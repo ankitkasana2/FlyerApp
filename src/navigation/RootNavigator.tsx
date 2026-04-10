@@ -1,10 +1,10 @@
 import React from 'react';
-import AppNavigator from './AppNavigator';
 import { observer } from 'mobx-react-lite';
 
-const RootNavigator = observer(() => {
-  const { authStore } = useStores();
+import AppNavigator from './AppNavigator';
+import AuthNavigator from './AuthNavigator';
 
+const RootNavigator = observer(() => {
   return authStore.isLoggedIn ? <AppNavigator /> : <AuthNavigator />;
 });
 

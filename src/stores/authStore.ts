@@ -1,3 +1,5 @@
+import { makeAutoObservable } from 'mobx';
+
 export class AuthStore {
   isAuthenticated: boolean = false;
   user: any = null;
