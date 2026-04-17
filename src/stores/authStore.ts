@@ -9,13 +9,10 @@ export class AuthStore {
   }
 
   login(username: string, password: string) {
-    // Simulate an API call for authentication
-    if (username === 'admin' && password === 'password') {
-      this.isAuthenticated = true;
-      this.user = { username: 'admin' };
-      return true;
-    }
-    return false;
+    // Authenticate any user for testing, as requested.
+    this.isAuthenticated = true;
+    this.user = { username: username || 'Guest' };
+    return true;
   }
 
   logout() {
