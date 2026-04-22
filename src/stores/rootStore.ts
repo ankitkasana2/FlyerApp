@@ -10,10 +10,11 @@ class RootStore {
   flyerStore: FlyerStore;
 
   constructor() {
-    this.userStore = new UserStore();
-    this.authStore = new AuthStore();
-    this.postStore = new PostStore();
     this.flyerStore = new FlyerStore();
+    this.userStore = new UserStore();
+    this.postStore = new PostStore();
+    // Pass flyerStore so authStore can reset it on logout
+    this.authStore = new AuthStore(this.flyerStore);
   }
 }
 

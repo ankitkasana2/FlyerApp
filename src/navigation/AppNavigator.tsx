@@ -19,6 +19,7 @@ import SettingsScreen from '../screens/Settings/SettingsScreen';
 import AboutScreen from '../screens/About/AboutScreen';
 import CartScreen from '../screens/cart/CartScreen';
 import DownloadsScreen from '../screens/Download/DownloadsScreen';
+import FlyerDetailScreen from '../screens/FlyerDetail/FlyerDetailScreen';
 
 // ─── Tab Icon component ────────────────────────────────────────────────────
 const TabIcon = ({
@@ -161,6 +162,7 @@ const AppNavigator = () => (
   <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
     <AppStack.Screen name="DrawerRoot" component={DrawerNavigator} />
     <AppStack.Screen name="Cart" component={CartScreen} />
+    <AppStack.Screen name="FlyerDetail" component={FlyerDetailScreen} />
   </AppStack.Navigator>
 );
 

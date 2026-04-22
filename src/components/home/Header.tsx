@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
-import Images from '../../assets/index';
+import AppImages from '../../assets/App';
 
 // ─── Icon: Hamburger ──────────────────────────────────────────────────────────
 const HamburgerIcon: React.FC<{ color?: string }> = ({
@@ -29,130 +29,6 @@ const HamburgerIcon: React.FC<{ color?: string }> = ({
         }}
       />
     ))}
-  </View>
-);
-
-// ─── Icon: Search ─────────────────────────────────────────────────────────────
-const SearchIcon: React.FC<{ color?: string; size?: number }> = ({
-  color = Colors.textPrimary,
-  size = 20,
-}) => (
-  <View
-    style={{
-      width: size,
-      height: size,
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <View
-      style={{
-        width: size * 0.6,
-        height: size * 0.6,
-        borderRadius: size * 0.3,
-        borderWidth: 2,
-        borderColor: color,
-      }}
-    />
-    <View
-      style={{
-        position: 'absolute',
-        width: 2,
-        height: size * 0.32,
-        backgroundColor: color,
-        borderRadius: 1,
-        top: size * 0.54,
-        left: size * 0.54,
-        transform: [{ rotate: '-45deg' }],
-      }}
-    />
-  </View>
-);
-
-// ─── Icon: Cart ───────────────────────────────────────────────────────────────
-const CartIcon: React.FC<{ color?: string; size?: number }> = ({
-  color = Colors.textPrimary,
-  size = 20,
-}) => (
-  <View style={{ width: size, height: size }}>
-    {/* Cart body */}
-    <View
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: size * 0.05,
-        width: size * 0.85,
-        height: size * 0.6,
-        borderWidth: 2,
-        borderColor: color,
-        borderRadius: 3,
-      }}
-    />
-    {/* Cart handle */}
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: size * 0.25,
-        width: size * 0.45,
-        height: size * 0.42,
-        borderTopWidth: 2,
-        borderLeftWidth: 2,
-        borderRightWidth: 2,
-        borderColor: color,
-        borderTopLeftRadius: size * 0.2,
-        borderTopRightRadius: size * 0.2,
-      }}
-    />
-  </View>
-);
-
-// ─── Icon: Bell ───────────────────────────────────────────────────────────────
-const BellIcon: React.FC<{ color?: string; size?: number }> = ({
-  color = Colors.textPrimary,
-  size = 20,
-}) => (
-  <View style={{ width: size, height: size, alignItems: 'center' }}>
-    {/* Bell body */}
-    <View
-      style={{
-        position: 'absolute',
-        top: size * 0.1,
-        width: size * 0.72,
-        height: size * 0.65,
-        borderTopLeftRadius: size * 0.36,
-        borderTopRightRadius: size * 0.36,
-        borderWidth: 2,
-        borderColor: color,
-        borderBottomWidth: 0,
-      }}
-    />
-    {/* Bell base */}
-    <View
-      style={{
-        position: 'absolute',
-        bottom: size * 0.14,
-        width: size * 0.85,
-        height: 2,
-        backgroundColor: color,
-        borderRadius: 1,
-      }}
-    />
-    {/* Bell clapper */}
-    <View
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        width: size * 0.28,
-        height: size * 0.18,
-        borderBottomLeftRadius: size * 0.14,
-        borderBottomRightRadius: size * 0.14,
-        borderLeftWidth: 2,
-        borderRightWidth: 2,
-        borderBottomWidth: 2,
-        borderColor: color,
-      }}
-    />
   </View>
 );
 
@@ -194,14 +70,13 @@ const Header: React.FC<HeaderProps> = ({
 
       {/* Right: Actions */}
       <View style={styles.actions}>
-        {/* Search */}
         <TouchableOpacity
           style={styles.iconButton}
           onPress={onSearchPress}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <SearchIcon />
+          <Image source={AppImages.search} style={styles.headerIcon} resizeMode="contain" />
         </TouchableOpacity>
 
         {/* Cart with Badge */}
@@ -211,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <CartIcon />
+          <Image source={AppImages.cart} style={styles.headerIcon} resizeMode="contain" />
           {cartCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>
@@ -228,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <BellIcon />
+          <Image source={AppImages.bell} style={styles.headerIcon} resizeMode="contain" />
         </TouchableOpacity>
       </View>
     </View>
@@ -275,6 +150,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 28,
     height: 28,
+  },
+  headerIcon: {
+    width: 22,
+    height: 22,
+    tintColor: Colors.textPrimary,
   },
   cartWrapper: {
     position: 'relative',

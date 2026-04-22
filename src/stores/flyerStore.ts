@@ -23,6 +23,15 @@ class FlyerStore {
   limit: number = 20;
   hasMore: boolean = true;
 
+  // Single flyer state
+  flyer: Flyer | null = null;
+  loading: boolean = false;
+  basePrice: number = 0;
+  flyerFormDetail = {
+    flyerId: null as string | number | null,
+    categoryId: null as string | number | null,
+  };
+
   constructor() {
     makeAutoObservable(this);
   }
@@ -53,7 +62,6 @@ class FlyerStore {
       if (data.success) {
         runInAction(() => {
           this.banners = data.data;
-          console.log('✅ Banners fetched successfully:', this.banners);
         });
       } else {
         throw new Error(data.message || 'Failed to fetch banners');
@@ -103,7 +111,6 @@ class FlyerStore {
 
     try {
       const url = getApiUrl(`/flyers?page=${this.page}&limit=${this.limit}&sort_by=${sortBy}&sort_dir=${sortDir}`);
-      console.log("Calling API URL:", url);
       
       const response = await fetch(url);
       
@@ -112,7 +119,6 @@ class FlyerStore {
       }
 
       const data = await response.json();
-      console.log("Data received:", data);
         
       // Extract flyers array. Response format: { data: [...], pagination: {...} }
       const newFlyers = Array.isArray(data) ? data : (data.data || data.flyers || []);
@@ -158,11 +164,80 @@ class FlyerStore {
     }
   }
 
+  /** Fetch a specific flyer by ID */
+  async fetchFlyer(id: string, refreshSimilar = true) {
+    runInAction(() => {
+      this.loading = true;
+      this.resetForm(); // Reset form when fetching a new flyer
+    });
+    try {
+      const res = await fetch(getApiUrl(`/flyers/${id}`), {
+        cache: "no-store",
+      });
+
+      const data = await res.json();
+
+      runInAction(() => {
+        // FIX PRICE
+        const rawPrice = data.price;
+        const numericPrice = rawPrice
+          ? Number(String(rawPrice).replace(/[^0-9.]/g, ""))
+          : null;
+
+        this.flyer = {
+          ...data,
+          name: data.title, // FIX NAME
+          image_url: data.image_url, // FIX IMAGE
+          price: numericPrice || 0, // Store parsed numeric price
+        };
+
+        if (numericPrice !== null && !Number.isNaN(numericPrice)) {
+          this.basePrice = numericPrice;
+        }
+
+        // FIX FLYER ID
+        this.flyerFormDetail.flyerId = data.id;
+
+        // FIX CATEGORY
+        this.flyerFormDetail.categoryId =
+          data.categories?.[0] ?? this.flyerFormDetail.categoryId;
+
+        // Fetch similar flyers only if requested
+        if (refreshSimilar) {
+          this.fetchSimilarFlyers();
+        }
+        this.loading = false;
+      });
+    } catch (err) {
+      console.error("fetchFlyer Error:", err);
+      runInAction(() => {
+        this.loading = false;
+      });
+    }
+  }
+
+  /** Reset the flyer form detail */
+  resetForm() {
+    this.flyerFormDetail = {
+      flyerId: null,
+      categoryId: null,
+    };
+    this.flyer = null;
+    this.basePrice = 0;
+  }
+
+  /** Placeholder for fetching similar flyers */
+  fetchSimilarFlyers() {
+    console.log("Fetching similar flyers for category:", this.flyerFormDetail.categoryId);
+    // Implementation can be added here later
+  }
+
   /** Clear the list (e.g. on logout) */
   reset(): void {
     this.flyers = [];
     this.error = null;
     this.isLoading = false;
+    this.resetForm();
   }
 }
 

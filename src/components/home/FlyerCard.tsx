@@ -10,124 +10,17 @@ import {
   Animated,
   ImageSourcePropType,
   Dimensions,
+  Image,
 } from 'react-native';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
+import AppImages from '../../assets/App';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_GAP = 12;
 const HORIZONTAL_PADDING = 16;
 const CARD_WIDTH = (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
 const CARD_HEIGHT = CARD_WIDTH * 1.38; // portrait ratio
-
-// ─── Crown Icon ───────────────────────────────────────────────────────────────
-const CrownIcon: React.FC<{ size?: number }> = ({ size = 12 }) => (
-  <View style={{ width: size, height: size * 0.8, justifyContent: 'flex-end' }}>
-    {/* Crown base */}
-    <View
-      style={{
-        width: '100%',
-        height: size * 0.28,
-        backgroundColor: '#FFD700',
-        borderRadius: 1,
-        position: 'absolute',
-        bottom: 0,
-      }}
-    />
-    {/* Crown left spike */}
-    <View
-      style={{
-        position: 'absolute',
-        bottom: size * 0.22,
-        left: 0,
-        width: 0,
-        height: 0,
-        borderLeftWidth: size * 0.2,
-        borderRightWidth: size * 0.2,
-        borderBottomWidth: size * 0.45,
-        borderStyle: 'solid',
-        borderLeftColor: 'transparent',
-        borderRightColor: 'transparent',
-        borderBottomColor: '#FFD700',
-      }}
-    />
-    {/* Crown center spike */}
-    <View
-      style={{
-        position: 'absolute',
-        bottom: size * 0.22,
-        left: size * 0.28,
-        width: 0,
-        height: 0,
-        borderLeftWidth: size * 0.2,
-        borderRightWidth: size * 0.2,
-        borderBottomWidth: size * 0.55,
-        borderStyle: 'solid',
-        borderLeftColor: 'transparent',
-        borderRightColor: 'transparent',
-        borderBottomColor: '#FFD700',
-      }}
-    />
-    {/* Crown right spike */}
-    <View
-      style={{
-        position: 'absolute',
-        bottom: size * 0.22,
-        right: 0,
-        width: 0,
-        height: 0,
-        borderLeftWidth: size * 0.2,
-        borderRightWidth: size * 0.2,
-        borderBottomWidth: size * 0.45,
-        borderStyle: 'solid',
-        borderLeftColor: 'transparent',
-        borderRightColor: 'transparent',
-        borderBottomColor: '#FFD700',
-      }}
-    />
-  </View>
-);
-
-// ─── Heart Icon ───────────────────────────────────────────────────────────────
-const HeartIcon: React.FC<{ filled?: boolean; size?: number }> = ({
-  filled = false,
-  size = 16,
-}) => (
-  <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-    {/* Left half */}
-    <View
-      style={{
-        position: 'absolute',
-        top: size * 0.12,
-        left: size * 0.04,
-        width: size * 0.48,
-        height: size * 0.55,
-        borderTopLeftRadius: size * 0.28,
-        borderTopRightRadius: size * 0.28,
-        backgroundColor: filled ? Colors.primary : 'transparent',
-        borderWidth: filled ? 0 : 1.8,
-        borderColor: Colors.textPrimary,
-        transform: [{ rotate: '-45deg' }],
-      }}
-    />
-    {/* Right half */}
-    <View
-      style={{
-        position: 'absolute',
-        top: size * 0.12,
-        right: size * 0.04,
-        width: size * 0.48,
-        height: size * 0.55,
-        borderTopLeftRadius: size * 0.28,
-        borderTopRightRadius: size * 0.28,
-        backgroundColor: filled ? Colors.primary : 'transparent',
-        borderWidth: filled ? 0 : 1.8,
-        borderColor: Colors.textPrimary,
-        transform: [{ rotate: '45deg' }],
-      }}
-    />
-  </View>
-);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface FlyerCardProps {
@@ -202,7 +95,7 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
           {/* Premium Badge */}
           {isPremium && (
             <View style={styles.premiumBadge}>
-              <CrownIcon size={12} />
+              <Image source={AppImages.crown} style={styles.crownIconImage} resizeMode="contain" />
             </View>
           )}
 
@@ -215,7 +108,14 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
           >
             <View style={styles.favoriteInner}>
               <Animated.View style={{ transform: [{ scale: heartScale }] }}>
-                <HeartIcon filled={favorited} size={20} />
+                <Image
+                  source={AppImages.favourite}
+                  style={[
+                    styles.favoriteIconImage,
+                    { tintColor: favorited ? Colors.error : Colors.textPrimary },
+                  ]}
+                  resizeMode="contain"
+                />
               </Animated.View>
             </View>
           </TouchableOpacity>
@@ -252,12 +152,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     left: 12,
-    backgroundColor: 'rgba(255,215,0,0.3)',
     width: 28,
     height: 28,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  crownIconImage: {
+    width: 16,
+    height: 16,
   },
   favoriteButton: {
     position: 'absolute',
@@ -265,13 +168,15 @@ const styles = StyleSheet.create({
     right: 12,
   },
   favoriteInner: {
-    backgroundColor: 'rgba(0,0,0,0.4)',
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backdropFilter: 'blur(10px)', // for web, simulated via bg for mobile
+  },
+  favoriteIconImage: {
+    width: 20,
+    height: 20,
   },
   priceBadge: {
     position: 'absolute',

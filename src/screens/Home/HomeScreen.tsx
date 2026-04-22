@@ -92,8 +92,8 @@ const HomeScreen: React.FC = observer(() => {
   }, []);
 
   const handleCardPress = useCallback((id: string) => {
-    console.log('Card pressed:', id);
-  }, []);
+    navigation.navigate('FlyerDetail' as never, { flyerId: id } as never);
+  }, [navigation]);
 
   const handleFavoritePress = useCallback((id: string) => {
     flyerStore.toggleFavourite(id);
