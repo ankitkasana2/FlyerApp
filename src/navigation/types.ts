@@ -2,6 +2,7 @@
 export type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
+  ConfirmEmail: undefined;
 };
 
 // ─── Bottom Tabs ─────────────────────────────────────────────────────────────
@@ -23,6 +24,7 @@ export type DrawerParamList = {
 export type AppStackParamList = {
   DrawerRoot: undefined;
   Cart: undefined;
+  FlyerDetail: { flyerId: string };
 };
 
 // ─── Root ─────────────────────────────────────────────────────────────────────

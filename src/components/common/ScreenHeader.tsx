@@ -8,9 +8,11 @@ import {
   StyleSheet,
   Platform,
   ViewStyle,
+  Image,
 } from 'react-native';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
+import AppImages from '../../assets/App';
 
 // ─── Back Arrow Icon (pure View) ─────────────────────────────────────────────
 const BackArrowIcon: React.FC<{ color?: string; size?: number }> = ({
@@ -53,36 +55,6 @@ const BackArrowIcon: React.FC<{ color?: string; size?: number }> = ({
         backgroundColor: color,
         borderRadius: 1,
         left: size * 0.06,
-      }}
-    />
-  </View>
-);
-
-// ─── Search Icon ─────────────────────────────────────────────────────────────
-const SearchIcon: React.FC<{ color?: string; size?: number }> = ({
-  color = Colors.textPrimary,
-  size = 20,
-}) => (
-  <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
-    <View
-      style={{
-        width: size * 0.6,
-        height: size * 0.6,
-        borderRadius: size * 0.3,
-        borderWidth: 2,
-        borderColor: color,
-      }}
-    />
-    <View
-      style={{
-        position: 'absolute',
-        width: 2,
-        height: size * 0.32,
-        backgroundColor: color,
-        borderRadius: 1,
-        top: size * 0.54,
-        left: size * 0.54,
-        transform: [{ rotate: '-45deg' }],
       }}
     />
   </View>
@@ -139,7 +111,7 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <SearchIcon size={20} />
+            <Image source={AppImages.search} style={styles.headerIcon} resizeMode="contain" />
             {searchBadgeCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>
@@ -238,6 +210,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+  },
+  headerIcon: {
+    width: 20,
+    height: 20,
+    tintColor: Colors.textPrimary,
   },
   badge: {
     position: 'absolute',

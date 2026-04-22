@@ -1,382 +1,308 @@
-import React, { useState } from 'react';
+// screens/LoginScreen.tsx
+
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
   ScrollView,
+  TouchableOpacity,
+  StyleSheet,
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  TextInput,
   Image,
-  ImageBackground,
-  Dimensions,
 } from 'react-native';
-import Images from '../../assets';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { observer } from 'mobx-react-lite';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../../navigation/types';
+
+// Theme & Assets
+import Colors from '../../theme/colors';
+import Typography from '../../theme/typography';
+import Images from '../../assets';
+
+// Stores
 import { useStores } from '../../stores/StoreContext';
-import { Colors } from '../../theme/colors';
-import { FontSize, FontWeight } from '../../theme/typography';
-import { Spacing, BorderRadius } from '../../theme/spacing';
+import { AuthStackParamList } from '../../navigation/types';
+
+// Auth shared components
+import AuthHeader from './AuthHeader';
+import AuthInput, { InputValidationState } from './AuthInput';
+import SocialAuthButtons from './SocialAuthButtons';
 
 type LoginNavProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 const LoginScreen = observer(() => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPass, setShowPass] = useState(false);
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const { authStore } = useStores();
   const navigation = useNavigation<LoginNavProp>();
 
-  const handleLogin = () => {
-    authStore.login(username.trim(), password.trim());
-  };
+  // Refs for focus chaining
+  const passwordRef = useRef<TextInput>(null);
+
+  const handleLogin = useCallback(async () => {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
+      setError('Please enter both email and password');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      await authStore.login(cleanEmail, cleanPassword);
+      // Success: RootNavigator observes authStore.isAuthenticated and navigates automatically
+    } catch (err: any) {
+      console.log('[LoginScreen] Error:', err?.code, err?.message);
+
+      // amazon-cognito-identity-js throws errors with a `code` property
+      const code = err?.code || '';
+      const msg = err?.message || '';
+      let message = 'Login failed. Please check your credentials.';
+
+      if (code === 'NotAuthorizedException' || msg.includes('NotAuthorizedException')) {
+        if (msg.includes('Password attempts exceeded')) {
+          message = 'Too many failed attempts. Please try again later.';
+        } else {
+          message = 'Incorrect email or password.';
+        }
+      } else if (code === 'UserNotFoundException' || msg.includes('UserNotFoundException')) {
+        message = 'No account found with this email. Please sign up first.';
+      } else if (code === 'UserNotConfirmedException' || msg.includes('UserNotConfirmedException')) {
+        message = 'Please verify your email before signing in.';
+      } else if (code === 'PasswordResetRequiredException') {
+        message = 'A password reset is required. Please check your email.';
+      } else if (code === 'TooManyRequestsException') {
+        message = 'Too many login attempts. Please wait and try again.';
+      } else if (code === 'NetworkError' || msg.includes('Network')) {
+        message = 'Network error. Please check your internet connection.';
+      } else if (msg === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+        message = 'You need to set a new password. Please check your email.';
+      } else if (msg) {
+        message = msg;
+      }
+
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [email, password, authStore]);
 
   return (
-    <View style={styles.root}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      
-      {/* Background Image Mosaic Section */}
-      <View style={styles.bgGrid}>
-        <View style={[styles.flyerCol, { paddingTop: 20 }]}>
-          <Image source={Images.pic1} style={styles.flyerGridImage} resizeMode="cover" />
-          <Image source={Images.pic2} style={styles.flyerGridImage} resizeMode="cover" />
-          <Image source={Images.pic3} style={styles.flyerGridImage} resizeMode="cover" />
-        </View>
-        <View style={[styles.flyerCol, { paddingTop: 0 }]}>
-          <Image source={Images.pic4} style={styles.flyerGridImage} resizeMode="cover" />
-          <Image source={Images.pic5} style={styles.flyerGridImage} resizeMode="cover" />
-          <Image source={Images.pic6} style={styles.flyerGridImage} resizeMode="cover" />
-        </View>
-        <View style={[styles.flyerCol, { paddingTop: 40 }]}>
-          <Image source={Images.pic7} style={styles.flyerGridImage} resizeMode="cover" />
-          <Image source={Images.pic8} style={styles.flyerGridImage} resizeMode="cover" />
-          <Image source={Images.pic9} style={styles.flyerGridImage} resizeMode="cover" />
-        </View>
-        <View style={[styles.flyerCol, { paddingTop: 10 }]}>
-          <Image source={Images.pic10} style={styles.flyerGridImage} resizeMode="cover" />
-          <Image source={Images.pic11} style={styles.flyerGridImage} resizeMode="cover" />
-          <Image source={Images.pic12} style={styles.flyerGridImage} resizeMode="cover" />
-        </View>
-
-        {/* Dark Gradient / Overlay */}
-        <View style={styles.overlay}>
-          <Image 
-            source={Images.logo} 
-            style={styles.logo} 
-            resizeMode="contain" 
-          />
-          <Text style={styles.tagline}>NEW FLYERS EVERY DAY</Text>
-        </View>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Spacer to push the card down and show the background */}
-          <View style={styles.spacer} />
+          {/* Header shared with Signup */}
+          <AuthHeader
+            title="GRODIFY"
+            subtitle="NEW FLYERS EVERY DAY"
+            // No stepLabel for Login
+            backgroundImages={[
+              Images.pic1,
+              Images.pic4,
+              Images.pic7,
+            ]}
+          />
 
-          {/* Bottom Card */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Welcome back</Text>
-            <Text style={styles.cardSub}>Sign in to access your premium flyers</Text>
+          <View style={styles.formBlock}>
+            <Text style={styles.welcomeTitle}>Welcome back</Text>
+            <Text style={styles.welcomeSub}>Sign in to access your premium flyers</Text>
 
             {/* Email Input */}
-            <View style={[
-              styles.inputWrap, 
-              focusedInput === 'email' && styles.inputWrapFocused
-            ]}>
-              <Image 
-                source={Images.email} 
-                style={styles.inputIcon} 
-                resizeMode="contain" 
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email address"
-                placeholderTextColor={Colors.textMuted}
-                autoCapitalize="none"
-                value={username}
-                onChangeText={setUsername}
-                onFocus={() => setFocusedInput('email')}
-                onBlur={() => setFocusedInput(null)}
-              />
-            </View>
-
-            {/* Password Input */}
-            <View style={[
-              styles.inputWrap, 
-              focusedInput === 'password' && styles.inputWrapFocused
-            ]}>
-              <Image 
-                source={Images.password} 
-                style={styles.inputIcon} 
-                resizeMode="contain" 
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor={Colors.textMuted}
-                secureTextEntry={!showPass}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => setFocusedInput('password')}
-                onBlur={() => setFocusedInput(null)}
-              />
-              <TouchableOpacity onPress={() => setShowPass(p => !p)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+            <AuthInput
+              label="EMAIL ADDRESS"
+              placeholder="you@example.com"
+              value={email}
+              onChangeText={(t) => {
+                setEmail(t);
+                setError(null);
+              }}
+              keyboardType="email-address"
+              leftIcon={
                 <Image 
-                  source={showPass ? Images.eyeOpen : Images.eyeClose} 
-                  style={styles.eyeIcon} 
+                  source={Images.email} 
+                  style={styles.inputIcon} 
                   resizeMode="contain" 
                 />
-              </TouchableOpacity>
-            </View>
+              }
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+            />
+
+            {/* Password Input */}
+            <AuthInput
+              label="PASSWORD"
+              placeholder="••••••••"
+              value={password}
+              onChangeText={(t) => {
+                setPassword(t);
+                setError(null);
+              }}
+              secureTextEntry
+              leftIcon={
+                <Image 
+                  source={Images.password} 
+                  style={styles.inputIcon} 
+                  resizeMode="contain" 
+                />
+              }
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
 
             {/* Forgot Password */}
-            <TouchableOpacity style={styles.forgotBtn}>
+            <TouchableOpacity style={styles.forgotBtn} activeOpacity={0.7}>
               <Text style={styles.forgotText}>Forgot password?</Text>
             </TouchableOpacity>
 
+            {/* Error Message */}
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
             {/* Sign In Button */}
             <TouchableOpacity
-              style={styles.loginBtn}
+              style={[styles.loginBtn, isLoading && styles.loginBtnDisabled]}
               onPress={handleLogin}
               activeOpacity={0.8}
+              disabled={isLoading}
             >
-              <Text style={styles.loginBtnText}>Sign In</Text>
+              <Text style={styles.loginBtnText}>
+                {isLoading ? 'Signing In...' : 'Sign In'}
+              </Text>
             </TouchableOpacity>
 
-            {/* OR Divider */}
-            <View style={styles.dividerWrap}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OR</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Social Logins */}
-            <View style={styles.socialWrap}>
-              <TouchableOpacity style={styles.socialBtn} activeOpacity={0.7}>
-                <Image 
-                  source={Images.apple} 
-                  style={[styles.socialIcon, { tintColor: Colors.white }]} 
-                  resizeMode="contain" 
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialBtn} activeOpacity={0.7}>
-                <Image 
-                  source={Images.google} 
-                  style={styles.socialIcon} 
-                  resizeMode="contain" 
-                />
-              </TouchableOpacity>
-            </View>
+            {/* Social Auth */}
+            <SocialAuthButtons
+              onApplePress={() => console.log('Apple Login')}
+              onGooglePress={() => console.log('Google Login')}
+            />
 
             {/* Footer */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Signup')} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Signup')}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.footerLink}>Sign up</Text>
               </TouchableOpacity>
             </View>
-
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 });
 
-export default LoginScreen;
-
 const styles = StyleSheet.create({
-  flex: { 
-    flex: 1, 
-  },
-  root: {
+  safeArea: {
     flex: 1,
     backgroundColor: Colors.background,
   },
-  bgGrid: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: SCREEN_HEIGHT * 0.6,
-    flexDirection: 'row',
-    backgroundColor: '#000',
-    overflow: 'hidden',
-    gap: 12,
-    paddingHorizontal: 8,
-  },
-  flyerCol: {
+  flex: {
     flex: 1,
-    gap: 12,
   },
-  flyerGridImage: {
-    width: '100%',
-    height: 180,
-    borderRadius: 8,
-    marginBottom: 4,
+  scroll: {
+    flex: 1,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Slightly lighter overlay for more pop
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: Platform.OS === 'ios' ? 40 : StatusBar.currentHeight || 20,
-  },
-  logo: {
-    width: 220,
-    height: 48,
-    marginBottom: 8,
-  },
-  tagline: {
-    color: '#D1D1D1',
-    fontSize: 12,
-    letterSpacing: 2,
-    fontWeight: '500',
-  },
-  scrollContainer: {
+  scrollContent: {
     flexGrow: 1,
-    justifyContent: 'flex-end',
   },
-  spacer: {
-    height: SCREEN_HEIGHT * 0.35, // Clear space for background image to be visible
+  formBlock: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 24,
+    gap: 20,
   },
-  card: {
-    backgroundColor: '#121212', // Very dark color consistent with image
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    padding: Spacing.xl,
-    paddingTop: 36,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-    minHeight: SCREEN_HEIGHT * 0.65, // Ensure it fills bottom
-  },
-  cardTitle: {
+  welcomeTitle: {
     fontSize: 26,
-    fontWeight: FontWeight.bold,
+    fontWeight: Typography.fontWeights.bold,
     color: Colors.textPrimary,
     marginBottom: 4,
   },
-  cardSub: { 
-    fontSize: FontSize.sm, 
-    color: '#9CA3AF', // Gray text
-    marginBottom: 32,
+  welcomeSub: {
+    fontSize: Typography.fontSizes.sm,
+    color: '#9CA3AF',
+    marginBottom: 12,
   },
-  inputWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1A1A1A',
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: '#2A2A2A', // Subtle border when not focused
-    height: 56,
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  inputWrapFocused: {
-    borderColor: '#00A3FF', // Bright blue border matching design when active
-  },
-  inputIcon: { 
-    width: 20, 
-    height: 20, 
-    tintColor: '#9CA3AF', // Gray tint for icons
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    height: '100%',
-    color: Colors.textPrimary,
-    fontSize: FontSize.base,
-  },
-  eyeIcon: { 
-    width: 20, 
-    height: 20, 
+  inputIcon: {
+    width: 20,
+    height: 20,
     tintColor: '#9CA3AF',
   },
   forgotBtn: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    marginTop: -8,
   },
   forgotText: {
-    color: Colors.primary, // Red text
-    fontSize: FontSize.sm,
-    fontWeight: '600',
+    color: Colors.primary,
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.semiBold,
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 0, 0, 0.2)',
+  },
+  errorText: {
+    color: Colors.primary,
+    fontSize: Typography.fontSizes.xs,
+    textAlign: 'center',
   },
   loginBtn: {
-    backgroundColor: Colors.primary, // Red button
-    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginTop: 8,
+  },
+  loginBtnDisabled: {
+    opacity: 0.6,
   },
   loginBtnText: {
-    fontSize: FontSize.base,
-    fontWeight: FontWeight.bold,
+    fontSize: Typography.fontSizes.base,
+    fontWeight: Typography.fontWeights.bold,
     color: Colors.white,
-  },
-  dividerWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#2A2A2A',
-  },
-  dividerText: {
-    color: '#6B7280',
-    paddingHorizontal: 16,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  socialWrap: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 16,
-    marginBottom: 32,
-  },
-  socialBtn: {
-    flex: 1,
-    height: 56,
-    backgroundColor: '#1A1A1A',
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#2A2A2A',
-  },
-  socialIcon: {
-    width: 24,
-    height: 24,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 12,
   },
-  footerText: { 
-    fontSize: FontSize.sm, 
+  footerText: {
+    fontSize: Typography.fontSizes.sm,
     color: '#9CA3AF',
   },
   footerLink: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.primary, // Red sign up
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.bold,
+    color: Colors.primary,
   },
 });
+
+export default LoginScreen;

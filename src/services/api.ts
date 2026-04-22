@@ -3,7 +3,7 @@
 // All variables are defined in the root .env file (no PUBLIC_ prefix needed).
 
 import Config from 'react-native-config';
-
+import axios from 'axios';
 import { Platform } from 'react-native';
 
 // ─── Base URL ─────────────────────────────────────────────────────────────────
@@ -43,3 +43,21 @@ export const getApiUrl = (path = ''): string => {
 
   return `${API_BASE_URL}${cleanPath}`;
 };
+
+// ─── Cognito Config ────────────────────────────────────────────────────────────
+// Using index access to avoid TypeScript errors with dynamic config keys
+export const COGNITO_REGION = (Config as any)['PUBLIC_AWS_REGION'] || 'ap-southeast-2';
+export const COGNITO_USER_POOL_ID = (Config as any)['PUBLIC_AWS_USER_POOL_ID'] || 'ap-southeast-2_qgU4fTnAC';
+export const COGNITO_CLIENT_ID = (Config as any)['PUBLIC_AWS_USER_POOL_WEB_CLIENT_ID'] || '2r2d0lev9923c83jmlnurtnnnp';
+export const COGNITO_ENDPOINT = `https://cognito-idp.${COGNITO_REGION}.amazonaws.com`;
+
+/**
+ * Axios instance for direct Cognito REST API calls.
+ * AWS Cognito requires 'application/x-amz-json-1.1' and specific X-Amz-Target headers.
+ */
+export const cognitoClient = axios.create({
+  baseURL: COGNITO_ENDPOINT,
+  headers: {
+    'Content-Type': 'application/x-amz-json-1.1',
+  },
+});
