@@ -1,6 +1,6 @@
 // components/auth/AuthInput.tsx
 
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, forwardRef } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,11 @@ import {
   StyleSheet,
   KeyboardTypeOptions,
   ViewStyle,
+  Image,
 } from 'react-native';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
-
 import Images from '../../assets';
-import { Image } from 'react-native';
 
 // ─── Eye / Eye-off icon (from assets) ─────────────────────────────────────────
 const EyeIcon: React.FC<{ visible: boolean; size?: number }> = ({
@@ -95,7 +94,7 @@ export interface AuthInputProps {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-const AuthInput: React.FC<AuthInputProps> = ({
+const AuthInput = forwardRef<TextInput, AuthInputProps>(({
   label,
   placeholder,
   value,
@@ -111,7 +110,7 @@ const AuthInput: React.FC<AuthInputProps> = ({
   leftIcon,
   rightElement,
   editable = true,
-}) => {
+}, ref) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const focusAnim = useRef(new Animated.Value(0)).current;
 
@@ -130,18 +129,6 @@ const AuthInput: React.FC<AuthInputProps> = ({
       useNativeDriver: false,
     }).start();
   }, [focusAnim]);
-
-  const borderColor = focusAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      validationState === 'error'
-        ? Colors.primary
-        : validationState === 'valid'
-        ? '#4CAF50'
-        : Colors.border,
-      validationState === 'error' ? Colors.primary : '#4CAF50',
-    ],
-  });
 
   const resolvedBorderColor =
     validationState === 'error'
@@ -179,6 +166,7 @@ const AuthInput: React.FC<AuthInputProps> = ({
           onBlur={handleBlur}
           selectionColor={Colors.primary}
           editable={editable}
+          ref={ref}
         />
 
         {/* Right element: custom, or auto eye/check */}
@@ -209,7 +197,7 @@ const AuthInput: React.FC<AuthInputProps> = ({
       ) : null}
     </View>
   );
-};
+});
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({

@@ -103,12 +103,14 @@ const LoginScreen = observer(() => {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
           {/* Header shared with Signup */}
           <AuthHeader
@@ -169,7 +171,11 @@ const LoginScreen = observer(() => {
             />
 
             {/* Forgot Password */}
-            <TouchableOpacity style={styles.forgotBtn} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={styles.forgotBtn} 
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('ResetPassword')}
+            >
               <Text style={styles.forgotText}>Forgot password?</Text>
             </TouchableOpacity>
 
@@ -228,6 +234,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 40,
   },
   formBlock: {
     paddingHorizontal: 24,

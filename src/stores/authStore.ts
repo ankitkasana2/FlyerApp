@@ -15,6 +15,9 @@ export class AuthStore {
   isLoading: boolean = true;
   pendingEmail: string | null = null;
   pendingPassword: string | null = null;
+  resetEmail: string | null = null;
+  loading: boolean = false;
+  error: string | null = null;
 
   private flyerStore: any;
 
@@ -182,6 +185,13 @@ export class AuthStore {
     return { success: true, needsVerification: true };
   }
 
+  async resendVerificationCode() {
+    if (!this.pendingEmail) {
+      throw new Error('Session expired. Please sign up again.');
+    }
+    await cognitoService.resendSignUpCode(this.pendingEmail);
+  }
+
   async verifyEmail(code: string) {
     if (!this.pendingEmail || !this.pendingPassword) {
       throw new Error('Session expired. Please sign up again.');
@@ -218,6 +228,220 @@ export class AuthStore {
 
     return { success: true };
   }
+
+  sendOTP = async (email: string) => {
+    runInAction(() => {
+      this.loading = true;
+      this.error = null;
+    });
+
+    try {
+      // Basic validation
+      if (!email) {
+        throw new Error('Email is required');
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      await cognitoService.sendPasswordResetCode(email);
+
+      runInAction(() => {
+        this.loading = false;
+        this.resetEmail = email;
+      });
+
+      return {
+        success: true,
+        message: 'Password reset code sent to your email.',
+      };
+    } catch (error: any) {
+      let errorMessage = 'Failed to send password reset code';
+      const errorString = error?.message || error?.toString() || '';
+
+      // User not found scenarios - Comprehensive coverage for password reset
+      if (
+        errorString.includes('UserNotFoundException') ||
+        errorString.includes('User does not exist') ||
+        errorString.includes('user not found') ||
+        errorString.includes('USER_NOT_FOUND') ||
+        errorString.includes('User not found') ||
+        errorString.includes('Username does not exist') ||
+        errorString.includes('username does not exist') ||
+        errorString.includes('USERNAME_DOES_NOT_EXIST') ||
+        errorString.includes('Invalid username') ||
+        errorString.includes('invalid username') ||
+        errorString.includes('INVALID_USERNAME') ||
+        errorString.includes('No such user') ||
+        errorString.includes('no such user') ||
+        errorString.includes('NO_SUCH_USER')
+      ) {
+        errorMessage =
+          'No account found with this email address. Please check your email or create a new account.';
+      } else if (errorString.includes('InvalidParameterException')) {
+        if (errorString.includes('email')) {
+          errorMessage =
+            'Invalid email format. Please enter a valid email address.';
+        } else {
+          errorMessage = 'Invalid input. Please check your email address.';
+        }
+      } else if (
+        errorString.includes('LimitExceededException') ||
+        errorString.includes('TooManyRequestsException')
+      ) {
+        errorMessage =
+          'Too many password reset attempts. Please wait a moment and try again.';
+      } else if (
+        errorString.includes('Network error') ||
+        errorString.includes('fetch')
+      ) {
+        errorMessage =
+          'Network connection error. Please check your internet connection and try again.';
+      } else if (errorString.includes('timeout')) {
+        errorMessage =
+          'Request timed out. Please check your connection and try again.';
+      } else if (errorString.includes('Email is required')) {
+        errorMessage = 'Please enter your email address.';
+      } else if (errorString.includes('Please enter a valid email address')) {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      runInAction(() => {
+        this.loading = false;
+        this.error = errorMessage;
+      });
+      throw new Error(errorMessage);
+    }
+  };
+
+  verifyOTP = async (email: string, code: string, newPassword: string) => {
+    runInAction(() => {
+      this.loading = true;
+      this.error = null;
+    });
+
+    try {
+      // Basic validation
+      if (!email || !code || !newPassword) {
+        throw new Error('All fields are required');
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      // Code validation
+      if (code.trim().length < 1) {
+        throw new Error('Verification code is required');
+      }
+
+      // Password validation (basic checks, Cognito will enforce policy)
+      if (newPassword.length < 8) {
+        throw new Error('New password must be at least 8 characters long');
+      }
+
+      await cognitoService.confirmPasswordReset(email, code, newPassword);
+
+      runInAction(() => {
+        this.loading = false;
+        this.resetEmail = null;
+      });
+
+      return {
+        success: true,
+        message:
+          'Password reset successful. You can now sign in with your new password.',
+      };
+    } catch (error: any) {
+      let errorMessage = 'Failed to reset password';
+      const errorString = error?.message || error?.toString() || '';
+
+      // User not found scenarios - Comprehensive coverage for OTP verification
+      if (
+        errorString.includes('UserNotFoundException') ||
+        errorString.includes('User does not exist') ||
+        errorString.includes('user not found') ||
+        errorString.includes('USER_NOT_FOUND') ||
+        errorString.includes('User not found') ||
+        errorString.includes('Username does not exist') ||
+        errorString.includes('username does not exist') ||
+        errorString.includes('USERNAME_DOES_NOT_EXIST') ||
+        errorString.includes('Invalid username') ||
+        errorString.includes('invalid username') ||
+        errorString.includes('INVALID_USERNAME') ||
+        errorString.includes('No such user') ||
+        errorString.includes('no such user') ||
+        errorString.includes('NO_SUCH_USER')
+      ) {
+        errorMessage =
+          'No account found with this email address. Please check your email or create a new account.';
+      } else if (errorString.includes('InvalidParameterException')) {
+        if (errorString.includes('code')) {
+          errorMessage =
+            'Invalid verification code. Please check the code and try again.';
+        } else if (errorString.includes('password')) {
+          errorMessage =
+            'New password does not meet security requirements. Please choose a stronger password.';
+        } else {
+          errorMessage = 'Invalid input. Please check all fields and try again.';
+        }
+      } else if (errorString.includes('CodeMismatchException')) {
+        errorMessage =
+          'Invalid verification code. Please check the code and try again.';
+      } else if (errorString.includes('ExpiredCodeException')) {
+        errorMessage =
+          'The verification code has expired. Please request a new code.';
+      } else if (errorString.includes('InvalidPasswordException')) {
+        if (errorString.includes('Password did not conform with policy')) {
+          errorMessage =
+            'Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.';
+        } else {
+          errorMessage =
+            'New password does not meet security requirements. Please choose a stronger password.';
+        }
+      } else if (
+        errorString.includes('LimitExceededException') ||
+        errorString.includes('TooManyRequestsException')
+      ) {
+        errorMessage =
+          'Too many verification attempts. Please wait a moment and try again.';
+      } else if (
+        errorString.includes('Network error') ||
+        errorString.includes('fetch')
+      ) {
+        errorMessage =
+          'Network connection error. Please check your internet connection and try again.';
+      } else if (errorString.includes('timeout')) {
+        errorMessage =
+          'Request timed out. Please check your connection and try again.';
+      } else if (errorString.includes('All fields are required')) {
+        errorMessage = 'Please fill in all required fields.';
+      } else if (errorString.includes('Please enter a valid email address')) {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (errorString.includes('Verification code is required')) {
+        errorMessage = 'Please enter the verification code.';
+      } else if (
+        errorString.includes('New password must be at least 8 characters long')
+      ) {
+        errorMessage = 'New password must be at least 8 characters long.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      runInAction(() => {
+        this.loading = false;
+        this.error = errorMessage;
+      });
+      throw new Error(errorMessage);
+    }
+  };
 
   private mapAttributes(attrs: Record<string, string>) {
     return {
