@@ -250,6 +250,30 @@ const cognitoService = {
   },
 
   /**
+   * Resend the confirmation code for signup verification.
+   */
+  resendSignUpCode(email: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log('[Cognito] ResendSignUpCode:', email);
+
+      const cognitoUser = new CognitoUser({
+        Username: email,
+        Pool: userPool,
+      });
+
+      cognitoUser.resendConfirmationCode((err) => {
+        if (err) {
+          console.error('[Cognito] ResendSignUpCode error:', err);
+          reject(err);
+          return;
+        }
+        console.log('[Cognito] ResendSignUpCode success');
+        resolve();
+      });
+    });
+  },
+
+  /**
    * Sign up a new user with Cognito.
    */
   signUp(email: string, password: string, fullName: string): Promise<{
@@ -294,6 +318,64 @@ const cognitoService = {
           });
         },
       );
+    });
+  },
+
+  /**
+   * Send a password reset code to the user's email.
+   */
+  sendPasswordResetCode(email: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log('[Cognito] SendPasswordResetCode:', email);
+
+      const cognitoUser = new CognitoUser({
+        Username: email,
+        Pool: userPool,
+      });
+
+      cognitoUser.forgotPassword({
+        onSuccess: (data) => {
+          console.log('[Cognito] SendPasswordResetCode onSuccess:', data);
+          resolve();
+        },
+        onFailure: (err) => {
+          console.error('[Cognito] SendPasswordResetCode onFailure:', err);
+          reject(err);
+        },
+        inputVerificationCode: (data) => {
+          console.log('[Cognito] SendPasswordResetCode inputVerificationCode:', data);
+          resolve();
+        },
+      });
+    });
+  },
+
+  /**
+   * Confirm password reset with the code and new password.
+   */
+  confirmPasswordReset(
+    email: string,
+    code: string,
+    newPassword: string,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log('[Cognito] ConfirmPasswordReset:', email);
+
+      const cognitoUser = new CognitoUser({
+        Username: email,
+        Pool: userPool,
+      });
+
+      cognitoUser.confirmPassword(code, newPassword, {
+        onSuccess: () => {
+          console.log('[Cognito] ConfirmPasswordReset success');
+          resolve();
+        },
+        onFailure: (err) => {
+          console.error('[Cognito] ConfirmPasswordReset error:', err);
+          reject(err);
+        },
+      });
     });
   },
 };

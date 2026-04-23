@@ -21,7 +21,7 @@ import { useStores } from '../../stores/StoreContext';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 
-const OTP_LENGTH = 4;
+const OTP_LENGTH = 6;
 const RESEND_TIME = 60;
 
 type ConfirmEmailNavProp = NativeStackNavigationProp<AuthStackParamList, 'ConfirmEmail'>;
@@ -76,9 +76,13 @@ const OtpScreen = observer(() => {
 
   const handleResend = useCallback(async () => {
     if (timer > 0) return;
-    Alert.alert('Resend', 'A new verification code has been sent to your email.');
-    setTimer(RESEND_TIME);
-  }, [timer]);
+    try {
+      await authStore.resendVerificationCode();
+      setTimer(RESEND_TIME);
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to resend code. Please try again.');
+    }
+  }, [timer]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleVerify = useCallback(async (code: string) => {
     setIsLoading(true);
@@ -124,7 +128,7 @@ const OtpScreen = observer(() => {
           <View style={styles.topSection}>
             <Text style={styles.title}>Verify Account</Text>
             <Text style={styles.subtitle}>
-              Enter the 4-digit code sent to{'\n'}your email
+              Enter the 6-digit code sent to{'\n'}your email
             </Text>
             <Text style={styles.email}>{email}</Text>
           </View>
@@ -239,7 +243,7 @@ const styles = StyleSheet.create({
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
+    gap: 10,
     marginBottom: 16,
   },
   input: {

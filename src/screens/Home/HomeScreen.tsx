@@ -24,6 +24,7 @@ import SearchBar from '../../components/common/SearchBar';
 // Home Components
 import Header from '../../components/home/Header';
 import HeroBanner, { BannerSlide } from '../../components/home/HeroBanner';
+import BannerSkeleton from '../../components/home/BannerSkeleton';
 import SectionHeader from '../../components/home/SectionHeader';
 import FlyerCard, {
   CARD_GAP,
@@ -194,22 +195,10 @@ const HomeScreen: React.FC = observer(() => {
       </View>
 
       {/* Hero Banner Slider */}
-      {mappedBanners.length > 0 && (
+      {mappedBanners.length > 0 ? (
         <HeroBanner slides={mappedBanners} autoPlayInterval={5000} />
-      )}
-
-      {/* Hero Banner Loading Skeleton Placeholder */}
-      {flyerStore.isBannersLoading && mappedBanners.length === 0 && (
-        <View style={styles.bannerLoading}>
-          <ActivityIndicator color={Colors.primary} />
-        </View>
-      )}
-
-      {/* Loading state for initial flyer load */}
-      {flyerStore.isLoading && flyerStore.flyers.length === 0 && (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
+      ) : (
+        <BannerSkeleton />
       )}
 
       {/* Error state */}
@@ -220,7 +209,7 @@ const HomeScreen: React.FC = observer(() => {
       )}
 
       {/* Empty state */}
-      {!flyerStore.isLoading && !flyerStore.error && groupedCategories.length === 0 && (
+      {!flyerStore.isLoading && !flyerStore.isBannersLoading && !flyerStore.error && groupedCategories.length === 0 && (
         <View style={styles.center}>
           <Text style={styles.emptyText}>No flyers found.</Text>
         </View>
@@ -252,7 +241,6 @@ const HomeScreen: React.FC = observer(() => {
   );
 });
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -261,14 +249,6 @@ const styles = StyleSheet.create({
   searchWrapper: {
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingVertical: 12,
-  },
-  bannerLoading: {
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    marginHorizontal: HORIZONTAL_PADDING,
-    borderRadius: 16,
   },
   categorySection: {
     marginTop: 24,

@@ -3,6 +3,8 @@ export type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
   ConfirmEmail: undefined;
+  ResetPassword: undefined;
+  ResetPasswordConfirm: { email: string };
 };
 
 // ─── Bottom Tabs ─────────────────────────────────────────────────────────────
