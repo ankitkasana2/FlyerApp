@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -31,7 +31,6 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { AppStackParamList } from '../../navigation/types';
 import { ActivityIndicator } from 'react-native';
-import { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // ─── Static data ──────────────────────────────────────────────────────────────
@@ -142,6 +141,29 @@ const FlyerDetailScreen: React.FC = observer(() => {
     }));
   }, []);
 
+  // ─── Price calculation ──────────────────────────────────────────────────
+  const totalPrice = useMemo(() => {
+    let total = flyerStore.basePrice || 0;
+    
+    // Delivery cost
+    const delivery = DELIVERY_OPTIONS.find(o => o.id === form.deliveryTime);
+    if (delivery && delivery.sublabel) {
+      const deliveryCost = parseInt(delivery.sublabel.replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(deliveryCost)) total += deliveryCost;
+    }
+    
+    // Extras cost
+    form.selectedExtras.forEach(id => {
+      const extra = EXTRAS.find(e => e.id === id);
+      if (extra && extra.price && !extra.isFree) {
+        const extraCost = parseInt(extra.price.replace(/[^0-9]/g, ''), 10);
+        if (!isNaN(extraCost)) total += extraCost;
+      }
+    });
+    
+    return total;
+  }, [flyerStore.basePrice, form.deliveryTime, form.selectedExtras]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
 
@@ -163,153 +185,178 @@ const FlyerDetailScreen: React.FC = observer(() => {
           <Text style={styles.loadingText}>Loading Flyer...</Text>
         </View>
       ) : (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* ── Hero Banner ── */}
-          <FlyerHeroBanner
-            imageSource={
-              flyerStore.flyer?.image_url
-                ? { uri: flyerStore.flyer.image_url }
-                : { uri: 'https://via.placeholder.com/800x900?text=No+Image' }
-            }
-            brandTag="GKODIFY"
-            isPremium={flyerStore.flyer?.isPremium}
-            isFavorited={flyerStore.flyer?.isFavorited}
-            onFavoritePress={() => {
-              if (flyerStore.flyer?.id) {
-                flyerStore.toggleFavourite(String(flyerStore.flyer.id));
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* ── Hero Banner ── */}
+            <FlyerHeroBanner
+              imageSource={
+                flyerStore.flyer?.image_url
+                  ? { uri: flyerStore.flyer.image_url }
+                  : { uri: 'https://via.placeholder.com/800x900?text=No+Image' }
               }
-            }}
-          />
+              brandTag="GKODIFY"
+              isPremium={flyerStore.flyer?.isPremium}
+              isFavorited={flyerStore.flyer?.isFavorited}
+              onFavoritePress={() => {
+                if (flyerStore.flyer?.id) {
+                  flyerStore.toggleFavourite(String(flyerStore.flyer.id));
+                }
+              }}
+            />
 
-        {/* ── Form Card ── */}
-        <View style={styles.formCard}>
-          {/* Section title */}
-          <View style={styles.sectionTitleRow}>
-            <Text style={styles.sectionTitle}>Event Details</Text>
-            <Image source={AppImages.edit} style={styles.sectionTitleIconImage} />
+          {/* ── Form Card ── */}
+          <View style={styles.formCard}>
+            {/* Section title */}
+            <View style={styles.sectionTitleRow}>
+              <Text style={styles.sectionTitle}>Event Details</Text>
+              <Image source={AppImages.edit} style={styles.sectionTitleIconImage} />
+            </View>
+
+            {/* Presenting */}
+            <SelectDropdown
+              label="Presenting"
+              placeholder="Select Presenter"
+              options={PRESENTER_OPTIONS}
+              selectedValue={form.presenter}
+              onSelect={(v) => setField('presenter', v)}
+            />
+
+            {/* Event Title */}
+            <FormField
+              label="Event Title"
+              placeholder="Society Fridays"
+              value={form.eventTitle}
+              onChangeText={(t) => setField('eventTitle', t)}
+            />
+
+            {/* Date */}
+            <FormField
+              label="Date"
+              isRequired
+              placeholder="June 01, 2025"
+              value={form.date}
+              onChangeText={(t) => setField('date', t)}
+              rightIcon={
+                <Image source={AppImages.calender} style={styles.calendarIconImage} />
+              }
+            />
+
+            {/* Flyer Info */}
+            <FormField
+              label="Flyer info"
+              placeholder="Add details, dress code, age limit..."
+              value={form.flyerInfo}
+              onChangeText={(t) => setField('flyerInfo', t)}
+              multiline
+              numberOfLines={4}
+            />
+
+            {/* Address & Phone */}
+            <FormField
+              label="Address & Phone"
+              placeholder="123 Nightlife St, +1 234 567 890"
+              value={form.addressPhone}
+              onChangeText={(t) => setField('addressPhone', t)}
+              keyboardType="default"
+            />
+
+            {/* Venue Logo */}
+            <VenueLogoUpload
+              onUploadPress={() => console.log('Upload logo')}
+              onChooseFromLibrary={() => console.log('Choose from library')}
+            />
+
+            {/* DJs & Artists */}
+            <DynamicListField
+              label="DJs & Artists"
+              items={form.djArtists}
+              onChange={(items) => setField('djArtists', items)}
+              addLabel="ADD MORE DJs"
+              placeholder="DJ/Artist"
+              maxItems={8}
+            />
+
+            {/* Hosts */}
+            <DynamicListField
+              label="Hosts"
+              items={form.hosts}
+              onChange={(items) => setField('hosts', items)}
+              addLabel="ADD HOST (S)"
+              placeholder="Host"
+              maxItems={5}
+            />
+
+            {/* Sponsors */}
+            <SponsorsUpload
+              count={3}
+              onUploadPress={(i) => console.log('Upload sponsor', i)}
+              onLibraryPress={(i) => console.log('Library sponsor', i)}
+            />
+
+            {/* Delivery Time */}
+            <DeliveryTimeSelector
+              options={DELIVERY_OPTIONS}
+              selectedId={form.deliveryTime}
+              onSelect={(id) => setField('deliveryTime', id)}
+            />
+
+            {/* Extras */}
+            <ExtrasSelector
+              extras={EXTRAS}
+              selectedIds={form.selectedExtras}
+              onToggle={handleToggleExtra}
+            />
+
+            {/* Note for Designer */}
+            <FormField
+              label="Note for the Designer"
+              placeholder="Any specific design requests or branding guidelines..."
+              value={form.designerNote}
+              onChangeText={(t) => setField('designerNote', t)}
+              multiline
+              numberOfLines={4}
+            />
           </View>
 
-          {/* Presenting */}
-          <SelectDropdown
-            label="Presenting"
-            placeholder="Select Presenter"
-            options={PRESENTER_OPTIONS}
-            selectedValue={form.presenter}
-            onSelect={(v) => setField('presenter', v)}
-          />
+          {/* ── Similar Flyers ── */}
+          <View style={styles.similarSection}>
+            <SimilarFlyersSection
+              items={SIMILAR_FLYERS}
+              onSeeAll={() => console.log('See all similar')}
+              onItemPress={(id) => console.log('Similar flyer pressed:', id)}
+            />
+          </View>
 
-          {/* Event Title */}
-          <FormField
-            label="Event Title"
-            placeholder="Society Fridays"
-            value={form.eventTitle}
-            onChangeText={(t) => setField('eventTitle', t)}
-          />
+          <View style={styles.bottomPadding} />
+          </ScrollView>
 
-          {/* Date */}
-          <FormField
-            label="Date"
-            isRequired
-            placeholder="June 01, 2025"
-            value={form.date}
-            onChangeText={(t) => setField('date', t)}
-            rightIcon={
-              <Image source={AppImages.calender} style={styles.calendarIconImage} />
-            }
-          />
+          {/* ── Sticky Footer Buttons ── */}
+          <View style={styles.footer}>
+            <TouchableOpacity 
+              style={styles.addToCartButton}
+              onPress={() => console.log('Add to cart')}
+            >
+              <Text style={styles.addToCartText}>ADD TO CART</Text>
+            </TouchableOpacity>
 
-          {/* Flyer Info */}
-          <FormField
-            label="Flyer info"
-            placeholder="Add details, dress code, age limit..."
-            value={form.flyerInfo}
-            onChangeText={(t) => setField('flyerInfo', t)}
-            multiline
-            numberOfLines={4}
-          />
-
-          {/* Address & Phone */}
-          <FormField
-            label="Address & Phone"
-            placeholder="123 Nightlife St, +1 234 567 890"
-            value={form.addressPhone}
-            onChangeText={(t) => setField('addressPhone', t)}
-            keyboardType="default"
-          />
-
-          {/* Venue Logo */}
-          <VenueLogoUpload
-            onUploadPress={() => console.log('Upload logo')}
-            onChooseFromLibrary={() => console.log('Choose from library')}
-          />
-
-          {/* DJs & Artists */}
-          <DynamicListField
-            label="DJs & Artists"
-            items={form.djArtists}
-            onChange={(items) => setField('djArtists', items)}
-            addLabel="ADD MORE DJs"
-            placeholder="DJ/Artist"
-            maxItems={8}
-          />
-
-          {/* Hosts */}
-          <DynamicListField
-            label="Hosts"
-            items={form.hosts}
-            onChange={(items) => setField('hosts', items)}
-            addLabel="ADD HOST (S)"
-            placeholder="Host"
-            maxItems={5}
-          />
-
-          {/* Sponsors */}
-          <SponsorsUpload
-            count={3}
-            onUploadPress={(i) => console.log('Upload sponsor', i)}
-            onLibraryPress={(i) => console.log('Library sponsor', i)}
-          />
-
-          {/* Delivery Time */}
-          <DeliveryTimeSelector
-            options={DELIVERY_OPTIONS}
-            selectedId={form.deliveryTime}
-            onSelect={(id) => setField('deliveryTime', id)}
-          />
-
-          {/* Extras */}
-          <ExtrasSelector
-            extras={EXTRAS}
-            selectedIds={form.selectedExtras}
-            onToggle={handleToggleExtra}
-          />
-
-          {/* Note for Designer */}
-          <FormField
-            label="Note for the Designer"
-            placeholder="Any specific design requests or branding guidelines..."
-            value={form.designerNote}
-            onChangeText={(t) => setField('designerNote', t)}
-            multiline
-            numberOfLines={4}
-          />
+            <TouchableOpacity 
+              style={styles.checkoutButton}
+              onPress={() => console.log('Checkout now')}
+            >
+              <View style={styles.checkoutContent}>
+                <View>
+                  <Text style={styles.checkoutText}>CHECKOUT</Text>
+                  <Text style={styles.checkoutText}>NOW</Text>
+                </View>
+                <Text style={styles.priceText}>${totalPrice.toFixed(2)}</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {/* ── Similar Flyers ── */}
-        <View style={styles.similarSection}>
-          <SimilarFlyersSection
-            items={SIMILAR_FLYERS}
-            onSeeAll={() => console.log('See all similar')}
-            onItemPress={(id) => console.log('Similar flyer pressed:', id)}
-          />
-        </View>
-
-        <View style={styles.bottomPadding} />
-        </ScrollView>
       )}
     </SafeAreaView>
   );
@@ -357,7 +404,57 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   bottomPadding: {
-    height: 40,
+    height: 100, // Increased for footer
+  },
+  footer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: Colors.background,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    gap: 12,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  addToCartButton: {
+    flex: 1,
+    backgroundColor: '#1E1E1E', // Dark grey
+    height: 56,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addToCartText: {
+    color: Colors.textPrimary,
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.bold,
+  },
+  checkoutButton: {
+    flex: 1.5,
+    backgroundColor: Colors.primary, // Red
+    height: 56,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  checkoutContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  checkoutText: {
+    color: Colors.textPrimary,
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.black,
+    lineHeight: 16,
+  },
+  priceText: {
+    color: Colors.textPrimary,
+    fontSize: Typography.fontSizes.lg,
+    fontWeight: Typography.fontWeights.black,
   },
   loadingContainer: {
     flex: 1,

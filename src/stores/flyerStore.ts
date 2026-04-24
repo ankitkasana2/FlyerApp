@@ -22,6 +22,8 @@ class FlyerStore {
   page: number = 1;
   limit: number = 20;
   hasMore: boolean = true;
+  nextCategoryPages: Record<string, number> = {};
+  loadingCategories: Record<string, boolean> = {};
 
   // Single flyer state
   flyer: Flyer | null = null;
@@ -134,7 +136,15 @@ class FlyerStore {
         this.isLoading = false;
         this.isFetchingNextPage = false;
 
-        // Use pagination metadata if available, otherwise fallback to item count check
+        // Use pagination metadata if available
+        const nextCatPages = data.pagination?.nextCategoryPages || data.nextCategoryPages;
+        if (nextCatPages) {
+          this.nextCategoryPages = {
+            ...this.nextCategoryPages,
+            ...nextCatPages
+          };
+        }
+
         if (data.pagination) {
           this.hasMore = data.pagination.hasNextPage;
         } else {
@@ -155,6 +165,66 @@ class FlyerStore {
       });
     }
   };
+
+  /** Fetch next page of flyers for a specific category */
+  fetchCategoryFlyers = async (category: string) => {
+    // If explicitly set to null/0 or a sentinel value indicating end, then return.
+    if (this.nextCategoryPages[category] === null || this.nextCategoryPages[category] === 0) {
+       return;
+    }
+
+    // Default to page 2 if not tracked yet (since initial load fetches page 1)
+    const nextPage = this.nextCategoryPages[category] || 2;
+
+    if (this.loadingCategories[category]) return;
+
+    runInAction(() => {
+      this.loadingCategories[category] = true;
+    });
+
+    try {
+      const categoryPagesParam = JSON.stringify({ [category]: nextPage });
+      const url = getApiUrl(`/flyers?categoryPages=${encodeURIComponent(categoryPagesParam)}`);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      
+      const newFlyers = Array.isArray(data) ? data : (data.data || data.flyers || []);
+
+      runInAction(() => {
+        // Append new flyers
+        this.flyers = [...this.flyers, ...newFlyers];
+
+        const nextCatPages = data.pagination?.nextCategoryPages || data.nextCategoryPages;
+        if (nextCatPages) {
+          // If the backend returns a new nextPage for this category, update it
+          if (nextCatPages[category]) {
+            this.nextCategoryPages[category] = nextCatPages[category];
+          } else {
+            // Otherwise, set to null to prevent further requests
+            this.nextCategoryPages[category] = null as any;
+          }
+        } else {
+          // If no pagination metadata is returned, assume no more pages
+          this.nextCategoryPages[category] = null as any;
+        }
+      });
+
+    } catch (err: any) {
+      console.error(`fetchCategoryFlyers Error for ${category}:`, err);
+    } finally {
+      runInAction(() => {
+        this.loadingCategories[category] = false;
+      });
+    }
+  };
+
 
   /** Toggle favourite flag locally (optimistic update) */
   toggleFavourite(id: string): void {
@@ -237,6 +307,8 @@ class FlyerStore {
     this.flyers = [];
     this.error = null;
     this.isLoading = false;
+    this.nextCategoryPages = {};
+    this.loadingCategories = {};
     this.resetForm();
   }
 }

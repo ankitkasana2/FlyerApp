@@ -180,7 +180,8 @@ const SignupScreen: React.FC = observer(() => {
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <ScrollView
           style={styles.scroll}
@@ -285,8 +286,8 @@ const SignupScreen: React.FC = observer(() => {
 
             {/* Social auth */}
             <SocialAuthButtons
-              onApplePress={() => console.log('Apple sign in')}
-              onGooglePress={() => console.log('Google sign in')}
+              onApplePress={() => authStore.signInWithProvider('apple')}
+              onGooglePress={() => authStore.signInWithProvider('google')}
             />
 
             {/* Sign in link */}

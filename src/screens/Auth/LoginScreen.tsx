@@ -102,8 +102,8 @@ const LoginScreen = observer(() => {
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <ScrollView
           style={styles.scroll}
@@ -200,8 +200,8 @@ const LoginScreen = observer(() => {
 
             {/* Social Auth */}
             <SocialAuthButtons
-              onApplePress={() => console.log('Apple Login')}
-              onGooglePress={() => console.log('Google Login')}
+              onApplePress={() => authStore.signInWithProvider('apple')}
+              onGooglePress={() => authStore.signInWithProvider('google')}
             />
 
             {/* Footer */}

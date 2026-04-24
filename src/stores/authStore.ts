@@ -1,7 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import cognitoService from '../services/cognitoService';
-import { getApiUrl } from '../services/api';
+import { getApiUrl, COGNITO_DOMAIN, COGNITO_CLIENT_ID } from '../services/api';
+import { Linking } from 'react-native';
 import axios from 'axios';
 
 const STORAGE_KEY = '@auth_user';
@@ -44,10 +45,33 @@ export class AuthStore {
           this.refreshToken = session.getRefreshToken().getToken();
           this.user = user;
           this.isAuthenticated = true;
+          this.isLoading = false;
         });
+        return; // Early return since we successfully restored standard session
       }
-    } catch {
-      console.warn('[AuthStore] Session restore failed, user not logged in.');
+    } catch (e) {
+      console.warn('[AuthStore] Standard session restore threw an error:', e);
+    }
+
+    // Fallback: check for manually stored OAuth tokens if no normal session was restored
+    try {
+      const storedTokensStr = await AsyncStorage.getItem('@auth_tokens');
+      const storedUserRaw = await AsyncStorage.getItem(STORAGE_KEY);
+      
+      if (storedTokensStr && storedUserRaw) {
+        const tokens = JSON.parse(storedTokensStr);
+        runInAction(() => {
+          this.accessToken = tokens.accessToken;
+          this.idToken = tokens.idToken;
+          this.refreshToken = tokens.refreshToken;
+          this.user = JSON.parse(storedUserRaw);
+          this.isAuthenticated = true;
+        });
+      } else {
+        console.warn('[AuthStore] Session restore failed, user not logged in.');
+      }
+    } catch (e) {
+      console.warn('[AuthStore] Failed to restore manual tokens', e);
     } finally {
       runInAction(() => {
         this.isLoading = false;
@@ -93,9 +117,10 @@ export class AuthStore {
       console.warn('[AuthStore] Cognito sign out error:', e);
     }
 
-    // 2. Clear our persisted user object
+    // 2. Clear our persisted user object and tokens
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
+      await AsyncStorage.removeItem('@auth_tokens');
     } catch (e) {
       console.error('[AuthStore] Failed to clear storage during logout', e);
     }
@@ -452,4 +477,110 @@ export class AuthStore {
       provider: 'email',
     };
   }
+
+  signInWithProvider = async (provider: 'google' | 'apple') => {
+    try {
+      const identityProvider = provider === 'google' ? 'Google' : 'SignInWithApple'; 
+      const redirectUri = encodeURIComponent('flyerapp://auth');
+      const authUrl = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=${identityProvider}&response_type=code&client_id=${COGNITO_CLIENT_ID}&redirect_uri=${redirectUri}&scope=email+openid+profile`;
+
+      try {
+        await Linking.openURL(authUrl);
+      } catch (openErr) {
+        console.error('[AuthStore] Linking.openURL failed:', openErr);
+        throw new Error('Cannot open web browser for sign in.');
+      }
+    } catch (error: any) {
+      let errorMessage = `Failed to sign in with ${provider}`;
+      const errorString = error?.message || error?.toString() || '';
+
+      if (errorString.includes('NotAuthorizedException')) {
+        errorMessage = `${provider} sign-in not authorized. Please check your ${provider} account settings.`;
+      } else if (errorString.includes('UserNotConfirmedException')) {
+        errorMessage = `Your ${provider} account needs to be verified. Please check your email.`;
+      } else if (errorString.includes('Network error') || errorString.includes('fetch')) {
+        errorMessage = 'Network connection error. Please check your internet connection and try again.';
+      } else if (errorString.includes('timeout')) {
+        errorMessage = 'Request timed out. Please check your connection and try again.';
+      } else if (errorString.includes('TooManyRequestsException')) {
+        errorMessage = 'Too many sign-in attempts. Please wait a moment and try again.';
+      } else if (errorString.includes('InvalidParameterException')) {
+        errorMessage = 'Invalid sign-in parameters. Please try again.';
+      } else if (errorString.includes('UserLambdaValidationException')) {
+        errorMessage = 'Unable to sign in with social account. The service is temporarily unavailable. Please try again later.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      runInAction(() => {
+        this.error = errorMessage;
+      });
+      throw new Error(errorMessage);
+    }
+  };
+
+  handleOAuthCallback = async (url: string) => {
+    if (url && url.includes('?code=')) {
+      const code = url.split('?code=')[1].split('&')[0];
+      
+      runInAction(() => { 
+        this.loading = true; 
+        this.error = null; 
+      });
+      
+      try {
+        const redirectUri = encodeURIComponent('flyerapp://auth');
+        const tokenUrl = `${COGNITO_DOMAIN}/oauth2/token`;
+        
+        const body = `grant_type=authorization_code&client_id=${COGNITO_CLIENT_ID}&code=${code}&redirect_uri=${redirectUri}`;
+
+        const response = await axios.post(tokenUrl, body, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+
+        const { access_token, id_token, refresh_token } = response.data;
+        
+        // Fetch user info using the access token
+        const userInfoResponse = await axios.get(`${COGNITO_DOMAIN}/oauth2/userInfo`, {
+          headers: {
+            Authorization: `Bearer ${access_token}`
+          }
+        });
+        
+        const payload = userInfoResponse.data;
+        const user = {
+          id: payload.sub,
+          name: payload.name || payload.given_name || payload.email || 'User',
+          email: payload.email,
+          phone: payload.phone_number || '',
+          provider: 'social',
+        };
+
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        await AsyncStorage.setItem('@auth_tokens', JSON.stringify({
+          accessToken: access_token,
+          idToken: id_token,
+          refreshToken: refresh_token
+        }));
+
+        runInAction(() => {
+          this.accessToken = access_token;
+          this.idToken = id_token;
+          this.refreshToken = refresh_token;
+          this.user = user;
+          this.isAuthenticated = true;
+          this.loading = false;
+        });
+
+      } catch (error: any) {
+        console.error('[AuthStore] OAuth Callback Error:', error?.response?.data || error);
+        runInAction(() => {
+          this.error = 'Failed to authenticate with social provider.';
+          this.loading = false;
+        });
+      }
+    }
+  };
 }

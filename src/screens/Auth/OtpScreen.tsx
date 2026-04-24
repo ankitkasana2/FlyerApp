@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { observer } from 'mobx-react-lite';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/types';
 import { useStores } from '../../stores/StoreContext';
@@ -27,10 +27,12 @@ const RESEND_TIME = 60;
 type ConfirmEmailNavProp = NativeStackNavigationProp<AuthStackParamList, 'ConfirmEmail'>;
 
 const OtpScreen = observer(() => {
-  const navigation = useNavigation<ConfirmEmailNavProp>();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const { authStore } = useStores();
 
-  const email = authStore.pendingEmail ?? '';
+  const isResetFlow = route.name === 'ResetPasswordOtp';
+  const email = isResetFlow ? route.params?.email : (authStore.pendingEmail ?? '');
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [timer, setTimer] = useState(RESEND_TIME);
@@ -40,11 +42,11 @@ const OtpScreen = observer(() => {
   const inputs = useRef<Array<TextInput | null>>([]);
 
   useEffect(() => {
-    if (!authStore.pendingEmail) {
+    if (!email) {
       navigation.goBack();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [email]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -77,17 +79,28 @@ const OtpScreen = observer(() => {
   const handleResend = useCallback(async () => {
     if (timer > 0) return;
     try {
-      await authStore.resendVerificationCode();
+      if (isResetFlow) {
+        await authStore.sendOTP(email);
+      } else {
+        await authStore.resendVerificationCode();
+      }
       setTimer(RESEND_TIME);
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to resend code. Please try again.');
     }
-  }, [timer]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timer, isResetFlow, email]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleVerify = useCallback(async (code: string) => {
     setIsLoading(true);
     setError(null);
     try {
+      if (isResetFlow) {
+        // Just navigate to the new password screen with the code
+        navigation.navigate('ResetPasswordNewPassword', { email, otp: code });
+        setIsLoading(false);
+        return;
+      }
+
       await authStore.verifyEmail(code);
       navigation.reset({
         index: 0,
@@ -108,7 +121,7 @@ const OtpScreen = observer(() => {
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation]);
+  }, [navigation, isResetFlow, email]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>

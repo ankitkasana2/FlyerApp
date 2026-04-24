@@ -170,6 +170,15 @@ const HomeScreen: React.FC = observer(() => {
         contentContainerStyle={styles.horizontalListContent}
         snapToInterval={CARD_GAP + 160} // approximate
         decelerationRate="fast"
+        onEndReached={() => flyerStore.fetchCategoryFlyers(item.title)}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          flyerStore.loadingCategories[item.title] ? (
+            <View style={styles.footerLoaderHorizontal}>
+              <ActivityIndicator size="small" color={Colors.primary} />
+            </View>
+          ) : null
+        }
       />
     </View>
   );
@@ -224,13 +233,6 @@ const HomeScreen: React.FC = observer(() => {
         renderItem={renderCategorySection}
         keyExtractor={(item) => item.title}
         ListHeaderComponent={renderHeader}
-        ListFooterComponent={() => (
-          flyerStore.isFetchingNextPage ? (
-            <View style={styles.footerLoader}>
-              <ActivityIndicator size="small" color={Colors.primary} />
-            </View>
-          ) : null
-        )}
         showsVerticalScrollIndicator={false}
         onRefresh={handleRefresh}
         refreshing={flyerStore.isLoading}
@@ -267,6 +269,12 @@ const styles = StyleSheet.create({
   footerLoader: {
     paddingVertical: 20,
     alignItems: 'center',
+  },
+  footerLoaderHorizontal: {
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 250, // Match approximate height of FlyerCard
   },
   errorText: {
     color: '#FF6B6B',

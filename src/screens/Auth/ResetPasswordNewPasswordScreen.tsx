@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,13 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  TextInput,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { observer } from 'mobx-react-lite';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { AuthStackParamList } from '../../navigation/types';
 
 // Theme & Assets
 import Colors from '../../theme/colors';
@@ -24,26 +26,59 @@ import { useStores } from '../../stores/StoreContext';
 
 // Auth shared components
 import AuthHeader from './AuthHeader';
-import AuthInput from './AuthInput';
+import AuthInput, { InputValidationState } from './AuthInput';
+import PasswordStrengthBar from './PasswordStrengthBar';
 
-function ResetPasswordScreen() {
+type ResetPasswordNewPasswordRouteProp = RouteProp<AuthStackParamList, 'ResetPasswordNewPassword'>;
+
+const ResetPasswordNewPasswordScreen = () => {
   const { authStore } = useStores();
   const navigation = useNavigation<any>();
+  const route = useRoute<ResetPasswordNewPasswordRouteProp>();
+  const { email, otp } = route.params;
 
-  const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
   const [localError, setLocalError] = useState<string | null>(null);
 
+  const confirmRef = useRef<TextInput>(null);
+
+  // ── Derived validation states ──────────────────────────────────────────────
+  const newPasswordState: InputValidationState =
+    newPassword.length === 0
+      ? 'idle'
+      : newPassword.length >= 8
+      ? 'valid'
+      : 'error';
+
+  const confirmPasswordState: InputValidationState =
+    confirmPassword.length === 0
+      ? 'idle'
+      : confirmPassword === newPassword && newPassword.length >= 8
+      ? 'valid'
+      : 'error';
+
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleSendOTP = async () => {
-    if (!email.trim()) {
-      setLocalError('Please enter your email address');
+  const handleReset = async () => {
+    setLocalError(null);
+    
+    if (newPassword.length < 8) {
+      setLocalError('Password must be at least 8 characters long');
       return;
     }
-    setLocalError(null);
+    if (newPassword !== confirmPassword) {
+      setLocalError('Passwords do not match');
+      return;
+    }
+
     try {
-      await authStore.sendOTP(email.trim());
-      // Navigate to the OTP screen
-      navigation.navigate('ResetPasswordOtp', { email: email.trim() });
+      await authStore.verifyOTP(email, otp, newPassword);
+      // Navigate to Login immediately without success screen
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
     } catch (err: any) {
       setLocalError(err.message);
     }
@@ -68,29 +103,54 @@ function ResetPasswordScreen() {
           />
 
           <View style={styles.formBlock}>
-            <Text style={styles.pageTitle}>Forgot Password</Text>
+            <Text style={styles.pageTitle}>Create New Password</Text>
             <Text style={styles.pageSubtitle}>
-              Enter your email address and we'll send you a code to reset your password.
+              Please enter and confirm your new password below.
             </Text>
 
             <AuthInput
-              label="EMAIL ADDRESS"
-              placeholder="you@example.com"
-              value={email}
+              label="NEW PASSWORD"
+              placeholder="••••••••"
+              value={newPassword}
               onChangeText={(t) => {
-                setEmail(t);
+                setNewPassword(t);
                 setLocalError(null);
               }}
-              keyboardType="email-address"
+              secureTextEntry
               leftIcon={
                 <Image 
-                  source={Images.email} 
+                  source={Images.password} 
                   style={styles.inputIcon} 
                   resizeMode="contain" 
                 />
               }
+              validationState={newPasswordState}
+              returnKeyType="next"
+              onSubmitEditing={() => confirmRef.current?.focus()}
+            />
+
+            <PasswordStrengthBar password={newPassword} />
+
+            <AuthInput
+              label="CONFIRM PASSWORD"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChangeText={(t) => {
+                setConfirmPassword(t);
+                setLocalError(null);
+              }}
+              secureTextEntry
+              leftIcon={
+                <Image 
+                  source={Images.password} 
+                  style={styles.inputIcon} 
+                  resizeMode="contain" 
+                />
+              }
+              validationState={confirmPasswordState}
               returnKeyType="done"
-              onSubmitEditing={() => handleSendOTP()}
+              onSubmitEditing={() => handleReset()}
+              ref={confirmRef}
             />
 
             {localError || authStore.error ? (
@@ -101,12 +161,12 @@ function ResetPasswordScreen() {
 
             <TouchableOpacity
               style={[styles.resetBtn, authStore.loading && styles.resetBtnDisabled]}
-              onPress={() => handleSendOTP()}
+              onPress={() => handleReset()}
               activeOpacity={0.8}
               disabled={authStore.loading}
             >
               <Text style={styles.resetBtnText}>
-                {authStore.loading ? 'Sending Code...' : 'Send Code'}
+                {authStore.loading ? 'Updating Password...' : 'Update Password'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -114,7 +174,7 @@ function ResetPasswordScreen() {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -183,4 +243,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default observer(ResetPasswordScreen);
+export default observer(ResetPasswordNewPasswordScreen);

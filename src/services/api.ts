@@ -49,6 +49,7 @@ export const getApiUrl = (path = ''): string => {
 export const COGNITO_REGION = (Config as any)['PUBLIC_AWS_REGION'] || 'ap-southeast-2';
 export const COGNITO_USER_POOL_ID = (Config as any)['PUBLIC_AWS_USER_POOL_ID'] || 'ap-southeast-2_qgU4fTnAC';
 export const COGNITO_CLIENT_ID = (Config as any)['PUBLIC_AWS_USER_POOL_WEB_CLIENT_ID'] || '2r2d0lev9923c83jmlnurtnnnp';
+export const COGNITO_DOMAIN = (Config as any)['PUBLIC_AWS_COGNITO_DOMAIN'] || 'https://ap-southeast-2qgu4ftnac.auth.ap-southeast-2.amazoncognito.com';
 export const COGNITO_ENDPOINT = `https://cognito-idp.${COGNITO_REGION}.amazonaws.com`;
 
 /**
