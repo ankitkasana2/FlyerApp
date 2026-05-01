@@ -28,6 +28,11 @@ export type AppStackParamList = {
   DrawerRoot: undefined;
   Cart: undefined;
   FlyerDetail: { flyerId: string };
+  Favorites: undefined;
+  ContactUs: undefined;
+  FAQ: undefined;
+  HelpCenter: undefined;
+  PrivacyPolicy: undefined;
 };
 
 // ─── Root ─────────────────────────────────────────────────────────────────────

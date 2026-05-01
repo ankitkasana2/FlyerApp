@@ -1,22 +1,13 @@
 // src/screens/Download/DownloadsScreen.tsx
 
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  StatusBar,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Theme
 import Colors from '../../theme/colors';
 
-// Components
-import Header from '../../components/home/Header';
-import FilterTabs, { FilterTab } from './FilterTabs';
 import DownloadOrderCard, { DownloadOrder } from './DownloadOrderCard';
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
@@ -68,7 +59,6 @@ const MOCK_ORDERS: DownloadOrder[] = [
 
 const DownloadsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
-  const [activeTab, setActiveTab] = useState<FilterTab>('All');
 
   const handleMenuPress = useCallback(() => {
     navigation.dispatch(DrawerActions.openDrawer());
@@ -86,10 +76,6 @@ const DownloadsScreen: React.FC = () => {
     console.log('Notifications pressed');
   }, []);
 
-  const handleTabPress = useCallback((tab: FilterTab) => {
-    setActiveTab(tab);
-  }, []);
-
   const handleViewDetails = useCallback((orderNumber: string) => {
     console.log('View details for:', orderNumber);
   }, []);
@@ -99,18 +85,7 @@ const DownloadsScreen: React.FC = () => {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
-
-      {/* ── Header ── */}
-      <Header
-        cartCount={2}
-        onMenuPress={handleMenuPress}
-        onSearchPress={handleSearchPress}
-        onCartPress={handleCartPress}
-        onNotificationPress={handleNotificationPress}
-      />
-
+    <View style={styles.container}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -123,12 +98,8 @@ const DownloadsScreen: React.FC = () => {
           </Text>
         </View>
 
-        <View style={styles.filterSection}>
-          <FilterTabs activeTab={activeTab} onTabPress={handleTabPress} />
-        </View>
-
         <View style={styles.ordersList}>
-          {MOCK_ORDERS.map((order) => (
+          {MOCK_ORDERS.map(order => (
             <DownloadOrderCard
               key={order.id}
               order={order}
@@ -138,17 +109,14 @@ const DownloadsScreen: React.FC = () => {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
   container: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   content: {
     paddingBottom: 24,

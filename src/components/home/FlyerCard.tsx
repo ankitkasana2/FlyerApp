@@ -26,6 +26,7 @@ const CARD_HEIGHT = CARD_WIDTH * 1.38; // portrait ratio
 export interface FlyerCardProps {
   id: string;
   title: string;
+  brand?: string;
   price: string;
   imageSource: ImageSourcePropType;
   isPremium?: boolean;
@@ -38,6 +39,7 @@ export interface FlyerCardProps {
 const FlyerCard: React.FC<FlyerCardProps> = ({
   id,
   title,
+  brand,
   price,
   imageSource,
   isPremium = false,
@@ -66,7 +68,7 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
   }, [scaleAnim]);
 
   const handleFavorite = useCallback(() => {
-    setFavorited((prev) => !prev);
+    setFavorited(prev => !prev);
     Animated.sequence([
       Animated.spring(heartScale, { toValue: 1.4, useNativeDriver: true }),
       Animated.spring(heartScale, { toValue: 1, useNativeDriver: true }),
@@ -75,7 +77,9 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
   }, [heartScale, id, onFavoritePress]);
 
   return (
-    <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
+    <Animated.View
+      style={[styles.container, { transform: [{ scale: scaleAnim }] }]}
+    >
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => onPress?.(id)}
@@ -89,13 +93,14 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
           imageStyle={styles.imageStyle}
           resizeMode="cover"
         >
-          {/* Dark overlay at bottom for text */}
-          <View style={styles.bottomOverlay} />
-
           {/* Premium Badge */}
           {isPremium && (
             <View style={styles.premiumBadge}>
-              <Image source={AppImages.crown} style={styles.crownIconImage} resizeMode="contain" />
+              <Image
+                source={AppImages.crown}
+                style={styles.crownIconImage}
+                resizeMode="contain"
+              />
             </View>
           )}
 
@@ -108,14 +113,20 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
           >
             <View style={styles.favoriteInner}>
               <Animated.View style={{ transform: [{ scale: heartScale }] }}>
-                <Image
-                  source={AppImages.favourite}
-                  style={[
-                    styles.favoriteIconImage,
-                    { tintColor: favorited ? Colors.error : Colors.textPrimary },
-                  ]}
-                  resizeMode="contain"
-                />
+                <View style={isFavorited ? styles.filledHeartBg : null}>
+                  <Image
+                    source={AppImages.favourite}
+                    style={[
+                      styles.favoriteIconImage,
+                      {
+                        tintColor: isFavorited
+                          ? Colors.error
+                          : Colors.textPrimary,
+                      },
+                    ]}
+                    resizeMode="contain"
+                  />
+                </View>
               </Animated.View>
             </View>
           </TouchableOpacity>
@@ -126,6 +137,18 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
           </View>
         </ImageBackground>
       </TouchableOpacity>
+
+      {/* Text Info below card */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.titleText} numberOfLines={1}>
+          {title}
+        </Text>
+        {brand ? (
+          <Text style={styles.brandText} numberOfLines={1}>
+            {brand}
+          </Text>
+        ) : null}
+      </View>
     </Animated.View>
   );
 };
@@ -133,20 +156,22 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
-    width: 160,
-    height: 240,
-    borderRadius: 8,
+    width: CARD_WIDTH,
+    borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#111',
+    backgroundColor: Colors.surface,
   },
   touchable: {
-    flex: 1,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   image: {
     flex: 1,
   },
   imageStyle: {
-    borderRadius: 20,
+    borderRadius: 16,
   },
   premiumBadge: {
     position: 'absolute',
@@ -173,6 +198,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   favoriteIconImage: {
     width: 20,
@@ -190,9 +216,24 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   priceText: {
-    fontSize: Typography.fontSizes.md,
+    fontSize: Typography.fontSizes.sm,
     fontWeight: Typography.fontWeights.bold,
     color: '#FFF',
+  },
+  infoContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  titleText: {
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.bold,
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  brandText: {
+    fontSize: Typography.fontSizes.xs,
+    color: Colors.textSecondary,
+    fontWeight: Typography.fontWeights.medium,
   },
 });
 

@@ -3,20 +3,32 @@
 
 import { makeAutoObservable, runInAction } from 'mobx';
 import { getApiUrl } from '../services/api';
-import type { Flyer, Banner } from '../types/flyer';
+import type { Flyer, Banner, FavoritesResponse } from '../types/flyer';
 
 class FlyerStore {
   // ─── State ────────────────────────────────────────────────────────────────
   flyers: Flyer[] = [];
+  allFlyers: Flyer[] = []; // Persistent cache for all flyers fetched so far
+  setFlyers = (flyers: Flyer[]) => {
+    runInAction(() => {
+      this.flyers = flyers;
+    });
+  };
   isLoading: boolean = false;
   isFetchingNextPage: boolean = false;
   error: string | null = null;
   hasFetched: boolean = false;
+  favorites: string[] = [];
+  favoritesData: Flyer[] = [];
 
   // Banners state
   banners: Banner[] = [];
   isBannersLoading: boolean = false;
   bannerError: string | null = null;
+
+  // Categories state
+  categories: any[] = [];
+  isCategoriesLoading: boolean = false;
 
   // Pagination state
   page: number = 1;
@@ -80,6 +92,30 @@ class FlyerStore {
     }
   };
 
+  /** Fetch categories for the tabs */
+  fetchCategories = async () => {
+    runInAction(() => {
+      this.isCategoriesLoading = true;
+    });
+
+    try {
+      const res = await fetch(getApiUrl('/categories'));
+      const data = await res.json();
+      if (data.success && Array.isArray(data.categories)) {
+        // Sort by rank ascending (1, 2, 3...)
+        runInAction(() => {
+          this.categories = data.categories.sort((a: any, b: any) => a.rank - b.rank);
+        });
+      }
+    } catch (error) {
+      console.error('fetchCategories Error:', error);
+    } finally {
+      runInAction(() => {
+        this.isCategoriesLoading = false;
+      });
+    }
+  };
+
   /** 
    * Fetch flyers from GET /flyers with pagination and sorting.
    * @param reset If true, clears the current list and starts from page 1.
@@ -89,7 +125,9 @@ class FlyerStore {
   fetchFlyers = async (
     reset: boolean = false,
     sortBy: string = 'created_at',
-    sortDir: 'asc' | 'desc' = 'desc'
+    sortDir: 'asc' | 'desc' = 'desc',
+    category?: string,
+    templateType?: string
   ) => {
     // Prevent overlapping requests
     if (this.isLoading || this.isFetchingNextPage) return;
@@ -100,6 +138,7 @@ class FlyerStore {
         this.isLoading = true;
         this.page = 1;
         this.hasMore = true;
+        this.flyers = [];
       });
     } else {
       runInAction(() => {
@@ -112,7 +151,9 @@ class FlyerStore {
     });
 
     try {
-      const url = getApiUrl(`/flyers?page=${this.page}&limit=${this.limit}&sort_by=${sortBy}&sort_dir=${sortDir}`);
+      const categoryParam = category ? `&category=${category}` : '';
+      const templateParam = templateType ? `&template_type=${templateType}` : '';
+      const url = getApiUrl(`/flyers?page=${this.page}&limit=${this.limit}&sort_by=${sortBy}&sort_dir=${sortDir}${categoryParam}${templateParam}`);
       
       const response = await fetch(url);
       
@@ -129,8 +170,16 @@ class FlyerStore {
         if (reset) {
           this.flyers = newFlyers;
         } else {
-          this.flyers = [...this.flyers, ...newFlyers];
+          // Append only new flyers that aren't already in the list
+          const existingIds = new Set(this.flyers.map(f => String(f._id || f.id)));
+          const uniqueNewFlyers = newFlyers.filter(f => !existingIds.has(String(f._id || f.id)));
+          this.flyers = [...this.flyers, ...uniqueNewFlyers];
         }
+
+        // Update master cache
+        const masterIds = new Set(this.allFlyers.map(f => String(f._id || f.id)));
+        const newToMaster = newFlyers.filter(f => !masterIds.has(String(f._id || f.id)));
+        this.allFlyers = [...this.allFlyers, ...newToMaster];
 
         this.hasFetched = true;
         this.isLoading = false;
@@ -233,6 +282,93 @@ class FlyerStore {
       flyer.isFavorited = !flyer.isFavorited;
     }
   }
+
+  async addToFavorites(userId: string, flyerId: number) {
+    if (!userId) {
+      throw new Error("User ID is required")
+    }
+
+    try {
+      const response = await fetch(getApiUrl("/favorites/add"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          flyer_id: flyerId,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        runInAction(() => {
+          // Add to local favorites array
+          if (!this.favorites.includes(String(flyerId))) {
+            this.favorites.push(String(flyerId))
+          }
+          // Also toggle locally in flyers list so UI updates immediately
+          const flyer = this.flyers.find((f) => String(f._id ?? f.id) === String(flyerId));
+          if (flyer) {
+            flyer.isFavorited = true;
+          }
+
+          // Update single flyer object if it's the one currently being viewed
+          if (this.flyer && String(this.flyer._id ?? this.flyer.id) === String(flyerId)) {
+            this.flyer.isFavorited = true;
+          }
+        })
+        return { success: true, message: data.message }
+      } else {
+        throw new Error(data.message || "Failed to add to favorites")
+      }
+    } catch (error: any) {
+      runInAction(() => {
+        this.error = error.message
+      })
+      throw error
+    }
+  }
+  async fetchFavorites(userId: string) {
+    if (!userId) {
+      return
+    }
+
+    runInAction(() => {
+      this.loading = true
+      this.error = null
+    })
+
+    try {
+      const response = await fetch(getApiUrl(`/favorites/user/${userId}`), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const data: FavoritesResponse = await response.json()
+
+      if (data.success) {
+        runInAction(() => {
+          this.favoritesData = data.favorites
+          this.favorites = data.favorites.map(f => String(f._id ?? f.id))
+          this.loading = false
+        })
+      } else {
+        throw new Error("Failed to fetch favorites")
+      }
+    } catch (error: any) {
+      runInAction(() => {
+        this.error = error.message
+        this.loading = false
+        this.favoritesData = []
+        this.favorites = []
+      })
+    }
+  }
+
 
   /** Fetch a specific flyer by ID */
   async fetchFlyer(id: string, refreshSimilar = true) {

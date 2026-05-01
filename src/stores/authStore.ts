@@ -21,9 +21,11 @@ export class AuthStore {
   error: string | null = null;
 
   private flyerStore: any;
+  private cartStore: any;
 
-  constructor(flyerStore?: any) {
+  constructor(flyerStore?: any, cartStore?: any) {
     this.flyerStore = flyerStore;
+    this.cartStore = cartStore;
     makeAutoObservable(this);
     this.initialize();
   }
@@ -128,6 +130,9 @@ export class AuthStore {
     // 3. Reset related stores (same pattern as website)
     if (this.flyerStore) {
       this.flyerStore.reset();
+    }
+    if (this.cartStore) {
+      this.cartStore.reset();
     }
 
     // 4. Clear auth state (triggers navigation via RootNavigator)

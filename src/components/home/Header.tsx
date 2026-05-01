@@ -70,15 +70,6 @@ const Header: React.FC<HeaderProps> = ({
 
       {/* Right: Actions */}
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={onSearchPress}
-          activeOpacity={0.7}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Image source={AppImages.search} style={styles.headerIcon} resizeMode="contain" />
-        </TouchableOpacity>
-
         {/* Cart with Badge */}
         <TouchableOpacity
           style={[styles.iconButton, styles.cartWrapper]}
@@ -86,7 +77,11 @@ const Header: React.FC<HeaderProps> = ({
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Image source={AppImages.cart} style={styles.headerIcon} resizeMode="contain" />
+          <Image
+            source={AppImages.cart}
+            style={styles.headerIcon}
+            resizeMode="contain"
+          />
           {cartCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>
@@ -103,7 +98,11 @@ const Header: React.FC<HeaderProps> = ({
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Image source={AppImages.bell} style={styles.headerIcon} resizeMode="contain" />
+          <Image
+            source={AppImages.bell}
+            style={styles.headerIcon}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
       </View>
     </View>

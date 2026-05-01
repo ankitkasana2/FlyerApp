@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import RootNavigator from './src/navigation/RootNavigator';
 import { StoreProvider } from './src/stores/StoreContext';
 import { rootStore } from './src/stores/rootStore';
+import Toast from 'react-native-toast-message';
 
 const App = () => {
   useEffect(() => {
@@ -35,6 +36,7 @@ const App = () => {
           <NavigationContainer>
             <RootNavigator />
           </NavigationContainer>
+          <Toast />
         </StoreProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

@@ -64,5 +64,12 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<!-- react-native-image-picker permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>FlyerApp needs camera access to capture photos for your flyer.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FlyerApp needs photo library access to choose images for your flyer.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>FlyerApp needs permission to save photos to your library.</string>
 </dict>
 </plist>

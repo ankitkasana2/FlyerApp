@@ -1,6 +1,6 @@
 // screens/CartScreen.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,18 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { observer } from 'mobx-react-lite';
 
 // Theme
 import { Colors } from '../../theme/colors';
 import Typography from '../../theme/typography';
+
+// Stores
+import { useStores } from '../../stores/StoreContext';
+import type { CartItem } from '../../stores/cartStore';
 
 // Components
 import ScreenHeader from '../../components/common/ScreenHeader';
@@ -21,65 +27,113 @@ import CartItemCard, { CartItemData } from './CartItemCard';
 import OrderSummary from './OrderSummary';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// ─── Mock cart data ───────────────────────────────────────────────────────────
-const INITIAL_CART_ITEMS: CartItemData[] = [
-  {
-    id: 'item_1',
-    title: 'Elite Friday Night',
-    templateName: 'Society Fri...',
-    platform: 'Instagram Post',
-    status: 'active',
-    infoLabel: 'Only Info',
-    presenter: 'Maruf',
-    date: '18/04/2026',
-    delivery: '24 Hours',
-    price: '$41.50',
-    image: { uri: 'https://picsum.photos/seed/elitenight/300/400' },
-  },
-];
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const SERVICE_FEE_RATE = 0.05; // 5%
 
-// ─── Helper: parse "$41.50" → 41.50 ─────────────────────────────────────────
-const parsePriceNum = (priceStr: string): number =>
-  parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+const formatPrice = (num: number): string => `$${num.toFixed(2)}`;
 
-const formatPrice = (num: number): string =>
-  `$${num.toFixed(2)}`;
+/**
+ * Maps the delivery_time string from the backend to a human-readable label.
+ * Backend stores values like '1h', '5h', '24h'.
+ */
+const mapDeliveryLabel = (dt: string | null | undefined): string => {
+  if (!dt) return 'Standard';
+  if (dt === '1h')  return '1 Hour';
+  if (dt === '5h')  return '5 Hours';
+  if (dt === '24h') return '24 Hours';
+  return dt;
+};
+
+/**
+ * Formats a UTC date string into a readable format (e.g., 02 MAY 2026).
+ */
+const formatEventDate = (dateString?: string | null): string => {
+  if (!dateString) return '—';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+    return date.toLocaleDateString('en-GB', options).toUpperCase();
+  } catch {
+    return dateString;
+  }
+};
+
+/**
+ * Maps a CartItem from the backend/store to the CartItemData shape used by
+ * the CartItemCard component.
+ */
+const mapCartItemToCard = (item: CartItem): CartItemData => {
+  // Build platform tag from extras
+  const extras: string[] = [];
+  if (item.story_size_version)  extras.push('Story');
+  if (item.instagram_post_size) extras.push('Instagram Post');
+  if (item.animated_flyer)      extras.push('Animated');
+  if (item.custom_flyer)        extras.push('Custom');
+
+  const platform = extras.length > 0 ? extras.join(', ') : 'Standard Post';
+
+  // Resolve image
+  const imageSource = item.flyer?.image
+    ? { uri: item.flyer.image }
+    : item.flyer_image_url
+    ? { uri: item.flyer_image_url }
+    : item.venue_logo
+    ? { uri: item.venue_logo }
+    : { uri: 'https://picsum.photos/seed/flyer_default/300/400' };
+
+  return {
+    id: String(item.id),
+    title: item.event_title || item.flyer?.title || item.flyer_title || `Flyer #${item.flyer_is}`,
+    templateName: String(item.flyer_is),
+    platform,
+    status: (item.status as CartItemData['status']) || 'active',
+    infoLabel: item.flyer?.type || (item.flyer_info ? 'Has Info' : undefined),
+    presenter: item.presenting || '—',
+    date: formatEventDate(item.event_date),
+    delivery: mapDeliveryLabel(item.delivery_time),
+    price: formatPrice(item.total_price ? Number(item.total_price) : 0),
+    image: imageSource,
+  };
+};
 
 // ─── CartScreen ───────────────────────────────────────────────────────────────
-const CartScreen: React.FC = () => {
-  const navigation = useNavigation<any>(); // Replace 'any' with your typed navigation prop if desired
 
-  // In production, this would come from Redux/Context
-  const [cartItems, setCartItems] = useState<CartItemData[]>(INITIAL_CART_ITEMS);
+const CartScreen: React.FC = observer(() => {
+  const navigation = useNavigation<any>();
+  const { cartStore, authStore } = useStores();
+
+  // Fetch cart on mount whenever user is authenticated
+  useEffect(() => {
+    const userId = authStore.user?.id;
+    if (userId) {
+      cartStore.load(userId);
+    }
+  }, [authStore.user, cartStore]);
+
+  // Map store items to card data
+  const cartCardItems = cartStore.cartItems.map(mapCartItemToCard);
 
   // ── Derived totals ──────────────────────────────────────────────────────────
-  const subtotalNum = cartItems.reduce(
-    (sum, item) => sum + parsePriceNum(item.price),
-    0,
-  );
+  const subtotalNum    = cartStore.subtotal;
   const serviceFeesNum = subtotalNum * SERVICE_FEE_RATE;
-  const totalNum = subtotalNum + serviceFeesNum;
+  const totalNum       = subtotalNum + serviceFeesNum;
 
   // ── Handlers ────────────────────────────────────────────────────────────────
-  const handleBack = useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
+  const handleBack = useCallback(() => navigation.goBack(), [navigation]);
 
   const handleSearchPress = useCallback(() => {
-    // navigation.navigate('Search');
     console.log('Search pressed');
   }, []);
 
   const handleAvatarPress = useCallback(() => {
-    // navigation.navigate('Profile');
     console.log('Avatar pressed');
   }, []);
 
   const handleEdit = useCallback((id: string) => {
-    console.log('Edit item:', id);
-    // navigation.navigate('EditItem', { id });
+    // Navigate to FlyerDetail or edit modal in the future
+    console.log('Edit cart item:', id);
   }, []);
 
   const handleRemove = useCallback((id: string) => {
@@ -91,12 +145,16 @@ const CartScreen: React.FC = () => {
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: () =>
-            setCartItems((prev) => prev.filter((item) => item.id !== id)),
+          onPress: () => {
+            const userId = authStore.user?.id;
+            if (userId) {
+              cartStore.removeFromCart(Number(id), userId);
+            }
+          },
         },
       ],
     );
-  }, []);
+  }, [cartStore, authStore.user]);
 
   const handleCheckout = useCallback((id: string) => {
     console.log('Checkout item:', id);
@@ -112,10 +170,32 @@ const CartScreen: React.FC = () => {
     // navigation.navigate('Checkout', { total: totalNum });
   }, [totalNum]);
 
+  // ── Loading State ────────────────────────────────────────────────────────────
+  if (cartStore.isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+        <ScreenHeader
+          title="CART"
+          onBackPress={handleBack}
+          showSearch
+          searchBadgeCount={0}
+          onSearchPress={handleSearchPress}
+          showAvatar
+          avatarInitials="AK"
+          onAvatarPress={handleAvatarPress}
+        />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Loading your cart…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // ── Empty State ─────────────────────────────────────────────────────────────
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      {/* Empty cart icon: just a simple cart outline from Views */}
+      {/* Empty cart icon */}
       <View style={styles.emptyIconWrapper}>
         <View style={styles.emptyCartBody} />
         <View style={styles.emptyCartHandle} />
@@ -139,22 +219,11 @@ const CartScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
 
-
-      {/* ── Global Reusable Header ── */}
-      {/*
-        Usage on ANY other screen:
-        <ScreenHeader
-          title="ORDERS"
-          onBackPress={() => navigation.goBack()}
-          searchBadgeCount={1}
-          avatarInitials="AK"
-        />
-      */}
       <ScreenHeader
         title="CART"
         onBackPress={handleBack}
         showSearch
-        searchBadgeCount={1}
+        searchBadgeCount={cartStore.itemCount}
         onSearchPress={handleSearchPress}
         showAvatar
         avatarInitials="AK"
@@ -166,27 +235,26 @@ const CartScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Page Title Block ── */}
+        {/* ── Page Subtitle ── */}
         <View style={styles.pageTitleBlock}>
-          {/* <Text style={styles.pageTitle}>Your Cart</Text> */}
           <Text style={styles.pageSubtitle}>
             Review your flyer templates and proceed to secure checkout.
           </Text>
         </View>
 
-        {cartItems.length === 0 ? (
+        {cartCardItems.length === 0 ? (
           renderEmpty()
         ) : (
           <>
-            {/* ── Items Head er Row ── */}
+            {/* ── Items Header Row ── */}
             <View style={styles.itemsHeaderRow}>
               <Text style={styles.itemsCount}>
-                Items ({cartItems.length})
+                Items ({cartCardItems.length})
               </Text>
             </View>
 
             {/* ── Cart Items ── */}
-            {cartItems.map((item) => (
+            {cartCardItems.map((item) => (
               <CartItemCard
                 key={item.id}
                 item={item}
@@ -210,11 +278,16 @@ const CartScreen: React.FC = () => {
           </>
         )}
 
+        {/* Error banner */}
+        {cartStore.error ? (
+          <Text style={styles.errorText}>{cartStore.error}</Text>
+        ) : null}
+
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
   );
-};
+});
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
@@ -231,15 +304,6 @@ const styles = StyleSheet.create({
   pageTitleBlock: {
     paddingHorizontal: 16,
     paddingBottom: 16,
-  },
-  pageTitle: {
-    fontSize: Typography.fontSizes.xxl,
-    fontWeight: Typography.fontWeights.black,
-    color: Colors.textPrimary,
-    marginBottom: 6,
-    // Underline accent matching Figma
-    textDecorationLine: 'underline',
-    textDecorationColor: Colors.primary,
   },
   pageSubtitle: {
     fontSize: Typography.fontSizes.sm,
@@ -264,6 +328,23 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: 36,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSizes.base,
+  },
+  errorText: {
+    color: Colors.primary,
+    textAlign: 'center',
+    fontSize: Typography.fontSizes.sm,
+    paddingHorizontal: 16,
+    marginTop: 12,
   },
 
   // ── Empty State ──
