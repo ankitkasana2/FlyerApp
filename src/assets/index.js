@@ -23,6 +23,27 @@ const Images = {
   eyeClose: require('./login/eyeclose.png'),
   apple: require('./login/Apple.png'),
   google: require('./login/Google.png'),
+
+  // Drawer Icons
+  contactus: require('./drawer/contactus.png'),
+  faq: require('./drawer/faq.png'),
+  help: require('./drawer/help.png'),
+  howitworks: require('./drawer/howitworks.png'),
+  myorders: require('./drawer/myorders.png'),
+  privacy: require('./drawer/privacy.png'),
+  terms: require('./drawer/terms.png'),
+  refund: require('./drawer/refund.png'),
+  drawerChevron: require('./drawer/Container.png'),
+
+  // Help Center Icons
+  helpHowItWorks: require('./help/howgrodifyworks.png'),
+  helpParcel: require('./help/parcel.png'),
+  helpTime: require('./help/Time.png'),
+  helpDelayed: require('./help/delayed.png'),
+  helpAnimated: require('./help/animatedflyers.png'),
+  helpCake: require('./help/cake.png'),
+  helpTrust: require('./help/trust.png'),
+  helpSubject: require('./help/subject.png'),
 };
 
 export default Images;

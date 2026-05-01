@@ -22,7 +22,6 @@ import { useStores } from '../../stores/StoreContext';
 import SearchBar from '../../components/common/SearchBar';
 
 // Home Components
-import Header from '../../components/home/Header';
 import HeroBanner, { BannerSlide } from '../../components/home/HeroBanner';
 import BannerSkeleton from '../../components/home/BannerSkeleton';
 import SectionHeader from '../../components/home/SectionHeader';
@@ -52,34 +51,41 @@ const formatPrice = (price: number | string | undefined | null): string => {
 // ─── HomeScreen ───────────────────────────────────────────────────────────────
 const HomeScreen: React.FC = observer(() => {
   const navigation = useNavigation();
-  const { flyerStore } = useStores();
+  const { flyerStore, cartStore, authStore } = useStores();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [cartCount] = useState<number>(2);
-
+  const [isRefreshing, setIsRefreshing] = useState(false);
   // Fetch data on mount
   useEffect(() => {
     // Parallel fetching for faster load
     flyerStore.fetchBanners();
     flyerStore.fetchFlyers(true);
-  }, [flyerStore]);
+
+    // Load cart if user is authenticated
+    if (authStore.user?.id) {
+      cartStore.load(authStore.user.id);
+    }
+  }, [flyerStore, cartStore, authStore.user?.id]);
 
   // Pull-to-refresh
   const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
     await Promise.all([
       flyerStore.fetchBanners(),
       flyerStore.fetchFlyers(true),
     ]);
+    setIsRefreshing(false);
   }, [flyerStore]);
 
   // Mapped Banners for HeroBanner
-  const mappedBanners: BannerSlide[] = (flyerStore.banners || []).map((b) => ({
+  const mappedBanners: BannerSlide[] = (flyerStore.banners || []).map(b => ({
     id: b.id,
     tag: b.tag,
     title: b.title,
-    ctaLabel: b.ctaLabel,
+    description: b.description,
+    ctaLabel: b.button_text || b.ctaLabel || 'Explore',
     imageSource: { uri: b.image_url },
-    onCtaPress: () => console.log('Banner CTA pressed:', b.id),
+    onCtaPress: () => navigation.navigate('Categories' as never),
   }));
 
   // Load more flyers (Pagination)
@@ -87,18 +93,40 @@ const HomeScreen: React.FC = observer(() => {
     flyerStore.fetchFlyers();
   }, [flyerStore]);
 
-  const handleSearchChange = useCallback((text: string) => setSearchQuery(text), []);
+  const handleSearchChange = useCallback(
+    (text: string) => setSearchQuery(text),
+    [],
+  );
   const handleSearchSubmit = useCallback((text: string) => {
     console.log('Search submitted:', text);
   }, []);
 
-  const handleCardPress = useCallback((id: string) => {
-    navigation.navigate('FlyerDetail' as never, { flyerId: id } as never);
-  }, [navigation]);
+  const handleCardPress = useCallback(
+    (id: string) => {
+      navigation.navigate('FlyerDetail' as never, { flyerId: id } as never);
+    },
+    [navigation],
+  );
 
-  const handleFavoritePress = useCallback((id: string) => {
-    flyerStore.toggleFavourite(id);
-  }, [flyerStore]);
+  const handleFavoritePress = useCallback(
+    async (id: string) => {
+      const userId = authStore.user?.id;
+      if (!userId) {
+        Alert.alert(
+          'Sign In Required',
+          'Please sign in to save flyers to your favorites.',
+        );
+        return;
+      }
+
+      try {
+        await flyerStore.addToFavorites(userId, Number(id));
+      } catch (err: any) {
+        console.error('Failed to add to favorites:', err);
+      }
+    },
+    [authStore.user?.id, flyerStore],
+  );
 
   // ─── Helper: Shuffle array (Fisher-Yates) ───────────────────────────────────
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -114,19 +142,25 @@ const HomeScreen: React.FC = observer(() => {
   const groupedCategories = useMemo(() => {
     const categoriesMap: Record<string, Flyer[]> = {};
     const flyersToMap = searchQuery.trim()
-      ? flyerStore.flyers.filter((f) =>
+      ? flyerStore.flyers.filter(f =>
           f.title.toLowerCase().includes(searchQuery.toLowerCase()),
         )
       : flyerStore.flyers;
 
-    flyersToMap.forEach((flyer) => {
-      const cats = flyer.categories || (flyer.category ? [flyer.category] : ['Uncategorized']);
-      cats.forEach((cat) => {
+    flyersToMap.forEach(flyer => {
+      const cats =
+        flyer.categories ||
+        (flyer.category ? [flyer.category] : ['Uncategorized']);
+      cats.forEach(cat => {
         if (!categoriesMap[cat]) {
           categoriesMap[cat] = [];
         }
         // Avoid duplicate flyers in the same category Shelf
-        if (!categoriesMap[cat].find((f) => (f._id || f.id) === (flyer._id || flyer.id))) {
+        if (
+          !categoriesMap[cat].find(
+            f => (f._id || f.id) === (flyer._id || flyer.id),
+          )
+        ) {
           categoriesMap[cat].push(flyer);
         }
       });
@@ -139,11 +173,14 @@ const HomeScreen: React.FC = observer(() => {
   }, [flyerStore.flyers, searchQuery]);
 
   // Render Horizontal Category Section
-  const renderCategorySection = ({ item }: { item: { title: string; data: Flyer[] } }) => (
+  const renderCategorySection = ({
+    item,
+  }: {
+    item: { title: string; data: Flyer[] };
+  }) => (
     <View style={styles.categorySection}>
       <SectionHeader
         title={item.title}
-        onActionPress={() => console.log('See all', item.title)}
       />
       <FlatList
         horizontal
@@ -165,7 +202,7 @@ const HomeScreen: React.FC = observer(() => {
             </View>
           );
         }}
-        keyExtractor={(flyer) => String(flyer._id ?? flyer.id)}
+        keyExtractor={flyer => String(flyer._id ?? flyer.id)}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.horizontalListContent}
         snapToInterval={CARD_GAP + 160} // approximate
@@ -183,17 +220,8 @@ const HomeScreen: React.FC = observer(() => {
     </View>
   );
 
-  // Header Component
   const renderHeader = () => (
     <View>
-      <Header
-        cartCount={cartCount}
-        onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-        onSearchPress={() => console.log('Search icon pressed')}
-        onCartPress={() => navigation.navigate('Cart' as never)}
-        onNotificationPress={() => console.log('Notifications pressed')}
-      />
-
       <View style={styles.searchWrapper}>
         <SearchBar
           value={searchQuery}
@@ -217,34 +245,44 @@ const HomeScreen: React.FC = observer(() => {
         </View>
       )}
 
-      {/* Empty state */}
-      {!flyerStore.isLoading && !flyerStore.isBannersLoading && !flyerStore.error && groupedCategories.length === 0 && (
+      {/* Initial Flyers Loading */}
+      {flyerStore.isLoading && groupedCategories.length === 0 && (
         <View style={styles.center}>
-          <Text style={styles.emptyText}>No flyers found.</Text>
+          <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       )}
+
+      {/* Empty state */}
+      {!flyerStore.isLoading &&
+        !flyerStore.isBannersLoading &&
+        !flyerStore.error &&
+        groupedCategories.length === 0 && (
+          <View style={styles.center}>
+            <Text style={styles.emptyText}>No flyers found.</Text>
+          </View>
+        )}
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <View style={styles.container}>
       <FlatList
         data={groupedCategories}
         renderItem={renderCategorySection}
-        keyExtractor={(item) => item.title}
+        keyExtractor={item => item.title}
         ListHeaderComponent={renderHeader}
         showsVerticalScrollIndicator={false}
         onRefresh={handleRefresh}
-        refreshing={flyerStore.isLoading}
+        refreshing={isRefreshing}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
       />
-    </SafeAreaView>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: Colors.background,
   },

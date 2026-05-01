@@ -5,6 +5,8 @@ export interface Flyer {
   _id?: string;
   id?: string | number;
   title: string;
+  /** Mapped from `title` by flyerStore.fetchFlyer */
+  name?: string;
   price: number | string;
   imageUrl?: string;
   image_url?: string;
@@ -21,5 +23,12 @@ export interface Banner {
   tag?: string;
   title: string;
   ctaLabel?: string;
+  button_text?: string;
+  description?: string;
   image_url: string;
+}
+export interface FavoritesResponse {
+  success: boolean;
+  favorites: Flyer[];
+  message?: string;
 }

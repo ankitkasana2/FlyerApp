@@ -37,7 +37,6 @@ const FlyerHeroBanner: React.FC<FlyerHeroBannerProps> = ({
       </View>
     )}
 
-    {/* Favorite Button */}
     <TouchableOpacity
       style={styles.favoriteButton}
       onPress={onFavoritePress}
@@ -86,6 +85,7 @@ const styles = StyleSheet.create({
     height: 36,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   favoriteIcon: {
     width: 20,

@@ -1,15 +1,33 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ImageSourcePropType } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ImageSourcePropType,
+  StatusBar,
+} from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { BottomTabParamList, DrawerParamList, AppStackParamList } from './types';
+import { DrawerActions, useNavigation } from '@react-navigation/native';
+import { observer } from 'mobx-react-lite';
+import {
+  BottomTabParamList,
+  DrawerParamList,
+  AppStackParamList,
+} from './types';
 import { Colors } from '../theme/colors';
 import { FontSize, FontWeight } from '../theme/typography';
 import { Spacing } from '../theme/spacing';
 import { useStores } from '../stores/StoreContext';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import AppImages from '../assets/App';
+import Header from '../components/home/Header';
 
 // ─── Screen Imports ────────────────────────────────────────────────────────
 import HomeScreen from '../screens/Home/HomeScreen';
@@ -20,6 +38,13 @@ import AboutScreen from '../screens/About/AboutScreen';
 import CartScreen from '../screens/cart/CartScreen';
 import DownloadsScreen from '../screens/Download/DownloadsScreen';
 import FlyerDetailScreen from '../screens/FlyerDetail/FlyerDetailScreen';
+import FavoritesScreen from '../screens/Favorites/FavoritesScreen';
+import CategoryScreen from '../screens/Category/CategoryScreen';
+import AppDrawer from './AppDrawer';
+import ContactUsScreen from '../screens/DrawerScreen/ContactUs';
+import FAQScreen from '../screens/DrawerScreen/FAQScreen';
+import HelpCenterScreen from '../screens/DrawerScreen/HelpCenterScreen';
+import PrivacyPolicyScreen from '../screens/DrawerScreen/PrivacyPolicyScreen';
 
 // ─── Tab Icon component ────────────────────────────────────────────────────
 const TabIcon = ({
@@ -29,12 +54,34 @@ const TabIcon = ({
   icon: ImageSourcePropType;
   focused: boolean;
 }) => (
-  <Image 
-    source={icon} 
-    style={[styles.tabIconImage, { tintColor: focused ? Colors.tabBarActive : Colors.tabBarInactive }]} 
+  <Image
+    source={icon}
+    style={[
+      styles.tabIconImage,
+      { tintColor: focused ? Colors.tabBarActive : Colors.tabBarInactive },
+    ]}
     resizeMode="contain"
   />
 );
+
+// ─── Global Header ─────────────────────────────────────────────────────────
+const GlobalHeader = observer(() => {
+  const navigation = useNavigation<any>();
+  const { cartStore } = useStores();
+  return (
+    <>
+      <SafeAreaView edges={['top']}>
+        <Header
+          cartCount={cartStore.itemCount}
+          onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+          onSearchPress={() => console.log('Search pressed')}
+          onCartPress={() => navigation.navigate('Cart')}
+          onNotificationPress={() => console.log('Notifications pressed')}
+        />
+      </SafeAreaView>
+    </>
+  );
+});
 
 // ─── Bottom Tab Navigator ─────────────────────────────────────────────────
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -47,89 +94,77 @@ const BottomTabs = () => {
         headerShown: false,
         tabBarStyle: [
           styles.tabBar,
-          { height: 60 + insets.bottom, paddingBottom: insets.bottom > 0 ? insets.bottom : 8 }
+          {
+            height: 60 + insets.bottom,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
+          },
         ],
         tabBarItemStyle: { paddingHorizontal: 0 },
         tabBarLabelStyle: styles.tabLabel,
         tabBarActiveTintColor: Colors.tabBarActive,
         tabBarInactiveTintColor: Colors.tabBarInactive,
-      }}>
-    <Tab.Screen
-      name="Home"
-      component={HomeScreen}
-      options={{
-        tabBarIcon: ({ focused }) => <TabIcon icon={AppImages.home} focused={focused} />,
-        tabBarItemStyle: { flex: 0.8 },
       }}
-    />
-    <Tab.Screen
-      name="Categories"
-      component={ExploreScreen}
-      options={{
-        tabBarIcon: ({ focused }) => <TabIcon icon={AppImages.categories} focused={focused} />,
-        tabBarItemStyle: { flex: 1.4 },
-      }}
-    />
-    <Tab.Screen
-      name="Download"
-      component={DownloadsScreen}
-      options={{
-        tabBarIcon: ({ focused }) => <TabIcon icon={AppImages.download} focused={focused} />,
-        tabBarItemStyle: { flex: 1.0 },
-      }}
-    />
-    <Tab.Screen
-      name="Profile"
-      component={ProfileScreen}
-      options={{
-        tabBarIcon: ({ focused }) => <TabIcon icon={AppImages.profile} focused={focused} />,
-        tabBarItemStyle: { flex: 0.8 },
-      }}
-    />
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={AppImages.home} focused={focused} />
+          ),
+          tabBarItemStyle: { flex: 1 },
+        }}
+      />
+      <Tab.Screen
+        name="Categories"
+        component={CategoryScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={AppImages.categories} focused={focused} />
+          ),
+          tabBarItemStyle: { flex: 1 },
+        }}
+      />
+      <Tab.Screen
+        name="Download"
+        component={DownloadsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={AppImages.download} focused={focused} />
+          ),
+          tabBarItemStyle: { flex: 1 },
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={AppImages.profile} focused={focused} />
+          ),
+          tabBarItemStyle: { flex: 1 },
+        }}
+      />
     </Tab.Navigator>
   );
 };
 
-// ─── Custom Drawer Content ─────────────────────────────────────────────────
-const CustomDrawerContent = (props: any) => {
-  const { authStore } = useStores();
-  return (
-    <DrawerContentScrollView
-      {...props}
-      contentContainerStyle={styles.drawerContainer}>
-      {/* Header */}
-      <View style={styles.drawerHeader}>
-        <View style={styles.drawerAvatar}>
-          <Text style={styles.drawerAvatarText}>✈️</Text>
-        </View>
-        <Text style={styles.drawerAppName}>FlyerApp</Text>
-        <Text style={styles.drawerTagline}>Your flight companion</Text>
-      </View>
-
-      {/* Nav Items */}
-      <View style={styles.drawerItems}>
-        <DrawerItemList {...props} />
-      </View>
-
-      {/* Footer */}
-      <View style={styles.drawerFooter}>
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={() => authStore.logout()}>
-          <Text style={styles.logoutIcon}>🚪</Text>
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
-      </View>
-    </DrawerContentScrollView>
-  );
-};
+// ─── Tab Layout with Global Header ─────────────────────────────────────────
+const TabLayout = () => (
+  <View style={{ flex: 1, backgroundColor: Colors.background }}>
+    <GlobalHeader />
+    <BottomTabs />
+  </View>
+);
 
 // ─── Drawer Navigator ─────────────────────────────────────────────────────
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
 const DrawerNavigator = () => (
   <Drawer.Navigator
-    drawerContent={props => <CustomDrawerContent {...props} />}
+    drawerContent={props => (
+      <AppDrawer onClose={() => props.navigation.closeDrawer()} />
+    )}
     screenOptions={{
       headerShown: false,
       drawerStyle: styles.drawer,
@@ -137,10 +172,11 @@ const DrawerNavigator = () => (
       drawerInactiveTintColor: Colors.textSecondary,
       drawerActiveBackgroundColor: `${Colors.primary}22`,
       drawerLabelStyle: styles.drawerLabel,
-    }}>
+    }}
+  >
     <Drawer.Screen
       name="MainTabs"
-      component={BottomTabs}
+      component={TabLayout}
       options={{ drawerLabel: '🏠  Home', title: 'Home' }}
     />
     <Drawer.Screen
@@ -159,10 +195,17 @@ const DrawerNavigator = () => (
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 
 const AppNavigator = () => (
-  <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
+  <AppStack.Navigator
+    screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}
+  >
     <AppStack.Screen name="DrawerRoot" component={DrawerNavigator} />
     <AppStack.Screen name="Cart" component={CartScreen} />
     <AppStack.Screen name="FlyerDetail" component={FlyerDetailScreen} />
+    <AppStack.Screen name="Favorites" component={FavoritesScreen} />
+    <AppStack.Screen name="ContactUs" component={ContactUsScreen} />
+    <AppStack.Screen name="FAQ" component={FAQScreen} />
+    <AppStack.Screen name="HelpCenter" component={HelpCenterScreen} />
+    <AppStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
   </AppStack.Navigator>
 );
 
@@ -177,8 +220,8 @@ const styles = StyleSheet.create({
     elevation: 0,
     shadowOpacity: 0,
     height: 70,
-    paddingBottom: 8,
-    paddingTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
   },
   tabIcon: {
     alignItems: 'center',

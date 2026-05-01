@@ -11,6 +11,8 @@ const AppImages = {
   search: require('./Search.png'),
   bell: require('./bell.png'),
   cart: require('./cart.png'),
+  time: require('./Time.png'),
+  subject: require('./subject.png'),
 };
 
 export default AppImages;

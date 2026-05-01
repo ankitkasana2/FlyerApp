@@ -25,6 +25,7 @@ export interface BannerSlide {
   id: string;
   tag?: string;
   title: string;
+  description?: string;
   ctaLabel?: string;
   onCtaPress?: () => void;
   imageSource: ImageSourcePropType;
@@ -39,6 +40,7 @@ export interface HeroBannerProps {
 const SlideItem: React.FC<BannerSlide> = ({
   tag = 'NEW ARRIVAL',
   title,
+  description,
   ctaLabel = 'Explore',
   onCtaPress,
   imageSource,
@@ -54,6 +56,7 @@ const SlideItem: React.FC<BannerSlide> = ({
       {/* Content */}
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
+        {description && <Text style={styles.description}>{description}</Text>}
 
         <TouchableOpacity
           style={styles.ctaButton}
@@ -181,9 +184,16 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSizes.xl,
     fontWeight: Typography.fontWeights.black,
     color: Colors.textPrimary,
-    lineHeight: 36,
-    marginBottom: 18,
-    maxWidth: '65%',
+    lineHeight: 32,
+    marginBottom: 8,
+    maxWidth: '80%',
+  },
+  description: {
+    fontSize: Typography.fontSizes.sm,
+    color: Colors.textSecondary,
+    marginBottom: 20,
+    lineHeight: 20,
+    maxWidth: '85%',
   },
   ctaButton: {
     backgroundColor: Colors.primary,
