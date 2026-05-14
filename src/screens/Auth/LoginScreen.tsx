@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { observer } from 'mobx-react-lite';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Toast from 'react-native-toast-message';
 
 // Theme & Assets
 import Colors from '../../theme/colors';
@@ -29,16 +30,30 @@ import { AuthStackParamList } from '../../navigation/types';
 
 // Auth shared components
 import AuthHeader from './AuthHeader';
-import AuthInput, { InputValidationState } from './AuthInput';
+import AuthInput from './AuthInput';
 import SocialAuthButtons from './SocialAuthButtons';
 
 type LoginNavProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
+
+const LOGIN_HEADER_FLYERS = [
+  Images.pic3,
+  Images.pic8,
+  Images.pic1,
+  Images.pic10,
+  Images.pic6,
+  Images.pic11,
+  Images.pic4,
+  Images.pic9,
+  Images.pic2,
+  Images.pic12,
+  Images.pic5,
+  Images.pic7,
+];
 
 const LoginScreen = observer(() => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const { authStore } = useStores();
   const navigation = useNavigation<LoginNavProp>();
@@ -51,12 +66,15 @@ const LoginScreen = observer(() => {
     const cleanPassword = password.trim();
 
     if (!cleanEmail || !cleanPassword) {
-      setError('Please enter both email and password');
+      Toast.show({
+        type: 'error',
+        text1: 'Login failed',
+        text2: 'Please enter both email and password.',
+      });
       return;
     }
 
     setIsLoading(true);
-    setError(null);
     try {
       await authStore.login(cleanEmail, cleanPassword);
       // Success: RootNavigator observes authStore.isAuthenticated and navigates automatically
@@ -90,7 +108,11 @@ const LoginScreen = observer(() => {
         message = msg;
       }
 
-      setError(message);
+      Toast.show({
+        type: 'error',
+        text1: 'Login failed',
+        text2: message,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -117,11 +139,7 @@ const LoginScreen = observer(() => {
             title="GRODIFY"
             subtitle="NEW FLYERS EVERY DAY"
             // No stepLabel for Login
-            backgroundImages={[
-              Images.pic1,
-              Images.pic4,
-              Images.pic7,
-            ]}
+            backgroundImages={LOGIN_HEADER_FLYERS}
           />
 
           <View style={styles.formBlock}>
@@ -135,7 +153,6 @@ const LoginScreen = observer(() => {
               value={email}
               onChangeText={(t) => {
                 setEmail(t);
-                setError(null);
               }}
               keyboardType="email-address"
               leftIcon={
@@ -156,7 +173,6 @@ const LoginScreen = observer(() => {
               value={password}
               onChangeText={(t) => {
                 setPassword(t);
-                setError(null);
               }}
               secureTextEntry
               leftIcon={
@@ -178,13 +194,6 @@ const LoginScreen = observer(() => {
             >
               <Text style={styles.forgotText}>Forgot password?</Text>
             </TouchableOpacity>
-
-            {/* Error Message */}
-            {error ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            ) : null}
 
             {/* Sign In Button */}
             <TouchableOpacity
@@ -266,18 +275,6 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: Typography.fontSizes.sm,
     fontWeight: Typography.fontWeights.semiBold,
-  },
-  errorContainer: {
-    backgroundColor: 'rgba(255, 0, 0, 0.1)',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 0, 0, 0.2)',
-  },
-  errorText: {
-    color: Colors.primary,
-    fontSize: Typography.fontSizes.xs,
-    textAlign: 'center',
   },
   loginBtn: {
     backgroundColor: Colors.primary,

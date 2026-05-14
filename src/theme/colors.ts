@@ -8,7 +8,7 @@ const Colors = {
   border: '#2A2A2A',
   borderLight: '#3D3C52',
 
-  primary: '#E53935',       // red accent
+  primary: '#B92025', // red accent
   primaryLight: '#FF6F6F',
   primaryDark: '#B71C1C',
 

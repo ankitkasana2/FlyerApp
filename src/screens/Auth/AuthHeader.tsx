@@ -16,6 +16,20 @@ import Images from '../../assets';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = 250;
+const DEFAULT_BACKGROUND_IMAGES: ImageSourcePropType[] = [
+  Images.pic1,
+  Images.pic2,
+  Images.pic3,
+  Images.pic4,
+  Images.pic5,
+  Images.pic6,
+  Images.pic7,
+  Images.pic8,
+  Images.pic9,
+  Images.pic10,
+  Images.pic11,
+  Images.pic12,
+];
 
 // ─── Back Arrow Icon ──────────────────────────────────────────────────────────
 const BackArrowIcon: React.FC<{ color?: string; size?: number }> = ({
@@ -73,56 +87,61 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({
   subtitle = 'NEW FLYERS EVERY DAY',
   stepLabel,
   onBackPress,
-}) => (
-  <View style={styles.container}>
-    {/* Background Image Mosaic Section */}
-    <View style={styles.bgGrid}>
-      <View style={[styles.flyerCol, { paddingTop: 20 }]}>
-        <Image source={Images.pic1} style={styles.flyerGridImage} resizeMode="cover" />
-        <Image source={Images.pic2} style={styles.flyerGridImage} resizeMode="cover" />
-        <Image source={Images.pic3} style={styles.flyerGridImage} resizeMode="cover" />
-      </View>
-      <View style={[styles.flyerCol, { paddingTop: 0 }]}>
-        <Image source={Images.pic4} style={styles.flyerGridImage} resizeMode="cover" />
-        <Image source={Images.pic5} style={styles.flyerGridImage} resizeMode="cover" />
-        <Image source={Images.pic6} style={styles.flyerGridImage} resizeMode="cover" />
-      </View>
-      <View style={[styles.flyerCol, { paddingTop: 40 }]}>
-        <Image source={Images.pic7} style={styles.flyerGridImage} resizeMode="cover" />
-        <Image source={Images.pic8} style={styles.flyerGridImage} resizeMode="cover" />
-        <Image source={Images.pic9} style={styles.flyerGridImage} resizeMode="cover" />
-      </View>
-      <View style={[styles.flyerCol, { paddingTop: 10 }]}>
-        <Image source={Images.pic10} style={styles.flyerGridImage} resizeMode="cover" />
-        <Image source={Images.pic11} style={styles.flyerGridImage} resizeMode="cover" />
-        <Image source={Images.pic12} style={styles.flyerGridImage} resizeMode="cover" />
+  backgroundImages,
+}) => {
+  const gallery = backgroundImages?.length ? backgroundImages : DEFAULT_BACKGROUND_IMAGES;
+  const tiledImages = Array.from({ length: 12 }, (_, index) => gallery[index % gallery.length]);
+  const columns = [
+    { paddingTop: 20, images: tiledImages.slice(0, 3) },
+    { paddingTop: 0, images: tiledImages.slice(3, 6) },
+    { paddingTop: 40, images: tiledImages.slice(6, 9) },
+    { paddingTop: 10, images: tiledImages.slice(9, 12) },
+  ];
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.bgGrid}>
+        {columns.map((column, columnIndex) => (
+          <View
+            key={`col-${columnIndex}`}
+            style={[styles.flyerCol, { paddingTop: column.paddingTop }]}
+          >
+            {column.images.map((imageSource, imageIndex) => (
+              <Image
+                key={`img-${columnIndex}-${imageIndex}`}
+                source={imageSource}
+                style={styles.flyerGridImage}
+                resizeMode="cover"
+              />
+            ))}
+          </View>
+        ))}
+
+        <View style={styles.bgBaseTint} />
+        <View style={styles.bgWarmTint} />
+        <View style={styles.bgTopGlow} />
+        <View style={styles.bgCenterSpotlight} />
+        <View style={styles.bgTopFade} />
+        <View style={styles.bgBottomFade} />
       </View>
 
-      <View style={styles.bgDimmer} />
+      {onBackPress && (
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={onBackPress}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <BackArrowIcon size={18} />
+        </TouchableOpacity>
+      )}
+
+      <View style={styles.centerBlock}>
+        <Image source={Images.logo} style={styles.logo} resizeMode="contain" />
+      </View>
     </View>
-
-    {/* Back button */}
-    {onBackPress && (
-      <TouchableOpacity
-        style={styles.backBtn}
-        onPress={onBackPress}
-        activeOpacity={0.7}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <BackArrowIcon size={18} />
-      </TouchableOpacity>
-    )}
-
-    {/* Center text */}
-    <View style={styles.centerBlock}>
-      <Image 
-        source={Images.logo} 
-        style={styles.logo} 
-        resizeMode="contain" 
-      />
-    </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -150,9 +169,47 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 4,
   },
-  bgDimmer: {
+  bgBaseTint: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(10, 12, 18, 0.22)',
+  },
+  bgWarmTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(120, 20, 26, 0.06)',
+  },
+  bgTopGlow: {
+    position: 'absolute',
+    top: -SCREEN_HEIGHT * 0.08,
+    left: SCREEN_WIDTH * 0.1,
+    width: SCREEN_WIDTH * 0.8,
+    height: SCREEN_HEIGHT * 0.26,
+    borderRadius: SCREEN_WIDTH * 0.42,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+  },
+  bgCenterSpotlight: {
+    position: 'absolute',
+    top: HEADER_HEIGHT * 0.14,
+    left: SCREEN_WIDTH * 0.17,
+    width: SCREEN_WIDTH * 0.66,
+    height: HEADER_HEIGHT * 0.5,
+    borderRadius: SCREEN_WIDTH * 0.33,
+    backgroundColor: 'rgba(255, 255, 255, 0.09)',
+  },
+  bgTopFade: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: HEADER_HEIGHT * 0.22,
+    backgroundColor: 'rgba(8, 10, 14, 0.12)',
+  },
+  bgBottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: HEADER_HEIGHT * 0.38,
+    backgroundColor: 'rgba(8, 10, 14, 0.18)',
   },
   backBtn: {
     position: 'absolute',
@@ -160,16 +217,19 @@ const styles = StyleSheet.create({
     left: 16,
     width: 36,
     height: 36,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(12, 14, 18, 0.28)',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.14)',
   },
   centerBlock: {
     alignItems: 'center',
     gap: 6,
     zIndex: 10,
+    paddingHorizontal: 24,
   },
   logo: {
     width: 220,
