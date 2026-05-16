@@ -1,28 +1,19 @@
-// screens/CategoryScreen.tsx
-
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
-  StatusBar,
   ListRenderItem,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../stores/StoreContext';
-import { useEffect } from 'react';
 
-// Theme
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 
-// Common components
 import SearchBar from '../../components/common/SearchBar';
-
-// Category components
 import CategoryTabs, { CategoryTab } from './CategoryTabs';
 import SortButton, { SortOption } from './SortButton';
 import FlyerCard, {
@@ -32,7 +23,6 @@ import FlyerCard, {
 import { useNavigation } from '@react-navigation/native';
 import type { Flyer } from '../../types/flyer';
 
-// ─── Static data ──────────────────────────────────────────────────────────────
 const DEFAULT_CATEGORY_TABS: CategoryTab[] = [
   { id: 'recently_added', label: 'RECENTLY ADDED' },
 ];
@@ -45,10 +35,8 @@ const SORT_OPTIONS: SortOption[] = [
   { id: 'popular', label: 'Most Popular' },
 ];
 
-// ─── Row pair type ────────────────────────────────────────────────────────────
 type FlyerRow = [Flyer, Flyer | null];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 const getFlyerImage = (flyer: Flyer) => {
   const url = flyer.image_url ?? flyer.imageUrl ?? flyer.image;
   if (url) return { uri: url };
@@ -62,16 +50,19 @@ const formatPrice = (price: number | string | undefined | null): string => {
   return priceStr.startsWith('$') ? priceStr : `$${priceStr}`;
 };
 
-const shuffleArray = <T,>(array: T[]): T[] => {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
+const toTimestamp = (value?: string): number => {
+  if (!value) return 0;
+  const ts = Date.parse(value);
+  return Number.isNaN(ts) ? 0 : ts;
 };
 
-// ─── CategoryScreen ───────────────────────────────────────────────────────────
+const toPriceNumber = (value: Flyer['price']): number => {
+  if (typeof value === 'number') return value;
+  const cleaned = String(value ?? '0').replace(/[^0-9.]/g, '');
+  const parsed = Number(cleaned);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
 const CategoryScreen: React.FC = observer(() => {
   const navigation = useNavigation();
   const { flyerStore } = useStores();
@@ -81,12 +72,17 @@ const CategoryScreen: React.FC = observer(() => {
   const [sortId, setSortId] = useState('newest');
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
 
-  // ── Fetch categories on mount ──────────────────────────────────────────────
+  const [category, setCategory] = useState('Recently Added');
+  const [visibleFlyers, setVisibleFlyers] = useState<Flyer[]>([]);
+  const [flyersLoading, setFlyersLoading] = useState(false);
+  const [flyersHasMore, setFlyersHasMore] = useState(true);
+  const [isApiModeStarted, setIsApiModeStarted] = useState(false);
+  const [startedQueryKey, setStartedQueryKey] = useState<string | null>(null);
+
   useEffect(() => {
     flyerStore.fetchCategories();
   }, [flyerStore]);
 
-  // ── Derived Sort Parameters ────────────────────────────────────────────────
   const sortParams = useMemo(() => {
     let sortBy = 'created_at';
     let sortDir: 'asc' | 'desc' = 'desc';
@@ -102,90 +98,159 @@ const CategoryScreen: React.FC = observer(() => {
     } else if (sortId === 'popular') {
       sortBy = 'popularity';
     }
+
     return { sortBy, sortDir };
   }, [sortId]);
 
-  // ── Fetch flyers when tab or sort changes ──────────────────────────────────
-  useEffect(() => {
-    const isRecentlyAdded = activeTabId === 'recently_added';
-    const selectedTab = categoryTabs.find(t => t.id === activeTabId);
-    const categoryName = isRecentlyAdded ? undefined : (selectedTab as any)?.name || activeTabId;
-    const templateType = selectedTemplates.length > 0 ? selectedTemplates.join(',') : undefined;
-
-    if (!isRecentlyAdded && categoryName) {
-      // Try to find local flyers first from the master cache
-      const nameLower = categoryName.toLowerCase();
-      const matched = flyerStore.allFlyers.filter(f => {
-        const cat = f.category?.toLowerCase();
-        const cats = f.categories?.map(c => c.toLowerCase()) || [];
-        const isCatMatch = cat === nameLower || cats.includes(nameLower);
-        
-        // Also respect template filter locally if active
-        if (!isCatMatch) return false;
-        if (selectedTemplates.length > 0) {
-          return selectedTemplates.includes(String(f.template_type));
-        }
-        return true;
-      });
-
-      if (matched.length > 0) {
-        // Update current display with shuffled local matches from cache
-        flyerStore.setFlyers(shuffleArray(matched));
-        flyerStore.page = 1;
-        flyerStore.hasMore = true;
-        return;
-      }
-    }
-
-    // If recently_added or no local matches, fetch from API
-    flyerStore.fetchFlyers(
-      true,
-      sortParams.sortBy,
-      sortParams.sortDir,
-      categoryName,
-      templateType,
-    );
-  }, [flyerStore, activeTabId, sortParams, categoryTabs, selectedTemplates]);
-
-  // ── Load more ──────────────────────────────────────────────────────────────
-  const handleLoadMore = useCallback(async () => {
-    const isRecentlyAdded = activeTabId === 'recently_added';
-    const selectedTab = categoryTabs.find(t => t.id === activeTabId);
-    const categoryName = isRecentlyAdded ? undefined : (selectedTab as any)?.name || activeTabId;
-    const templateType = selectedTemplates.length > 0 ? selectedTemplates.join(',') : undefined;
-
-    if (flyerStore.hasMore && !flyerStore.isFetchingNextPage && !flyerStore.isLoading) {
-      flyerStore.fetchFlyers(
-        false,
-        sortParams.sortBy,
-        sortParams.sortDir,
-        categoryName,
-        templateType,
-      );
-    }
-  }, [flyerStore, activeTabId, sortParams, categoryTabs, selectedTemplates]);
-
-  // ── Combine static + dynamic tabs ──────────────────────────────────────────
   const categoryTabs = useMemo<CategoryTab[]>(() => {
     const dynamicTabs = flyerStore.categories
       .map(cat => ({
         id: String(cat._id || cat.id),
-        name: String(cat.name || cat.label || ''), // Keep original name for API
+        name: String(cat.name || cat.label || ''),
         label: String(cat.name || cat.label || '').toUpperCase(),
       }))
       .filter(tab => !DEFAULT_CATEGORY_TABS.some(dt => dt.label === tab.label));
+
     return [...DEFAULT_CATEGORY_TABS, ...dynamicTabs];
   }, [flyerStore.categories]);
 
-  // ── Active tab label ───────────────────────────────────────────────────────
+  const queryContext = useMemo(() => {
+    const isRecentlyAdded = activeTabId === 'recently_added';
+    const selectedTab = categoryTabs.find(t => t.id === activeTabId);
+    const categoryName = isRecentlyAdded
+      ? 'Recently Added'
+      : ((selectedTab as any)?.name || activeTabId);
+    const apiCategory = isRecentlyAdded ? undefined : categoryName;
+    const templateType = selectedTemplates.length > 0 ? selectedTemplates.join(',') : undefined;
+    const queryKey = `${categoryName}::${sortParams.sortBy}::${sortParams.sortDir}::${templateType || ''}`;
+
+    return {
+      categoryName,
+      apiCategory,
+      templateType,
+      isRecentlyAdded,
+      queryKey,
+    };
+  }, [activeTabId, categoryTabs, selectedTemplates, sortParams]);
+
+  const localCategoryFlyers = useMemo(() => {
+    const categoryLower = queryContext.categoryName.toLowerCase();
+    let result = [...flyerStore.allFlyers];
+
+    if (!queryContext.isRecentlyAdded) {
+      result = result.filter(f => {
+        const primary = String(f.category || '').toLowerCase();
+        const cats = (f.categories || []).map(c => String(c).toLowerCase());
+        return primary === categoryLower || cats.includes(categoryLower);
+      });
+    }
+
+    if (selectedTemplates.length > 0) {
+      result = result.filter(f => selectedTemplates.includes(String(f.template_type)));
+    }
+
+    const stabilized = result.map((flyer, index) => ({ flyer, index }));
+    stabilized.sort((a, b) => {
+      if (sortParams.sortBy === 'price') {
+        const diff = toPriceNumber(a.flyer.price) - toPriceNumber(b.flyer.price);
+        return sortParams.sortDir === 'asc' ? diff : -diff;
+      }
+
+      if (sortParams.sortBy === 'created_at') {
+        const leftTs = toTimestamp(a.flyer.created_at ?? a.flyer.createdAt);
+        const rightTs = toTimestamp(b.flyer.created_at ?? b.flyer.createdAt);
+        const diff = leftTs - rightTs;
+        if (diff !== 0) {
+          return sortParams.sortDir === 'asc' ? diff : -diff;
+        }
+      }
+
+      return a.index - b.index;
+    });
+
+    return stabilized.map(item => item.flyer);
+  }, [flyerStore.allFlyers, queryContext, selectedTemplates, sortParams]);
+
+  useEffect(() => {
+    setCategory(queryContext.categoryName);
+    setVisibleFlyers(localCategoryFlyers);
+    setIsApiModeStarted(false);
+    setStartedQueryKey(null);
+    setFlyersHasMore(true);
+    setFlyersLoading(false);
+    flyerStore.resetPaginationState();
+  }, [queryContext, localCategoryFlyers, flyerStore]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (flyersLoading || flyerStore.isLoading || flyerStore.isFetchingNextPage) {
+      return;
+    }
+
+    if (!isApiModeStarted) {
+      if (startedQueryKey === queryContext.queryKey) {
+        return;
+      }
+
+      setStartedQueryKey(queryContext.queryKey);
+      setIsApiModeStarted(true);
+      setFlyersLoading(true);
+
+      try {
+        flyerStore.resetPaginationState();
+        flyerStore.limit = 15;
+
+        await flyerStore.fetchFlyers(
+          true,
+          sortParams.sortBy,
+          sortParams.sortDir,
+          queryContext.apiCategory,
+          queryContext.templateType,
+        );
+
+        setVisibleFlyers([...flyerStore.flyers]);
+        setFlyersHasMore(flyerStore.hasMore);
+      } finally {
+        setFlyersLoading(false);
+      }
+      return;
+    }
+
+    if (!flyersHasMore) {
+      return;
+    }
+
+    setFlyersLoading(true);
+    try {
+      flyerStore.limit = 15;
+      await flyerStore.fetchFlyers(
+        false,
+        sortParams.sortBy,
+        sortParams.sortDir,
+        queryContext.apiCategory,
+        queryContext.templateType,
+      );
+      setVisibleFlyers([...flyerStore.flyers]);
+      setFlyersHasMore(flyerStore.hasMore);
+    } finally {
+      setFlyersLoading(false);
+    }
+  }, [
+    flyersLoading,
+    flyerStore,
+    isApiModeStarted,
+    startedQueryKey,
+    queryContext,
+    sortParams,
+    flyersHasMore,
+  ]);
+
   const activeTabLabel = useMemo(
     () => categoryTabs.find(t => t.id === activeTabId)?.label ?? '',
     [activeTabId, categoryTabs],
   );
 
-  // ── Filtered + searched flyers ─────────────────────────────────────────────
   const filteredFlyers = useMemo(() => {
-    let result = [...flyerStore.flyers];
+    let result = [...visibleFlyers];
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -196,9 +261,8 @@ const CategoryScreen: React.FC = observer(() => {
       );
     }
     return result;
-  }, [flyerStore.flyers, searchQuery]);
+  }, [visibleFlyers, searchQuery]);
 
-  // ── Pair flyers into rows of 2 ─────────────────────────────────────────────
   const flyerRows = useMemo<FlyerRow[]>(() => {
     const rows: FlyerRow[] = [];
     for (let i = 0; i < filteredFlyers.length; i += 2) {
@@ -207,12 +271,12 @@ const CategoryScreen: React.FC = observer(() => {
     return rows;
   }, [filteredFlyers]);
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleToggleTemplate = (id: string) => {
-    setSelectedTemplates(prev => 
-      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    setSelectedTemplates(prev =>
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id],
     );
   };
+
   const handleFavorite = useCallback((id: string) => {
     flyerStore.toggleFavourite(id);
   }, [flyerStore]);
@@ -226,10 +290,8 @@ const CategoryScreen: React.FC = observer(() => {
 
   const handleTabPress = useCallback((id: string) => {
     setActiveTabId(id);
-    // Fetch new data for the selected tab
   }, []);
 
-  // ── Row renderer ───────────────────────────────────────────────────────────
   const renderRow: ListRenderItem<FlyerRow> = useCallback(
     ({ item: [left, right] }) => (
       <View style={styles.row}>
@@ -258,7 +320,6 @@ const CategoryScreen: React.FC = observer(() => {
             onFavoritePress={handleFavorite}
           />
         ) : (
-          // Empty spacer to keep grid aligned
           <View style={styles.emptyCardSpacer} />
         )}
       </View>
@@ -266,10 +327,8 @@ const CategoryScreen: React.FC = observer(() => {
     [handleCardPress, handleFavorite],
   );
 
-  // ── List header ────────────────────────────────────────────────────────────
   const ListHeader = (
     <View style={styles.listHeader}>
-      {/* Search bar — reusing global component, no filter icon */}
       <View style={styles.searchWrapper}>
         <SearchBar
           value={searchQuery}
@@ -278,7 +337,6 @@ const CategoryScreen: React.FC = observer(() => {
         />
       </View>
 
-      {/* Category tabs */}
       <View style={styles.tabsWrapper}>
         <CategoryTabs
           tabs={categoryTabs}
@@ -287,9 +345,8 @@ const CategoryScreen: React.FC = observer(() => {
         />
       </View>
 
-      {/* Section title + sort */}
       <View style={styles.sectionHeaderRow}>
-        <Text style={styles.sectionTitle}>{activeTabLabel}</Text>
+        <Text style={styles.sectionTitle}>{activeTabLabel || category.toUpperCase()}</Text>
         <SortButton
           options={SORT_OPTIONS}
           selectedId={sortId}
@@ -301,12 +358,8 @@ const CategoryScreen: React.FC = observer(() => {
     </View>
   );
 
-  // ── List footer (loader) ──────────────────────────────────────────────────
   const ListFooter = () => {
-    // Show footer loader if we are fetching next page OR 
-    // Show footer loader if we are fetching next page OR 
-    // if we are loading initial data for a category but already have some flyers visible
-    if (flyerStore.isFetchingNextPage || (flyerStore.isLoading && filteredFlyers.length > 0)) {
+    if (flyersLoading || flyerStore.isFetchingNextPage) {
       return (
         <View style={styles.footerLoader}>
           <ActivityIndicator size="small" color={Colors.primary} />
@@ -316,7 +369,6 @@ const CategoryScreen: React.FC = observer(() => {
     return null;
   };
 
-  // ── Empty state ────────────────────────────────────────────────────────────
   const ListEmpty = (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyTitle}>No flyers found</Text>
@@ -333,7 +385,7 @@ const CategoryScreen: React.FC = observer(() => {
         keyExtractor={(_, index) => `row_${index}`}
         renderItem={renderRow}
         ListHeaderComponent={ListHeader}
-        ListEmptyComponent={!flyerStore.isLoading ? ListEmpty : null}
+        ListEmptyComponent={!flyersLoading ? ListEmpty : null}
         ListFooterComponent={ListFooter}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -341,18 +393,9 @@ const CategoryScreen: React.FC = observer(() => {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
       />
-      
-      {/* Initial Loading Overlay */}
-      {flyerStore.isLoading && 
-       flyerStore.flyers.length === 0 && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      )}
     </View>
-  )
+  );
 });
-
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -417,13 +460,6 @@ const styles = StyleSheet.create({
   footerLoader: {
     paddingVertical: 20,
     alignItems: 'center',
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
   },
 });
 

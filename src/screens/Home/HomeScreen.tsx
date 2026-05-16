@@ -1,15 +1,15 @@
 // screens/Home/HomeScreen.tsx
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
-  RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
-import { DrawerActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
 
 // Theme
@@ -29,7 +29,6 @@ import FlyerCard, {
   CARD_GAP,
   HORIZONTAL_PADDING,
 } from '../../components/home/FlyerCard';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Flyer } from '../../types/flyer';
 
 // ─── Helper: resolve image source from a Flyer ────────────────────────────────
@@ -55,6 +54,7 @@ const HomeScreen: React.FC = observer(() => {
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const horizontalEndReachedMap = useRef<Record<string, boolean>>({});
   // Fetch data on mount
   useEffect(() => {
     // Parallel fetching for faster load
@@ -90,7 +90,9 @@ const HomeScreen: React.FC = observer(() => {
 
   // Load more flyers (Pagination)
   const handleLoadMore = useCallback(() => {
-    flyerStore.fetchFlyers();
+    if (flyerStore.hasMore && !flyerStore.isLoading && !flyerStore.isFetchingNextPage) {
+      flyerStore.fetchFlyers();
+    }
   }, [flyerStore]);
 
   const handleSearchChange = useCallback(
@@ -207,15 +209,17 @@ const HomeScreen: React.FC = observer(() => {
         contentContainerStyle={styles.horizontalListContent}
         snapToInterval={CARD_GAP + 160} // approximate
         decelerationRate="fast"
-        onEndReached={() => flyerStore.fetchCategoryFlyers(item.title)}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          flyerStore.loadingCategories[item.title] ? (
-            <View style={styles.footerLoaderHorizontal}>
-              <ActivityIndicator size="small" color={Colors.primary} />
-            </View>
-          ) : null
-        }
+        onMomentumScrollBegin={() => {
+          horizontalEndReachedMap.current[item.title] = false;
+        }}
+        onEndReached={() => {
+          if (horizontalEndReachedMap.current[item.title]) {
+            return;
+          }
+          horizontalEndReachedMap.current[item.title] = true;
+          handleLoadMore();
+        }}
+        onEndReachedThreshold={0.6}
       />
     </View>
   );
@@ -276,6 +280,13 @@ const HomeScreen: React.FC = observer(() => {
         refreshing={isRefreshing}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          flyerStore.isFetchingNextPage ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color={Colors.primary} />
+            </View>
+          ) : null
+        }
       />
     </View>
   );
@@ -307,12 +318,6 @@ const styles = StyleSheet.create({
   footerLoader: {
     paddingVertical: 20,
     alignItems: 'center',
-  },
-  footerLoaderHorizontal: {
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 250, // Match approximate height of FlyerCard
   },
   errorText: {
     color: '#FF6B6B',

@@ -15,9 +15,25 @@ export interface Flyer {
   isFavorited?: boolean;
   category?: string;
   categories?: string[];
+  template_type?: string;
   createdAt?: string;
   created_at?: string;
 }
+
+export interface FlyersPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface GetFlyersResponse {
+  success: boolean;
+  flyers: Flyer[];
+  pagination: FlyersPagination;
+}
+
 export interface Banner {
   id: string;
   tag?: string;
