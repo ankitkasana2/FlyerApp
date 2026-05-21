@@ -220,8 +220,8 @@ const styles = StyleSheet.create({
     elevation: 0,
     shadowOpacity: 0,
     height: 70,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    // paddingVertical: 8,
   },
   tabIcon: {
     alignItems: 'center',

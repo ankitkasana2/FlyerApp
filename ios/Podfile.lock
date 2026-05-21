@@ -1,5 +1,6 @@
 PODS:
   - AsyncStorage (3.0.2):
+<<<<<<< HEAD
     - boost
     - DoubleConversion
     - fast_float
@@ -11,6 +12,13 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -25,6 +33,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - boost (1.84.0)
@@ -55,6 +64,14 @@ PODS:
     - fast_float (= 8.0.0)
     - fmt (= 11.0.2)
     - glog
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - FBLazyVector (0.84.1)
+  - hermes-engine (250829098.0.9):
+    - hermes-engine/Pre-built (= 250829098.0.9)
+  - hermes-engine/Pre-built (250829098.0.9)
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   - RCTDeprecation (0.84.1)
   - RCTRequired (0.84.1)
   - RCTSwiftUI (0.84.1)
@@ -79,6 +96,7 @@ PODS:
     - React-RCTVibration (= 0.84.1)
   - React-callinvoker (0.84.1)
   - React-Core (0.84.1):
+<<<<<<< HEAD
     - boost
     - DoubleConversion
     - fast_float
@@ -88,6 +106,11 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default (= 0.84.1)
     - React-cxxreact
     - React-featureflags
@@ -101,6 +124,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/CoreModulesHeaders (0.84.1):
@@ -113,6 +137,16 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core-prebuilt (0.84.1):
+    - ReactNativeDependencies
+  - React-Core/CoreModulesHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -126,6 +160,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/Default (0.84.1):
@@ -138,6 +173,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/Default (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-featureflags
     - React-hermes
@@ -150,6 +193,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/DevSupport (0.84.1):
@@ -162,6 +206,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/DevSupport (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default (= 0.84.1)
     - React-Core/RCTWebSocket (= 0.84.1)
     - React-cxxreact
@@ -176,6 +228,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTActionSheetHeaders (0.84.1):
@@ -188,6 +241,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTActionSheetHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -201,6 +262,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTAnimationHeaders (0.84.1):
@@ -213,6 +275,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTAnimationHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -226,6 +296,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTBlobHeaders (0.84.1):
@@ -238,6 +309,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTBlobHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -251,6 +330,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTImageHeaders (0.84.1):
@@ -263,6 +343,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTImageHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -276,6 +364,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTLinkingHeaders (0.84.1):
@@ -288,6 +377,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTLinkingHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -301,6 +398,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTNetworkHeaders (0.84.1):
@@ -313,6 +411,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTNetworkHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -326,6 +432,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTSettingsHeaders (0.84.1):
@@ -338,6 +445,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTSettingsHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -351,6 +466,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTTextHeaders (0.84.1):
@@ -363,6 +479,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTTextHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -376,6 +500,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTVibrationHeaders (0.84.1):
@@ -388,6 +513,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTVibrationHeaders (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-cxxreact
     - React-featureflags
@@ -401,6 +534,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Core/RCTWebSocket (0.84.1):
@@ -413,6 +547,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTDeprecation
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Core/RCTWebSocket (0.84.1):
+    - hermes-engine
+    - RCTDeprecation
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default (= 0.84.1)
     - React-cxxreact
     - React-featureflags
@@ -426,6 +568,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-CoreModules (0.84.1):
@@ -437,6 +580,13 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTTypeSafety (= 0.84.1)
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-CoreModules (0.84.1):
+    - RCTTypeSafety (= 0.84.1)
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/CoreModulesHeaders (= 0.84.1)
     - React-debug
     - React-jsi (= 0.84.1)
@@ -450,6 +600,7 @@ PODS:
     - React-runtimeexecutor
     - React-utils
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
   - React-cxxreact (0.84.1):
     - boost
@@ -461,6 +612,13 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-callinvoker (= 0.84.1)
+=======
+    - ReactNativeDependencies
+  - React-cxxreact (0.84.1):
+    - hermes-engine
+    - React-callinvoker (= 0.84.1)
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug (= 0.84.1)
     - React-jsi (= 0.84.1)
     - React-jsinspector
@@ -471,6 +629,7 @@ PODS:
     - React-runtimeexecutor
     - React-timing (= 0.84.1)
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-debug (0.84.1)
   - React-defaultsnativemodule (0.84.1):
@@ -482,6 +641,13 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-debug (0.84.1)
+  - React-defaultsnativemodule (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-domnativemodule
     - React-featureflags
     - React-featureflagsnativemodule
@@ -492,6 +658,7 @@ PODS:
     - React-microtasksnativemodule
     - React-RCTFBReactNativeSpec
     - React-webperformancenativemodule
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-domnativemodule (0.84.1):
@@ -503,6 +670,13 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-domnativemodule (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Fabric
     - React-Fabric/bridging
     - React-FabricComponents
@@ -512,6 +686,7 @@ PODS:
     - React-RCTFBReactNativeSpec
     - React-runtimeexecutor
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Fabric (0.84.1):
@@ -526,6 +701,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Fabric (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric/animated (= 0.84.1)
@@ -557,6 +742,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/animated (0.84.1):
     - boost
@@ -570,6 +756,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/animated (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -582,6 +777,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/animationbackend (0.84.1):
     - boost
@@ -595,6 +791,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/animationbackend (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -607,6 +812,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/animations (0.84.1):
     - boost
@@ -620,6 +826,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/animations (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -632,6 +847,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/attributedstring (0.84.1):
     - boost
@@ -645,6 +861,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/attributedstring (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -657,6 +882,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/bridging (0.84.1):
     - boost
@@ -670,6 +896,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/bridging (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -682,6 +917,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/componentregistry (0.84.1):
     - boost
@@ -695,6 +931,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/componentregistry (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -707,6 +952,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/componentregistrynative (0.84.1):
     - boost
@@ -720,6 +966,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/componentregistrynative (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -732,6 +987,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/components (0.84.1):
     - boost
@@ -745,6 +1001,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/components (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric/components/legacyviewmanagerinterop (= 0.84.1)
@@ -761,6 +1026,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/components/legacyviewmanagerinterop (0.84.1):
     - boost
@@ -774,6 +1040,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/components/legacyviewmanagerinterop (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -786,6 +1061,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/components/root (0.84.1):
     - boost
@@ -799,6 +1075,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/components/root (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -811,6 +1096,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/components/scrollview (0.84.1):
     - boost
@@ -824,6 +1110,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/components/scrollview (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -836,6 +1131,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/components/view (0.84.1):
     - boost
@@ -849,6 +1145,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/components/view (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -862,6 +1167,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-Fabric/consistency (0.84.1):
@@ -876,6 +1182,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-Fabric/consistency (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -888,6 +1204,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/core (0.84.1):
     - boost
@@ -901,6 +1218,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/core (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -913,6 +1239,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/dom (0.84.1):
     - boost
@@ -926,6 +1253,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/dom (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -938,6 +1274,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/imagemanager (0.84.1):
     - boost
@@ -951,6 +1288,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/imagemanager (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -963,6 +1309,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/leakchecker (0.84.1):
     - boost
@@ -976,6 +1323,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/leakchecker (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -988,6 +1344,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/mounting (0.84.1):
     - boost
@@ -1001,6 +1358,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/mounting (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -1013,6 +1379,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/observers (0.84.1):
     - boost
@@ -1026,6 +1393,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/observers (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric/observers/events (= 0.84.1)
@@ -1040,6 +1416,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/observers/events (0.84.1):
     - boost
@@ -1053,6 +1430,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/observers/events (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -1065,6 +1451,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/observers/intersection (0.84.1):
     - boost
@@ -1078,6 +1465,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/observers/intersection (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -1090,6 +1486,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/scheduler (0.84.1):
     - boost
@@ -1103,6 +1500,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/scheduler (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric/observers/events
@@ -1118,6 +1524,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/telemetry (0.84.1):
     - boost
@@ -1131,6 +1538,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/telemetry (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -1143,6 +1559,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/templateprocessor (0.84.1):
     - boost
@@ -1156,6 +1573,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/templateprocessor (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -1168,6 +1594,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/uimanager (0.84.1):
     - boost
@@ -1181,6 +1608,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/uimanager (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric/uimanager/consistency (= 0.84.1)
@@ -1195,6 +1631,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-Fabric/uimanager/consistency (0.84.1):
     - boost
@@ -1208,6 +1645,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-Fabric/uimanager/consistency (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -1221,6 +1667,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-FabricComponents (0.84.1):
     - boost
@@ -1234,6 +1681,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-FabricComponents (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1249,6 +1705,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components (0.84.1):
@@ -1263,6 +1720,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1288,6 +1755,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/inputaccessory (0.84.1):
@@ -1302,6 +1770,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/inputaccessory (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1315,6 +1793,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/iostextinput (0.84.1):
@@ -1329,6 +1808,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/iostextinput (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1342,6 +1831,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/modal (0.84.1):
@@ -1356,6 +1846,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/modal (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1369,6 +1869,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/rncore (0.84.1):
@@ -1383,6 +1884,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/rncore (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1396,6 +1907,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/safeareaview (0.84.1):
@@ -1410,6 +1922,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/safeareaview (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1423,6 +1945,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/scrollview (0.84.1):
@@ -1437,6 +1960,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/scrollview (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1450,6 +1983,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/switch (0.84.1):
@@ -1464,6 +1998,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/switch (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1477,6 +2021,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/text (0.84.1):
@@ -1491,6 +2036,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/text (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1504,6 +2059,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/textinput (0.84.1):
@@ -1518,6 +2074,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/textinput (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1531,6 +2097,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/unimplementedview (0.84.1):
@@ -1545,6 +2112,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/unimplementedview (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1558,6 +2135,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/virtualview (0.84.1):
@@ -1572,6 +2150,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/virtualview (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1585,6 +2173,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/virtualviewexperimental (0.84.1):
@@ -1599,6 +2188,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/components/virtualviewexperimental (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1612,6 +2211,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricComponents/textlayoutmanager (0.84.1):
@@ -1626,6 +2226,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricComponents/textlayoutmanager (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-Fabric
@@ -1639,6 +2249,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-FabricImage (0.84.1):
@@ -1652,6 +2263,15 @@ PODS:
     - RCT-Folly/Fabric
     - RCTRequired (= 0.84.1)
     - RCTTypeSafety (= 0.84.1)
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-FabricImage (0.84.1):
+    - hermes-engine
+    - RCTRequired (= 0.84.1)
+    - RCTTypeSafety (= 0.84.1)
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Fabric
     - React-featureflags
     - React-graphics
@@ -1662,6 +2282,7 @@ PODS:
     - React-rendererdebug
     - React-utils
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-featureflags (0.84.1):
@@ -1682,11 +2303,22 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-featureflags (0.84.1):
+    - React-Core-prebuilt
+    - ReactNativeDependencies
+  - React-featureflagsnativemodule (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-featureflags
     - React-jsi
     - React-jsiexecutor
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-graphics (0.84.1):
     - boost
@@ -1710,6 +2342,19 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-graphics (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+    - React-jsi
+    - React-jsiexecutor
+    - React-utils
+    - ReactNativeDependencies
+  - React-hermes (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact (= 0.84.1)
     - React-jsi
     - React-jsiexecutor (= 0.84.1)
@@ -1720,6 +2365,7 @@ PODS:
     - React-oscompat
     - React-perflogger (= 0.84.1)
     - React-runtimeexecutor
+<<<<<<< HEAD
     - SocketRocket
   - React-idlecallbacksnativemodule (0.84.1):
     - boost
@@ -1730,12 +2376,19 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-idlecallbacksnativemodule (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-jsi
     - React-jsiexecutor
     - React-RCTFBReactNativeSpec
     - React-runtimeexecutor
     - React-runtimescheduler
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-ImageManager (0.84.1):
     - boost
@@ -1745,12 +2398,18 @@ PODS:
     - glog
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-ImageManager (0.84.1):
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-debug
     - React-Fabric
     - React-graphics
     - React-rendererdebug
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-intersectionobservernativemodule (0.84.1):
     - boost
@@ -1761,6 +2420,12 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-intersectionobservernativemodule (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-Fabric
     - React-Fabric/bridging
@@ -1771,6 +2436,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-jserrorhandler (0.84.1):
@@ -1782,11 +2448,19 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-jserrorhandler (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
     - React-jsi
     - ReactCommon/turbomodule/bridging
+<<<<<<< HEAD
     - SocketRocket
   - React-jsi (0.84.1):
     - boost
@@ -1807,6 +2481,16 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-jsi (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+    - ReactNativeDependencies
+  - React-jsiexecutor (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-jserrorhandler
@@ -1818,6 +2502,7 @@ PODS:
     - React-perflogger
     - React-runtimeexecutor
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-jsinspector (0.84.1):
     - boost
@@ -1828,6 +2513,12 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-jsinspector (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-featureflags
     - React-jsi
     - React-jsinspectorcdp
@@ -1837,6 +2528,7 @@ PODS:
     - React-perflogger (= 0.84.1)
     - React-runtimeexecutor
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-jsinspectorcdp (0.84.1):
     - boost
@@ -1866,10 +2558,24 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-jsinspectorcdp (0.84.1):
+    - React-Core-prebuilt
+    - ReactNativeDependencies
+  - React-jsinspectornetwork (0.84.1):
+    - React-Core-prebuilt
+    - React-jsinspectorcdp
+    - ReactNativeDependencies
+  - React-jsinspectortracing (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-jsi
     - React-jsinspectornetwork
     - React-oscompat
     - React-timing
+<<<<<<< HEAD
     - SocketRocket
   - React-jsitooling (0.84.1):
     - boost
@@ -1880,6 +2586,12 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-jsitooling (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact (= 0.84.1)
     - React-debug
     - React-jsi (= 0.84.1)
@@ -1888,6 +2600,7 @@ PODS:
     - React-jsinspectortracing
     - React-runtimeexecutor
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-jsitracing (0.84.1):
     - React-jsi
@@ -1919,10 +2632,26 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-jsitracing (0.84.1):
+    - React-jsi
+  - React-logger (0.84.1):
+    - React-Core-prebuilt
+    - ReactNativeDependencies
+  - React-Mapbuffer (0.84.1):
+    - React-Core-prebuilt
+    - React-debug
+    - ReactNativeDependencies
+  - React-microtasksnativemodule (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-jsi
     - React-jsiexecutor
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - react-native-config (1.6.1):
     - react-native-config/App (= 1.6.1)
@@ -1938,6 +2667,17 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - react-native-config (1.6.1):
+    - react-native-config/App (= 1.6.1)
+  - react-native-config/App (1.6.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -1952,6 +2692,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - react-native-image-picker (8.2.1):
@@ -1966,6 +2707,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-image-picker (8.2.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -1980,6 +2731,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - react-native-safe-area-context (5.7.0):
@@ -1994,6 +2746,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-safe-area-context (5.7.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2010,6 +2772,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - react-native-safe-area-context/common (5.7.0):
@@ -2024,6 +2787,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-safe-area-context/common (5.7.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2038,6 +2811,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - react-native-safe-area-context/fabric (5.7.0):
@@ -2052,6 +2826,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-safe-area-context/fabric (5.7.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2067,6 +2851,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - react-native-worklets-core (1.6.3):
@@ -2081,6 +2866,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-worklets-core (1.6.3):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2095,6 +2890,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-NativeModulesApple (0.84.1):
@@ -2108,6 +2904,15 @@ PODS:
     - RCT-Folly/Fabric
     - React-callinvoker
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-NativeModulesApple (0.84.1):
+    - hermes-engine
+    - React-callinvoker
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -2117,6 +2922,7 @@ PODS:
     - React-runtimeexecutor
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - React-networking (0.84.1):
     - boost
@@ -2126,10 +2932,16 @@ PODS:
     - glog
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-networking (0.84.1):
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-jsinspectornetwork
     - React-jsinspectortracing
     - React-performancetimeline
     - React-timing
+<<<<<<< HEAD
     - SocketRocket
   - React-oscompat (0.84.1)
   - React-perflogger (0.84.1):
@@ -2150,10 +2962,21 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-oscompat (0.84.1)
+  - React-perflogger (0.84.1):
+    - React-Core-prebuilt
+    - ReactNativeDependencies
+  - React-performancecdpmetrics (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-jsi
     - React-performancetimeline
     - React-runtimeexecutor
     - React-timing
+<<<<<<< HEAD
     - SocketRocket
   - React-performancetimeline (0.84.1):
     - boost
@@ -2163,11 +2986,17 @@ PODS:
     - glog
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-performancetimeline (0.84.1):
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-featureflags
     - React-jsinspector
     - React-jsinspectortracing
     - React-perflogger
     - React-timing
+<<<<<<< HEAD
     - SocketRocket
   - React-RCTActionSheet (0.84.1):
     - React-Core/RCTActionSheetHeaders (= 0.84.1)
@@ -2180,6 +3009,14 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTTypeSafety
+=======
+    - ReactNativeDependencies
+  - React-RCTActionSheet (0.84.1):
+    - React-Core/RCTActionSheetHeaders (= 0.84.1)
+  - React-RCTAnimation (0.84.1):
+    - RCTTypeSafety
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/RCTAnimationHeaders
     - React-debug
     - React-featureflags
@@ -2187,6 +3024,7 @@ PODS:
     - React-NativeModulesApple
     - React-RCTFBReactNativeSpec
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
   - React-RCTAppDelegate (0.84.1):
     - boost
@@ -2200,6 +3038,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-RCTAppDelegate (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-CoreModules
     - React-debug
     - React-defaultsnativemodule
@@ -2221,6 +3068,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
   - React-RCTBlob (0.84.1):
     - boost
@@ -2231,6 +3079,12 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-RCTBlob (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/RCTBlobHeaders
     - React-Core/RCTWebSocket
     - React-jsi
@@ -2240,6 +3094,7 @@ PODS:
     - React-RCTFBReactNativeSpec
     - React-RCTNetwork
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
   - React-RCTFabric (0.84.1):
     - boost
@@ -2252,6 +3107,14 @@ PODS:
     - RCT-Folly/Fabric
     - RCTSwiftUIWrapper
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-RCTFabric (0.84.1):
+    - hermes-engine
+    - RCTSwiftUIWrapper
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-FabricComponents
@@ -2276,6 +3139,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-RCTFBReactNativeSpec (0.84.1):
@@ -2290,10 +3154,21 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-RCTFBReactNativeSpec (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-jsi
     - React-NativeModulesApple
     - React-RCTFBReactNativeSpec/components (= 0.84.1)
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
   - React-RCTFBReactNativeSpec/components (0.84.1):
     - boost
@@ -2307,6 +3182,15 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-RCTFBReactNativeSpec/components (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2316,6 +3200,7 @@ PODS:
     - React-rendererdebug
     - React-utils
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - React-RCTImage (0.84.1):
@@ -2327,13 +3212,24 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTTypeSafety
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - React-RCTImage (0.84.1):
+    - RCTTypeSafety
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/RCTImageHeaders
     - React-jsi
     - React-NativeModulesApple
     - React-RCTFBReactNativeSpec
     - React-RCTNetwork
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
+=======
+    - ReactNativeDependencies
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   - React-RCTLinking (0.84.1):
     - React-Core/RCTLinkingHeaders (= 0.84.1)
     - React-jsi (= 0.84.1)
@@ -2342,6 +3238,7 @@ PODS:
     - ReactCommon
     - ReactCommon/turbomodule/core (= 0.84.1)
   - React-RCTNetwork (0.84.1):
+<<<<<<< HEAD
     - boost
     - DoubleConversion
     - fast_float
@@ -2350,6 +3247,10 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTTypeSafety
+=======
+    - RCTTypeSafety
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/RCTNetworkHeaders
     - React-debug
     - React-featureflags
@@ -2360,6 +3261,7 @@ PODS:
     - React-networking
     - React-RCTFBReactNativeSpec
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
   - React-RCTRuntime (0.84.1):
     - boost
@@ -2371,6 +3273,13 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-Core
+=======
+    - ReactNativeDependencies
+  - React-RCTRuntime (0.84.1):
+    - hermes-engine
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-jsi
     - React-jsinspector
@@ -2382,6 +3291,7 @@ PODS:
     - React-runtimeexecutor
     - React-RuntimeHermes
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-RCTSettings (0.84.1):
     - boost
@@ -2392,16 +3302,27 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTTypeSafety
+=======
+    - ReactNativeDependencies
+  - React-RCTSettings (0.84.1):
+    - RCTTypeSafety
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/RCTSettingsHeaders
     - React-jsi
     - React-NativeModulesApple
     - React-RCTFBReactNativeSpec
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
+=======
+    - ReactNativeDependencies
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   - React-RCTText (0.84.1):
     - React-Core/RCTTextHeaders (= 0.84.1)
     - Yoga
   - React-RCTVibration (0.84.1):
+<<<<<<< HEAD
     - boost
     - DoubleConversion
     - fast_float
@@ -2409,17 +3330,25 @@ PODS:
     - glog
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/RCTVibrationHeaders
     - React-jsi
     - React-NativeModulesApple
     - React-RCTFBReactNativeSpec
     - ReactCommon
+<<<<<<< HEAD
     - SocketRocket
+=======
+    - ReactNativeDependencies
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   - React-rendererconsistency (0.84.1)
   - React-renderercss (0.84.1):
     - React-debug
     - React-utils
   - React-rendererdebug (0.84.1):
+<<<<<<< HEAD
     - boost
     - DoubleConversion
     - fast_float
@@ -2439,6 +3368,15 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-callinvoker
+=======
+    - React-Core-prebuilt
+    - React-debug
+    - ReactNativeDependencies
+  - React-RuntimeApple (0.84.1):
+    - hermes-engine
+    - React-callinvoker
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-Core/Default
     - React-CoreModules
     - React-cxxreact
@@ -2457,6 +3395,7 @@ PODS:
     - React-RuntimeHermes
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-RuntimeCore (0.84.1):
     - boost
@@ -2467,6 +3406,12 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-RuntimeCore (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-Fabric
     - React-featureflags
@@ -2479,6 +3424,7 @@ PODS:
     - React-runtimeexecutor
     - React-runtimescheduler
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-runtimeexecutor (0.84.1):
     - boost
@@ -2488,10 +3434,16 @@ PODS:
     - glog
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-runtimeexecutor (0.84.1):
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-featureflags
     - React-jsi (= 0.84.1)
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-RuntimeHermes (0.84.1):
     - boost
@@ -2502,6 +3454,12 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-RuntimeHermes (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-featureflags
     - React-hermes
     - React-jsi
@@ -2513,6 +3471,7 @@ PODS:
     - React-RuntimeCore
     - React-runtimeexecutor
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-runtimescheduler (0.84.1):
     - boost
@@ -2524,6 +3483,13 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-callinvoker
+=======
+    - ReactNativeDependencies
+  - React-runtimescheduler (0.84.1):
+    - hermes-engine
+    - React-callinvoker
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-debug
     - React-featureflags
@@ -2535,6 +3501,7 @@ PODS:
     - React-runtimeexecutor
     - React-timing
     - React-utils
+<<<<<<< HEAD
     - SocketRocket
   - React-timing (0.84.1):
     - React-debug
@@ -2559,6 +3526,20 @@ PODS:
     - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
+=======
+    - ReactNativeDependencies
+  - React-timing (0.84.1):
+    - React-debug
+  - React-utils (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+    - React-debug
+    - React-jsi (= 0.84.1)
+    - ReactNativeDependencies
+  - React-webperformancenativemodule (0.84.1):
+    - hermes-engine
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact
     - React-jsi
     - React-jsiexecutor
@@ -2566,6 +3547,7 @@ PODS:
     - React-RCTFBReactNativeSpec
     - React-runtimeexecutor
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - ReactAppDependencyProvider (0.84.1):
     - ReactCodegen
@@ -2581,6 +3563,17 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - ReactAppDependencyProvider (0.84.1):
+    - ReactCodegen
+  - ReactCodegen (0.84.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-FabricImage
@@ -2594,6 +3587,7 @@ PODS:
     - React-utils
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
   - ReactCommon (0.84.1):
     - boost
@@ -2615,12 +3609,24 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-callinvoker (= 0.84.1)
+=======
+    - ReactNativeDependencies
+  - ReactCommon (0.84.1):
+    - React-Core-prebuilt
+    - ReactCommon/turbomodule (= 0.84.1)
+    - ReactNativeDependencies
+  - ReactCommon/turbomodule (0.84.1):
+    - hermes-engine
+    - React-callinvoker (= 0.84.1)
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact (= 0.84.1)
     - React-jsi (= 0.84.1)
     - React-logger (= 0.84.1)
     - React-perflogger (= 0.84.1)
     - ReactCommon/turbomodule/bridging (= 0.84.1)
     - ReactCommon/turbomodule/core (= 0.84.1)
+<<<<<<< HEAD
     - SocketRocket
   - ReactCommon/turbomodule/bridging (0.84.1):
     - boost
@@ -2632,10 +3638,18 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-callinvoker (= 0.84.1)
+=======
+    - ReactNativeDependencies
+  - ReactCommon/turbomodule/bridging (0.84.1):
+    - hermes-engine
+    - React-callinvoker (= 0.84.1)
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact (= 0.84.1)
     - React-jsi (= 0.84.1)
     - React-logger (= 0.84.1)
     - React-perflogger (= 0.84.1)
+<<<<<<< HEAD
     - SocketRocket
   - ReactCommon/turbomodule/core (0.84.1):
     - boost
@@ -2647,6 +3661,13 @@ PODS:
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-callinvoker (= 0.84.1)
+=======
+    - ReactNativeDependencies
+  - ReactCommon/turbomodule/core (0.84.1):
+    - hermes-engine
+    - React-callinvoker (= 0.84.1)
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-cxxreact (= 0.84.1)
     - React-debug (= 0.84.1)
     - React-featureflags (= 0.84.1)
@@ -2654,6 +3675,7 @@ PODS:
     - React-logger (= 0.84.1)
     - React-perflogger (= 0.84.1)
     - React-utils (= 0.84.1)
+<<<<<<< HEAD
     - SocketRocket
   - RNAWSCognito (6.3.16):
     - React-Core
@@ -2669,6 +3691,18 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+  - ReactNativeDependencies (0.84.1)
+  - RNAWSCognito (6.3.16):
+    - React-Core
+  - RNDateTimePicker (9.1.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2683,6 +3717,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - RNGestureHandler (2.31.0):
@@ -2697,6 +3732,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - RNGestureHandler (2.31.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2711,6 +3756,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - RNReanimated (4.3.0):
@@ -2725,6 +3771,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - RNReanimated (4.3.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2740,6 +3796,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - RNReanimated/apple (= 4.3.0)
     - RNReanimated/common (= 4.3.0)
     - RNWorklets
@@ -2757,6 +3814,19 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - RNReanimated/apple (= 4.3.0)
+    - RNReanimated/common (= 4.3.0)
+    - RNWorklets
+    - Yoga
+  - RNReanimated/apple (4.3.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2772,6 +3842,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - RNWorklets
     - SocketRocket
     - Yoga
@@ -2787,6 +3858,17 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - RNWorklets
+    - Yoga
+  - RNReanimated/common (4.3.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2802,6 +3884,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - RNWorklets
     - SocketRocket
     - Yoga
@@ -2817,6 +3900,17 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - RNWorklets
+    - Yoga
+  - RNScreens (4.24.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2832,6 +3926,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - RNScreens/common (= 4.24.0)
     - SocketRocket
     - Yoga
@@ -2847,6 +3942,17 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - RNScreens/common (= 4.24.0)
+    - Yoga
+  - RNScreens/common (4.24.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2862,6 +3968,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - RNWorklets (0.8.1):
@@ -2876,6 +3983,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - RNWorklets (0.8.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2891,6 +4008,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - RNWorklets/apple (= 0.8.1)
     - RNWorklets/common (= 0.8.1)
     - SocketRocket
@@ -2907,6 +4025,18 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - RNWorklets/apple (= 0.8.1)
+    - RNWorklets/common (= 0.8.1)
+    - Yoga
+  - RNWorklets/apple (0.8.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2922,6 +4052,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - RNWorklets/common (0.8.1):
@@ -2936,6 +4067,16 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+=======
+    - ReactNativeDependencies
+    - Yoga
+  - RNWorklets/common (0.8.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
     - React-debug
     - React-Fabric
     - React-featureflags
@@ -2951,13 +4092,19 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+<<<<<<< HEAD
     - SocketRocket
     - Yoga
   - SocketRocket (0.7.1)
+=======
+    - ReactNativeDependencies
+    - Yoga
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
   - "AsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+<<<<<<< HEAD
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
@@ -2966,6 +4113,10 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
+=======
+  - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
+  - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
   - RCTSwiftUI (from `../node_modules/react-native/ReactApple/RCTSwiftUI`)
@@ -2974,6 +4125,10 @@ DEPENDENCIES:
   - React (from `../node_modules/react-native/`)
   - React-callinvoker (from `../node_modules/react-native/ReactCommon/callinvoker`)
   - React-Core (from `../node_modules/react-native/`)
+<<<<<<< HEAD
+=======
+  - React-Core-prebuilt (from `../node_modules/react-native/React-Core-prebuilt.podspec`)
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   - React-Core/RCTWebSocket (from `../node_modules/react-native/`)
   - React-CoreModules (from `../node_modules/react-native/React/CoreModules`)
   - React-cxxreact (from `../node_modules/react-native/ReactCommon/cxxreact`)
@@ -3039,12 +4194,17 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios/ReactAppDependencyProvider`)
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+<<<<<<< HEAD
+=======
+  - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   - RNAWSCognito (from `../node_modules/amazon-cognito-identity-js`)
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
+<<<<<<< HEAD
   - SocketRocket (~> 0.7.1)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -3072,6 +4232,18 @@ EXTERNAL SOURCES:
     :tag: hermes-v250829098.0.9
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
+=======
+  - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
+
+EXTERNAL SOURCES:
+  AsyncStorage:
+    :path: "../node_modules/@react-native-async-storage/async-storage"
+  FBLazyVector:
+    :path: "../node_modules/react-native/Libraries/FBLazyVector"
+  hermes-engine:
+    :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
+    :tag: hermes-v250829098.0.9
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   RCTDeprecation:
     :path: "../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   RCTRequired:
@@ -3088,6 +4260,11 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/callinvoker"
   React-Core:
     :path: "../node_modules/react-native/"
+<<<<<<< HEAD
+=======
+  React-Core-prebuilt:
+    :podspec: "../node_modules/react-native/React-Core-prebuilt.podspec"
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   React-CoreModules:
     :path: "../node_modules/react-native/React/CoreModules"
   React-cxxreact:
@@ -3216,6 +4393,11 @@ EXTERNAL SOURCES:
     :path: build/generated/ios/ReactCodegen
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+<<<<<<< HEAD
+=======
+  ReactNativeDependencies:
+    :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
   RNAWSCognito:
     :path: "../node_modules/amazon-cognito-identity-js"
   RNDateTimePicker:
@@ -3232,6 +4414,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+<<<<<<< HEAD
   AsyncStorage: bb9dc624a5f86c3a1eacf4ec9f61e1be04b75e98
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
@@ -3323,5 +4506,93 @@ SPEC CHECKSUMS:
   Yoga: 447c8baf495b8d96457a46e6691a2c9952cbd07f
 
 PODFILE CHECKSUM: c876cc9e23b5d766b67f14d51237a8db157c1c82
+=======
+  AsyncStorage: 2e1d431842588f5af845737e6435c1fcbecdab51
+  FBLazyVector: e97c19a5a442429d1988f182a1940fb08df514da
+  hermes-engine: ff386dbb01facfb7a842ba435c6a47efd68f25d2
+  RCTDeprecation: af44b104091a34482596cd9bd7e8d90c4e9b4bd7
+  RCTRequired: bb77b070f75f53398ce43c0aaaa58337cebe2bf6
+  RCTSwiftUI: afc0a0a635860da1040a0b894bfd529da06d7810
+  RCTSwiftUIWrapper: 3197c020094f3b2151bb2d1223f7276787be8166
+  RCTTypeSafety: d13e192a37f151ce354641184bf4239844a3be17
+  React: 1ba7d364ade7d883a1ec055bfc3606f35fdee17b
+  React-callinvoker: bc2a26f8d84fb01f003fc6de6c9337b64715f95b
+  React-Core: 7840d3a80b43a95c5e80ef75146bd70925ebab0f
+  React-Core-prebuilt: 1f35c80542bd587b689134892b71f2150d12626b
+  React-CoreModules: 2eb010400b63b89e53a324ffb3c112e4c7c3ce42
+  React-cxxreact: a558e92199d26f145afa9e62c4233cf8e7950efe
+  React-debug: 755200a6e7f5e6e0a40ff8d215493d43cce285fc
+  React-defaultsnativemodule: bb85b1bdd9b4b82650cfa92998567fcfdb030145
+  React-domnativemodule: ffdba8ba4323387e821d8298be2013516036df87
+  React-Fabric: 8705ba7f14acf5b1df474d1af4b0191c69ac4690
+  React-FabricComponents: 5a1b5007fe8c5d5f043e45c335ebef2af0717fb2
+  React-FabricImage: e96eea6bb65b501cf5db3ce4ad057a97dea1dd69
+  React-featureflags: 410f6c383eb94019f63f105374d738169df291ae
+  React-featureflagsnativemodule: 5d6d7931ec5d4576639661c0f79169a0ae383023
+  React-graphics: b9b69adbe79d6944838aa304c849d78f977e9f21
+  React-hermes: 666c66bbc856b46dfa4b132f1c9efaa37ad419a1
+  React-idlecallbacksnativemodule: 785d307b9236ec9fb4ec0bcf99b34e8539d2d76e
+  React-ImageManager: daeef8b1c19803c71a9233f21f7f235cd3ec294e
+  React-intersectionobservernativemodule: c17189d2350205012682aefe566f7ebaa4f980e3
+  React-jserrorhandler: 431377b3d1783127bc394986fe8d932bcb8982fe
+  React-jsi: 33db13b95bb53827b03d9fb0f567d12b63dfc8ef
+  React-jsiexecutor: 49de4d48a7c4f283eaa865f7a4f3919f2c39be1c
+  React-jsinspector: 3ec7dd478806a0eb4ec6ab394e51a395e8f895ba
+  React-jsinspectorcdp: bcb79a666959b1a3e8aac3ff8209d05c719aaa2a
+  React-jsinspectornetwork: be3b81a6342b56c74dd0bdd58bf3f62f978c1472
+  React-jsinspectortracing: 293251deadf7c255da593bf1d9d337a645abdfdc
+  React-jsitooling: 6f729cdb85ff0c8294709ec1903e1f0c59662331
+  React-jsitracing: be95d903cc9440ab89a704c999dd7db6675dc47f
+  React-logger: b5521614afb8690420146dfc61a1447bb5d65419
+  React-Mapbuffer: f4ee8c62e0ef8359d139124f35a471518a172cd3
+  React-microtasksnativemodule: d1956f0eec54c619b63a379520fb4c618a55ccb9
+  react-native-config: 530d1344e93c66f9819d0e5b54bd19d0d88e398c
+  react-native-image-picker: 48d850454b4a389753053e1d7378b624d3b47d77
+  react-native-safe-area-context: ae7587b95fb580d1800c5b0b2a7bd48c2868e67a
+  react-native-worklets-core: 3a098cd17188379c1a0ecbdea1f7d28f70dbb2a0
+  React-NativeModulesApple: 5ba0903927f6b8d335a091700e9fda143980f819
+  React-networking: 3a4b7f9ed2b2d1c0441beacb79674323a24bcca6
+  React-oscompat: ff26abf0ae3e3fdbe47b44224571e3fc7226a573
+  React-perflogger: a86b2146936f2ffa80188425c6e8892729e2ad01
+  React-performancecdpmetrics: 65b699c3e52c0a1d978d9cdf15e60c62e335b900
+  React-performancetimeline: b44f82caa563e46068d02d9cf5b0d2b84bdc7a6a
+  React-RCTActionSheet: fc1d5d419856868e7f8c13c14591ed63dadef43a
+  React-RCTAnimation: 2a1e7eeb55b71e8524db296fa31e46eeaa2d0da4
+  React-RCTAppDelegate: 317c1102a2d0bcc07567d8de58d9147102080b0e
+  React-RCTBlob: c82bbf96b2d1389550c05fb9739d4e85d471052e
+  React-RCTFabric: d82ad8120ba70fe63207e261b9e33d9b6077e2de
+  React-RCTFBReactNativeSpec: 4d33b5f3b339e9fa902168e8a1d62c458dda16e9
+  React-RCTImage: f959463e53ea731ab267e371eea1b92fccf27634
+  React-RCTLinking: 2a857113b8059ac4f0a8ae89f8aa312837b955d0
+  React-RCTNetwork: dc026bf25f6457249349be8cf8bd5fdf84cdfb14
+  React-RCTRuntime: b0630731fd864064066301e1e31406fea606d5f9
+  React-RCTSettings: e159e19475df2e92fd3b4ddcfe29f6cc12cf0ee4
+  React-RCTText: 7356cc84c2ed79635931891c176f72e0289dc75d
+  React-RCTVibration: 77621175b67b22e655ce4b29d1cda8498f2033e7
+  React-rendererconsistency: e91aba4bb482dac127ad955dba6333a8af629c5b
+  React-renderercss: 7cc41efaecf557d7b70edaa08fad5ace79f714f6
+  React-rendererdebug: 0f004cbed7b4c27327423be47209770830bf3c6d
+  React-RuntimeApple: 6f4ff8e2d8b05cb3ceabf57e494c04da8751f009
+  React-RuntimeCore: 25be9c7025eabb524cd00dbb6ce56d6b122e3d92
+  React-runtimeexecutor: 84d394b9f0a8fc7dab8a98bf88a43228bb04dac2
+  React-RuntimeHermes: 2bed5b2d2419945cc5c2f6d627a1b46ce3a0f66a
+  React-runtimescheduler: 23b092dbcd3088f9c947551c23366dd00254caf3
+  React-timing: 2ab9ccd4b41aa171090c16f664f6c5bfb2fd0ddc
+  React-utils: 8d888b379f0808bfabaea03d85f9e8dd9b8548da
+  React-webperformancenativemodule: c10016db7f1bb1153060d4aa9f7dbde2c88c845d
+  ReactAppDependencyProvider: e96e93b493d8d86eeaee3e590ba0be53f6abe46f
+  ReactCodegen: 797de5178718324c6eba3327b07f9a423fbd5787
+  ReactCommon: 07572bf9e687c8a52fbe4a3641e9e3a1a477c78e
+  ReactNativeDependencies: 65e32f862daaac54444ad1e75d5a1f96bd52e09c
+  RNAWSCognito: c271cb77af824c5fbfb5060cb22ecae245376939
+  RNDateTimePicker: 9025ccd219b382f246e9ceb85cd4095279b9bad1
+  RNGestureHandler: 5e7f23adbdc5b74c1333fdcba3455e93e84e52e6
+  RNReanimated: 923eb30d50cea473eed734767d4c33c374fae5fc
+  RNScreens: 6cb648bdad8fe9bee9259fe144df95b6d1d5b707
+  RNWorklets: bc32c788b41ef5f9ee519d6bf3f495b73fb7741b
+  Yoga: c0b3f2c7e8d3e327e450223a2414ca3fa296b9a2
+
+PODFILE CHECKSUM: 962a30b0843775baac99fa0924f2d4556fde01be
+>>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
 
 COCOAPODS: 1.16.2

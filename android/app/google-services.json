@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "551566874046",
+    "project_id": "flyerapp-ba31a",
+    "storage_bucket": "flyerapp-ba31a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:551566874046:android:1a3b7cd90b5fabdab015ef",
+        "android_client_info": {
+          "package_name": "com.flyerapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWUxzJSEEkz8u2Oz8jb3sv4LNW3THkEcY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
