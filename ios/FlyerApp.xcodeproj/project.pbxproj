@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		1E72675D6A2183438FA71D36 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		28140F6362F1CDC09C26E88E /* libPods-FlyerApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A0B8F20CB4A158BFE9E86238 /* libPods-FlyerApp.a */; };
+		276C2CFA289DFF48D442BFB7 /* libPods-FlyerApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91E30DF5007F54D22A0A173 /* libPods-FlyerApp.a */; };
 		2A2199B0B363483EBA888C3E /* Geist-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F93F5C581F084D649A9E132C /* Geist-Medium.ttf */; };
 		45BD1E93FAA741D5A7F864D5 /* Geist-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9275D432B04B4D91B40DC659 /* Geist-Regular.ttf */; };
 		5217936A759E47639E9FCA1B /* GeistMono-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 769C6544D0D341968E8D6041 /* GeistMono-SemiBold.ttf */; };
@@ -31,16 +31,16 @@
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = FlyerApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		364F29611E6D4070A9D329B0 /* Geist-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Bold.ttf"; path = "../src/assets/fonts/Geist-Bold.ttf"; sourceTree = "<group>"; };
 		412905F6285B4410840D1456 /* GeistMono-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Medium.ttf"; path = "../src/assets/fonts/GeistMono-Medium.ttf"; sourceTree = "<group>"; };
+		67A4C3F86A78C39794AEE4FC /* Pods-FlyerApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.release.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.release.xcconfig"; sourceTree = "<group>"; };
 		70A48059DEE247EE948B8019 /* GeistMono-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Regular.ttf"; path = "../src/assets/fonts/GeistMono-Regular.ttf"; sourceTree = "<group>"; };
+		72198B86E119B528230D8A73 /* Pods-FlyerApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.debug.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.debug.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = FlyerApp/AppDelegate.swift; sourceTree = "<group>"; };
 		769C6544D0D341968E8D6041 /* GeistMono-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-SemiBold.ttf"; path = "../src/assets/fonts/GeistMono-SemiBold.ttf"; sourceTree = "<group>"; };
 		7FEB7475F2D44AC0A5EA8B05 /* GeistMono-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Bold.ttf"; path = "../src/assets/fonts/GeistMono-Bold.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = FlyerApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8BB910CAA85F3373D7561201 /* Pods-FlyerApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.debug.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.debug.xcconfig"; sourceTree = "<group>"; };
 		9275D432B04B4D91B40DC659 /* Geist-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Regular.ttf"; path = "../src/assets/fonts/Geist-Regular.ttf"; sourceTree = "<group>"; };
-		A0B8F20CB4A158BFE9E86238 /* libPods-FlyerApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FlyerApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D3A85BE947EA359A90CBD02F /* Pods-FlyerApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.release.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F91E30DF5007F54D22A0A173 /* libPods-FlyerApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FlyerApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F93F5C581F084D649A9E132C /* Geist-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Medium.ttf"; path = "../src/assets/fonts/Geist-Medium.ttf"; sourceTree = "<group>"; };
 		FA2E4FB79C154D58861719D2 /* Geist-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-SemiBold.ttf"; path = "../src/assets/fonts/Geist-SemiBold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -50,7 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				28140F6362F1CDC09C26E88E /* libPods-FlyerApp.a in Frameworks */,
+				276C2CFA289DFF48D442BFB7 /* libPods-FlyerApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,7 +73,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				A0B8F20CB4A158BFE9E86238 /* libPods-FlyerApp.a */,
+				F91E30DF5007F54D22A0A173 /* libPods-FlyerApp.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -128,8 +128,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				8BB910CAA85F3373D7561201 /* Pods-FlyerApp.debug.xcconfig */,
-				D3A85BE947EA359A90CBD02F /* Pods-FlyerApp.release.xcconfig */,
+				72198B86E119B528230D8A73 /* Pods-FlyerApp.debug.xcconfig */,
+				67A4C3F86A78C39794AEE4FC /* Pods-FlyerApp.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -141,13 +141,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "FlyerApp" */;
 			buildPhases = (
-				339AFD60E819FB1E1D80FBC0 /* [CP] Check Pods Manifest.lock */,
+				2FAFD5B1172B24FD7929C2AF /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				F46C26C113628E7D160FCFAC /* [CP] Embed Pods Frameworks */,
-				F01ECD03C49D3C899DFC333B /* [CP] Copy Pods Resources */,
+				E327575DFFEE1E5E31C6084F /* [CP] Embed Pods Frameworks */,
+				700B4732207BB1629DA3E5B7 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -228,7 +228,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"\\\"$WITH_ENVIRONMENT\\\" \\\"$REACT_NATIVE_XCODE\\\"\"\n";
 		};
-		339AFD60E819FB1E1D80FBC0 /* [CP] Check Pods Manifest.lock */ = {
+		2FAFD5B1172B24FD7929C2AF /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -250,7 +250,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F01ECD03C49D3C899DFC333B /* [CP] Copy Pods Resources */ = {
+		700B4732207BB1629DA3E5B7 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -267,7 +267,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FlyerApp/Pods-FlyerApp-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F46C26C113628E7D160FCFAC /* [CP] Embed Pods Frameworks */ = {
+		E327575DFFEE1E5E31C6084F /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -300,7 +300,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8BB910CAA85F3373D7561201 /* Pods-FlyerApp.debug.xcconfig */;
+			baseConfigurationReference = 72198B86E119B528230D8A73 /* Pods-FlyerApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -330,7 +330,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D3A85BE947EA359A90CBD02F /* Pods-FlyerApp.release.xcconfig */;
+			baseConfigurationReference = 67A4C3F86A78C39794AEE4FC /* Pods-FlyerApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -360,6 +360,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUILD_DIR = /private/tmp/FlyerAppBuild;
+				BUILD_ROOT = /private/tmp/FlyerAppBuild;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -416,6 +418,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
+				OBJROOT = /private/tmp/FlyerAppObj;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -432,8 +435,10 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SHARED_PRECOMPS_DIR = /private/tmp/FlyerAppPCH;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SYMROOT = /private/tmp/FlyerAppBuild;
 				USE_HERMES = true;
 			};
 			name = Debug;
@@ -442,6 +447,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUILD_DIR = /private/tmp/FlyerAppBuild;
+				BUILD_ROOT = /private/tmp/FlyerAppBuild;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -491,6 +498,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OBJROOT = /private/tmp/FlyerAppObj;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
@@ -506,7 +514,9 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SHARED_PRECOMPS_DIR = /private/tmp/FlyerAppPCH;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SYMROOT = /private/tmp/FlyerAppBuild;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};

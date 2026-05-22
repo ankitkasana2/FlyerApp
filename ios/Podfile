@@ -37,5 +37,27 @@ target 'FlyerApp' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    build_dir = '/private/tmp/FlyerAppBuild'
+    objroot = '/private/tmp/FlyerAppObj'
+    shared_precomps_dir = '/private/tmp/FlyerAppPCH'
+
+    installer.pods_project.build_configurations.each do |configuration|
+      configuration.build_settings['BUILD_DIR'] = build_dir
+      configuration.build_settings['BUILD_ROOT'] = build_dir
+      configuration.build_settings['OBJROOT'] = objroot
+      configuration.build_settings['SYMROOT'] = build_dir
+      configuration.build_settings['SHARED_PRECOMPS_DIR'] = shared_precomps_dir
+    end
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |configuration|
+        configuration.build_settings['BUILD_DIR'] = build_dir
+        configuration.build_settings['BUILD_ROOT'] = build_dir
+        configuration.build_settings['OBJROOT'] = objroot
+        configuration.build_settings['SYMROOT'] = build_dir
+        configuration.build_settings['SHARED_PRECOMPS_DIR'] = shared_precomps_dir
+      end
+    end
   end
 end
