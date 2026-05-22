@@ -118,7 +118,6 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({
         ))}
 
         <View style={styles.bgBaseTint} />
-        <View style={styles.bgWarmTint} />
         <View style={styles.bgTopGlow} />
         <View style={styles.bgCenterSpotlight} />
         <View style={styles.bgTopFade} />
@@ -171,11 +170,7 @@ const styles = StyleSheet.create({
   },
   bgBaseTint: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(10, 12, 18, 0.22)',
-  },
-  bgWarmTint: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(120, 20, 26, 0.06)',
+    backgroundColor: 'rgba(9, 9, 11, 0.42)',
   },
   bgTopGlow: {
     position: 'absolute',
@@ -184,7 +179,7 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.8,
     height: SCREEN_HEIGHT * 0.26,
     borderRadius: SCREEN_WIDTH * 0.42,
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   bgCenterSpotlight: {
     position: 'absolute',
@@ -193,7 +188,7 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.66,
     height: HEADER_HEIGHT * 0.5,
     borderRadius: SCREEN_WIDTH * 0.33,
-    backgroundColor: 'rgba(255, 255, 255, 0.09)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
   bgTopFade: {
     position: 'absolute',
@@ -201,7 +196,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: HEADER_HEIGHT * 0.22,
-    backgroundColor: 'rgba(8, 10, 14, 0.12)',
+    backgroundColor: 'rgba(9, 9, 11, 0.18)',
   },
   bgBottomFade: {
     position: 'absolute',
@@ -209,7 +204,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: HEADER_HEIGHT * 0.38,
-    backgroundColor: 'rgba(8, 10, 14, 0.18)',
+    backgroundColor: 'rgba(9, 9, 11, 0.38)',
   },
   backBtn: {
     position: 'absolute',
@@ -217,13 +212,13 @@ const styles = StyleSheet.create({
     left: 16,
     width: 36,
     height: 36,
-    backgroundColor: 'rgba(12, 14, 18, 0.28)',
+    backgroundColor: 'rgba(24, 24, 27, 0.72)',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.14)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   centerBlock: {
     alignItems: 'center',
@@ -240,7 +235,7 @@ const styles = StyleSheet.create({
     color: '#D1D1D1',
     fontSize: 12,
     letterSpacing: 2,
-    fontWeight: '500',
+    fontFamily: Typography.fontFamilies.medium,
   },
   stepWrapper: {
     alignItems: 'center',
@@ -255,7 +250,7 @@ const styles = StyleSheet.create({
   },
   stepLabel: {
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.primary,
     letterSpacing: 1.5,
   },

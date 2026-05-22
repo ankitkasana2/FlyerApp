@@ -253,19 +253,19 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     fontSize: 26,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.textPrimary,
     marginBottom: 4,
   },
   welcomeSub: {
     fontSize: Typography.fontSizes.sm,
-    color: '#9CA3AF',
+    color: Colors.textSecondary,
     marginBottom: 12,
   },
   inputIcon: {
     width: 20,
     height: 20,
-    tintColor: '#9CA3AF',
+    tintColor: Colors.textSecondary,
   },
   forgotBtn: {
     alignSelf: 'flex-end',
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   forgotText: {
     color: Colors.primary,
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.semiBold,
+    fontFamily: Typography.fontFamilies.semiBold,
   },
   loginBtn: {
     backgroundColor: Colors.primary,
@@ -289,8 +289,8 @@ const styles = StyleSheet.create({
   },
   loginBtnText: {
     fontSize: Typography.fontSizes.base,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.white,
+    fontFamily: Typography.fontFamilies.bold,
+    color: Colors.textInverse,
   },
   footer: {
     flexDirection: 'row',
@@ -300,11 +300,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: Typography.fontSizes.sm,
-    color: '#9CA3AF',
+    color: Colors.textSecondary,
   },
   footerLink: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.primary,
   },
 });

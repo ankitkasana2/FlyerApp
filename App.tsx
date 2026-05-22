@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Linking } from 'react-native';
+import { Linking, Text, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -7,6 +7,33 @@ import RootNavigator from './src/navigation/RootNavigator';
 import { StoreProvider } from './src/stores/StoreContext';
 import { rootStore } from './src/stores/rootStore';
 import Toast from 'react-native-toast-message';
+import Colors from './src/theme/colors';
+import Typography from './src/theme/typography';
+
+const globalTextStyle = { fontFamily: Typography.fontFamilies.regular };
+const globalInputStyle = {
+  fontFamily: Typography.fontFamilies.regular,
+  color: Colors.textPrimary,
+};
+
+const TextWithDefaults = Text as typeof Text & {
+  defaultProps?: { style?: unknown };
+};
+const TextInputWithDefaults = TextInput as typeof TextInput & {
+  defaultProps?: { style?: unknown };
+};
+
+TextWithDefaults.defaultProps = TextWithDefaults.defaultProps || {};
+TextWithDefaults.defaultProps.style = [
+  globalTextStyle,
+  TextWithDefaults.defaultProps.style,
+].filter(Boolean);
+
+TextInputWithDefaults.defaultProps = TextInputWithDefaults.defaultProps || {};
+TextInputWithDefaults.defaultProps.style = [
+  globalInputStyle,
+  TextInputWithDefaults.defaultProps.style,
+].filter(Boolean);
 
 const App = () => {
   useEffect(() => {

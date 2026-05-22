@@ -68,8 +68,8 @@ const styles = StyleSheet.create({
   },
   checkMark: {
     fontSize: 13,
-    color: Colors.textPrimary,
-    fontWeight: '900',
+    color: Colors.textInverse,
+    fontFamily: Typography.fontFamilies.black,
   },
   text: {
     flex: 1,
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   },
   link: {
     color: Colors.textPrimary,
-    fontWeight: Typography.fontWeights.semiBold,
+    fontFamily: Typography.fontFamilies.semiBold,
   },
 });
 

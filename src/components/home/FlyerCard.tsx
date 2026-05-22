@@ -200,6 +200,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
+  filledHeartBg: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(9, 9, 11, 0.7)',
+  },
   favoriteIconImage: {
     width: 20,
     height: 20,
@@ -217,7 +225,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: '#FFF',
   },
   infoContainer: {
@@ -226,14 +234,14 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
   brandText: {
     fontSize: Typography.fontSizes.xs,
     color: Colors.textSecondary,
-    fontWeight: Typography.fontWeights.medium,
+    fontFamily: Typography.fontFamilies.medium,
   },
 });
 

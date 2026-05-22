@@ -98,12 +98,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.medium,
+    fontFamily: Typography.fontFamilies.medium,
     color: Colors.textSecondary,
   },
   required: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.primary,
   },
   inputContainer: {
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   },
   inputText: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.regular,
+    fontFamily: Typography.fontFamilies.regular,
     color: Colors.textPrimary,
   },
   inputWithIcon: {

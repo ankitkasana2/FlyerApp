@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.textSecondary,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: Typography.fontSizes.md,
-    fontWeight: Typography.fontWeights.regular,
+    fontFamily: Typography.fontFamilies.regular,
     color: Colors.textPrimary,
     paddingVertical: 0,
     includeFontPadding: false,
@@ -254,8 +254,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.medium,
-    color: Colors.primary,
+    fontFamily: Typography.fontFamilies.medium,
+    color: Colors.error,
   },
 });
 

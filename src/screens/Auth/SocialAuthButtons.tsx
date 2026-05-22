@@ -39,7 +39,7 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
       >
         <Image 
           source={Images.apple} 
-          style={[styles.socialIcon, { tintColor: Colors.white }]} 
+          style={[styles.socialIcon, { tintColor: Colors.textPrimary }]} 
           resizeMode="contain" 
         />
       </TouchableOpacity>
@@ -72,12 +72,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#2A2A2A',
+    backgroundColor: Colors.border,
   },
   dividerText: {
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.semiBold,
-    color: '#6B7280',
+    fontFamily: Typography.fontFamilies.semiBold,
+    color: Colors.textMuted,
     letterSpacing: 1,
   },
   buttonsRow: {
@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
   socialBtn: {
     flex: 1,
     height: 56,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },

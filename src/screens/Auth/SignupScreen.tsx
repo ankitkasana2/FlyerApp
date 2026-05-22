@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
   },
   createBtnText: {
     fontSize: Typography.fontSizes.base,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
+    fontFamily: Typography.fontFamilies.bold,
+    color: Colors.textInverse,
     letterSpacing: 0.3,
   },
   signinRow: {
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   },
   signinLink: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.primary,
   },
 });

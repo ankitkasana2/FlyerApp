@@ -49,11 +49,15 @@ const OtpScreen = observer(() => {
   }, [email]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (timer > 0) {
       interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [timer]);
 
   const handleChange = useCallback((text: string, index: number) => {
@@ -150,7 +154,9 @@ const OtpScreen = observer(() => {
             {otp.map((digit, index) => (
               <TextInput
                 key={index}
-                ref={(ref) => (inputs.current[index] = ref)}
+                ref={(ref) => {
+                  inputs.current[index] = ref;
+                }}
                 value={digit}
                 onChangeText={(text) => handleChange(text, index)}
                 onKeyPress={({ nativeEvent }) =>
@@ -229,7 +235,7 @@ const styles = StyleSheet.create({
   backArrow: {
     color: Colors.textPrimary,
     fontSize: 22,
-    fontWeight: '300',
+    fontFamily: Typography.fontFamilies.regular,
   },
   topSection: {
     alignItems: 'center',
@@ -237,7 +243,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: Typography.fontSizes['2xl'],
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.textPrimary,
     marginBottom: 12,
   },
@@ -250,7 +256,7 @@ const styles = StyleSheet.create({
   email: {
     fontSize: Typography.fontSizes.sm,
     color: Colors.primary,
-    fontWeight: Typography.fontWeights.medium,
+    fontFamily: Typography.fontFamilies.medium,
     marginTop: 8,
   },
   otpContainer: {
@@ -265,7 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     textAlign: 'center',
     fontSize: 24,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.textPrimary,
   },
   inputInactive: {
@@ -300,8 +306,8 @@ const styles = StyleSheet.create({
   },
   verifyBtnText: {
     fontSize: Typography.fontSizes.base,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
+    fontFamily: Typography.fontFamilies.bold,
+    color: Colors.textInverse,
   },
   resendRow: {
     flexDirection: 'row',
@@ -320,7 +326,7 @@ const styles = StyleSheet.create({
   },
   resendLink: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.primary,
   },
   resendLinkDisabled: {

@@ -26,25 +26,41 @@ const fontWeights = {
   black: '900' as const,
 };
 
+const fontFamilies = {
+  regular: 'Geist-Regular',
+  medium: 'Geist-Medium',
+  semiBold: 'Geist-SemiBold',
+  bold: 'Geist-Bold',
+  black: 'Geist-Black',
+  sans: 'Geist-Regular',
+  mono: 'GeistMono-Regular',
+  monoMedium: 'GeistMono-Medium',
+  monoSemiBold: 'GeistMono-SemiBold',
+  monoBold: 'GeistMono-Bold',
+} as const;
+
 // ─── Named exports (used by old screens/navigators) ───────────────────────────
 export const FontSize = fontSizes;
 export const FontWeight = fontWeights;
+export const FontFamily = fontFamilies;
 
 // ─── Stylesheet presets ───────────────────────────────────────────────────────
 export const typography = StyleSheet.create({
-  displayLarge: { fontSize: fontSizes['4xl'], fontWeight: fontWeights.black },
-  headingLarge: { fontSize: fontSizes['2xl'], fontWeight: fontWeights.bold },
-  headingMedium: { fontSize: fontSizes.xl, fontWeight: fontWeights.semiBold },
-  bodyLarge: { fontSize: fontSizes.base, fontWeight: fontWeights.regular },
-  bodySmall: { fontSize: fontSizes.sm, fontWeight: fontWeights.regular },
-  label: { fontSize: fontSizes.sm, fontWeight: fontWeights.semiBold },
-  caption: { fontSize: fontSizes.xs, fontWeight: fontWeights.regular },
+  displayLarge: { fontSize: fontSizes['4xl'], fontFamily: fontFamilies.black },
+  headingLarge: { fontSize: fontSizes['2xl'], fontFamily: fontFamilies.bold },
+  headingMedium: { fontSize: fontSizes.xl, fontFamily: fontFamilies.semiBold },
+  bodyLarge: { fontSize: fontSizes.base, fontFamily: fontFamilies.regular },
+  bodySmall: { fontSize: fontSizes.sm, fontFamily: fontFamilies.regular },
+  label: { fontSize: fontSizes.sm, fontFamily: fontFamilies.semiBold },
+  caption: { fontSize: fontSizes.xs, fontFamily: fontFamilies.regular },
+  mono: { fontSize: fontSizes.sm, fontFamily: fontFamilies.mono },
 });
 
 // ─── Default export (used by new components like Header, FlyerCard, etc.) ─────
 const Typography = {
   fontSizes,
   fontWeights,
+  fontFamilies,
 };
 
 export default Typography;

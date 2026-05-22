@@ -1,0 +1,41 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Geist-Black.ttf",
+      "sha1": "1ed7feeb8e068ec82fd37ca10ae669b2a5ab0312"
+    },
+    {
+      "path": "src/assets/fonts/Geist-Bold.ttf",
+      "sha1": "a867f9dc7a844ec0b1ac256698d04669814707e9"
+    },
+    {
+      "path": "src/assets/fonts/Geist-Medium.ttf",
+      "sha1": "c32b4b2827d979266de1781d969ed3669b6c0c15"
+    },
+    {
+      "path": "src/assets/fonts/Geist-Regular.ttf",
+      "sha1": "8a4c78e86e13dbf6e741a84f526dd79481b679db"
+    },
+    {
+      "path": "src/assets/fonts/Geist-SemiBold.ttf",
+      "sha1": "16e3c4be2ba41bf0c9aba8968c21abc645c6c43c"
+    },
+    {
+      "path": "src/assets/fonts/GeistMono-Bold.ttf",
+      "sha1": "9153d0bd7d61141d311742a364802f22101ff787"
+    },
+    {
+      "path": "src/assets/fonts/GeistMono-Medium.ttf",
+      "sha1": "046b5701ff0d4fd91f262b5d780d261ee2f88c2c"
+    },
+    {
+      "path": "src/assets/fonts/GeistMono-Regular.ttf",
+      "sha1": "fc0992c37598f9db2d80173b50269e9dd590b55e"
+    },
+    {
+      "path": "src/assets/fonts/GeistMono-SemiBold.ttf",
+      "sha1": "55c2e63d9236d23eb41044e239700dda45d5e3da"
+    }
+  ]
+}

@@ -8,15 +8,20 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-<<<<<<< HEAD
-		737B518E43287D786CC5E1E3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-=======
 		1E72675D6A2183438FA71D36 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		28140F6362F1CDC09C26E88E /* libPods-FlyerApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A0B8F20CB4A158BFE9E86238 /* libPods-FlyerApp.a */; };
->>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		F0FC9920AA5A3C1F9C263CF1 /* libPods-FlyerApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620739A8E13C1A83127EB0EA /* libPods-FlyerApp.a */; };
+		45BD1E93FAA741D5A7F864D5 /* Geist-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9275D432B04B4D91B40DC659 /* Geist-Regular.ttf */; };
+		F26D469956744B349F4328BA /* Geist-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0C401A9716924E1AACF8B60A /* Geist-Black.ttf */; };
+		683D4AB5B3904FDEBB6806FF /* Geist-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 364F29611E6D4070A9D329B0 /* Geist-Bold.ttf */; };
+		5217936A759E47639E9FCA1B /* GeistMono-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 769C6544D0D341968E8D6041 /* GeistMono-SemiBold.ttf */; };
+		2A2199B0B363483EBA888C3E /* Geist-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F93F5C581F084D649A9E132C /* Geist-Medium.ttf */; };
+		B19450A85E294B1DBDACE2D4 /* GeistMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 412905F6285B4410840D1456 /* GeistMono-Medium.ttf */; };
+		59AAFF1A24FD4CDF9A53C6DA /* GeistMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 70A48059DEE247EE948B8019 /* GeistMono-Regular.ttf */; };
+		C2572FAC692349868AEB51E4 /* Geist-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FA2E4FB79C154D58861719D2 /* Geist-SemiBold.ttf */; };
+		D2FEFA7FD103450599568DB3 /* GeistMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7FEB7475F2D44AC0A5EA8B05 /* GeistMono-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,18 +29,21 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = FlyerApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = FlyerApp/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = FlyerApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-<<<<<<< HEAD
-		15228FAB710A90AA9E9E2C19 /* Pods-FlyerApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.debug.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.debug.xcconfig"; sourceTree = "<group>"; };
-		42A9AE941E3F72F6D1080E96 /* Pods-FlyerApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.release.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.release.xcconfig"; sourceTree = "<group>"; };
-		620739A8E13C1A83127EB0EA /* libPods-FlyerApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FlyerApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-=======
->>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = FlyerApp/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = FlyerApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8BB910CAA85F3373D7561201 /* Pods-FlyerApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.debug.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.debug.xcconfig"; sourceTree = "<group>"; };
 		A0B8F20CB4A158BFE9E86238 /* libPods-FlyerApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FlyerApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3A85BE947EA359A90CBD02F /* Pods-FlyerApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.release.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		9275D432B04B4D91B40DC659 /* Geist-Regular.ttf */ = {isa = PBXFileReference; name = "Geist-Regular.ttf"; path = "../src/assets/fonts/Geist-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		0C401A9716924E1AACF8B60A /* Geist-Black.ttf */ = {isa = PBXFileReference; name = "Geist-Black.ttf"; path = "../src/assets/fonts/Geist-Black.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		364F29611E6D4070A9D329B0 /* Geist-Bold.ttf */ = {isa = PBXFileReference; name = "Geist-Bold.ttf"; path = "../src/assets/fonts/Geist-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		769C6544D0D341968E8D6041 /* GeistMono-SemiBold.ttf */ = {isa = PBXFileReference; name = "GeistMono-SemiBold.ttf"; path = "../src/assets/fonts/GeistMono-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		F93F5C581F084D649A9E132C /* Geist-Medium.ttf */ = {isa = PBXFileReference; name = "Geist-Medium.ttf"; path = "../src/assets/fonts/Geist-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		412905F6285B4410840D1456 /* GeistMono-Medium.ttf */ = {isa = PBXFileReference; name = "GeistMono-Medium.ttf"; path = "../src/assets/fonts/GeistMono-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		70A48059DEE247EE948B8019 /* GeistMono-Regular.ttf */ = {isa = PBXFileReference; name = "GeistMono-Regular.ttf"; path = "../src/assets/fonts/GeistMono-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		FA2E4FB79C154D58861719D2 /* Geist-SemiBold.ttf */ = {isa = PBXFileReference; name = "Geist-SemiBold.ttf"; path = "../src/assets/fonts/Geist-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		7FEB7475F2D44AC0A5EA8B05 /* GeistMono-Bold.ttf */ = {isa = PBXFileReference; name = "GeistMono-Bold.ttf"; path = "../src/assets/fonts/GeistMono-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,11 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-<<<<<<< HEAD
-				F0FC9920AA5A3C1F9C263CF1 /* libPods-FlyerApp.a in Frameworks */,
-=======
 				28140F6362F1CDC09C26E88E /* libPods-FlyerApp.a in Frameworks */,
->>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,11 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-<<<<<<< HEAD
-				620739A8E13C1A83127EB0EA /* libPods-FlyerApp.a */,
-=======
 				A0B8F20CB4A158BFE9E86238 /* libPods-FlyerApp.a */,
->>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -94,6 +94,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				8A0349EF8EBF4C01B2793067 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -111,16 +112,28 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-<<<<<<< HEAD
-				15228FAB710A90AA9E9E2C19 /* Pods-FlyerApp.debug.xcconfig */,
-				42A9AE941E3F72F6D1080E96 /* Pods-FlyerApp.release.xcconfig */,
-=======
 				8BB910CAA85F3373D7561201 /* Pods-FlyerApp.debug.xcconfig */,
 				D3A85BE947EA359A90CBD02F /* Pods-FlyerApp.release.xcconfig */,
->>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
 			);
 			path = Pods;
 			sourceTree = "<group>";
+		};
+		8A0349EF8EBF4C01B2793067 /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				9275D432B04B4D91B40DC659 /* Geist-Regular.ttf */,
+				0C401A9716924E1AACF8B60A /* Geist-Black.ttf */,
+				364F29611E6D4070A9D329B0 /* Geist-Bold.ttf */,
+				769C6544D0D341968E8D6041 /* GeistMono-SemiBold.ttf */,
+				F93F5C581F084D649A9E132C /* Geist-Medium.ttf */,
+				412905F6285B4410840D1456 /* GeistMono-Medium.ttf */,
+				70A48059DEE247EE948B8019 /* GeistMono-Regular.ttf */,
+				FA2E4FB79C154D58861719D2 /* Geist-SemiBold.ttf */,
+				7FEB7475F2D44AC0A5EA8B05 /* GeistMono-Bold.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -129,22 +142,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "FlyerApp" */;
 			buildPhases = (
-<<<<<<< HEAD
-				EA33596B2B5853F3F3504C64 /* [CP] Check Pods Manifest.lock */,
-=======
 				339AFD60E819FB1E1D80FBC0 /* [CP] Check Pods Manifest.lock */,
->>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-<<<<<<< HEAD
-				8B687D139A1DD268764F688C /* [CP] Embed Pods Frameworks */,
-				8D3C8FC0CED4BB85AF1F2449 /* [CP] Copy Pods Resources */,
-=======
 				F46C26C113628E7D160FCFAC /* [CP] Embed Pods Frameworks */,
 				F01ECD03C49D3C899DFC333B /* [CP] Copy Pods Resources */,
->>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
 			);
 			buildRules = (
 			);
@@ -195,9 +199,21 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 <<<<<<< HEAD
 				737B518E43287D786CC5E1E3 /* PrivacyInfo.xcprivacy in Resources */,
+<<<<<<< HEAD
 =======
 				1E72675D6A2183438FA71D36 /* PrivacyInfo.xcprivacy in Resources */,
 >>>>>>> acc54db (Update privacy settings, modify iOS build command, and add camera/photo library permissions)
+=======
+				45BD1E93FAA741D5A7F864D5 /* Geist-Regular.ttf in Resources */,
+				F26D469956744B349F4328BA /* Geist-Black.ttf in Resources */,
+				683D4AB5B3904FDEBB6806FF /* Geist-Bold.ttf in Resources */,
+				5217936A759E47639E9FCA1B /* GeistMono-SemiBold.ttf in Resources */,
+				2A2199B0B363483EBA888C3E /* Geist-Medium.ttf in Resources */,
+				B19450A85E294B1DBDACE2D4 /* GeistMono-Medium.ttf in Resources */,
+				59AAFF1A24FD4CDF9A53C6DA /* GeistMono-Regular.ttf in Resources */,
+				C2572FAC692349868AEB51E4 /* Geist-SemiBold.ttf in Resources */,
+				D2FEFA7FD103450599568DB3 /* GeistMono-Bold.ttf in Resources */,
+>>>>>>> 2c07cc9 (Add font assets and update typography styles across components)
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

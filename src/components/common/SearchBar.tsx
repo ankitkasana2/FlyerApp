@@ -9,45 +9,11 @@ import {
   Animated,
   Platform,
   ViewStyle,
+  Image,
 } from 'react-native';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
-
-// ─── SVG-less inline icon: Search ────────────────────────────────────────────
-const SearchIcon: React.FC<{ color?: string; size?: number }> = ({
-  color = Colors.searchIcon,
-  size = 18,
-}) => (
-  // Using a simple Unicode magnifier rendered via Text inside an absolute view
-  // For production swap with your SVG asset
-  <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
-    {/* Circle part */}
-    <View
-      style={{
-        width: size * 0.62,
-        height: size * 0.62,
-        borderRadius: size * 0.31,
-        borderWidth: 2,
-        borderColor: color,
-      }}
-    />
-    {/* Handle part */}
-    <View
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-        width: 2,
-        height: size * 0.35,
-        backgroundColor: color,
-        borderRadius: 1,
-        transform: [{ rotate: '-45deg' }],
-        top: size * 0.52,
-        left: size * 0.52,
-      }}
-    />
-  </View>
-);
+import AppImages from '../../assets/App';
 
 // ─── Clear Icon (X) ───────────────────────────────────────────────────────────
 const ClearIcon: React.FC<{ color?: string; size?: number }> = ({
@@ -146,7 +112,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <Animated.View style={[styles.container, { borderColor }, containerStyle]}>
       {/* Search Icon */}
       <View style={styles.iconLeft}>
-        <SearchIcon color={Colors.searchIcon} size={18} />
+        <Image
+          source={AppImages.search}
+          style={styles.searchIcon}
+          resizeMode="contain"
+        />
       </View>
 
       {/* Input */}
@@ -210,10 +180,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  searchIcon: {
+    width: 18,
+    height: 18,
+    tintColor: Colors.searchIcon,
+  },
   input: {
     flex: 1,
     fontSize: Typography.fontSizes.md,
-    fontWeight: Typography.fontWeights.regular,
+    fontFamily: Typography.fontFamilies.regular,
     color: Colors.textPrimary,
     paddingVertical: 0, // reset Android default padding
     includeFontPadding: false,

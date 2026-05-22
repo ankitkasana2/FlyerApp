@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
-import Images from '../../assets/index';
 
 // ─── Icon: Hamburger ──────────────────────────────────────────────────────────
 const HamburgerIcon: React.FC<{ color?: string }> = ({
@@ -29,43 +28,6 @@ const HamburgerIcon: React.FC<{ color?: string }> = ({
         }}
       />
     ))}
-  </View>
-);
-
-// ─── Icon: Search ─────────────────────────────────────────────────────────────
-const SearchIcon: React.FC<{ color?: string; size?: number }> = ({
-  color = Colors.textPrimary,
-  size = 20,
-}) => (
-  <View
-    style={{
-      width: size,
-      height: size,
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <View
-      style={{
-        width: size * 0.6,
-        height: size * 0.6,
-        borderRadius: size * 0.3,
-        borderWidth: 2,
-        borderColor: color,
-      }}
-    />
-    <View
-      style={{
-        position: 'absolute',
-        width: 2,
-        height: size * 0.32,
-        backgroundColor: color,
-        borderRadius: 1,
-        top: size * 0.54,
-        left: size * 0.54,
-        transform: [{ rotate: '-45deg' }],
-      }}
-    />
   </View>
 );
 
@@ -160,7 +122,6 @@ const BellIcon: React.FC<{ color?: string; size?: number }> = ({
 export interface HeaderProps {
   cartCount?: number;
   onMenuPress?: () => void;
-  onSearchPress?: () => void;
   onCartPress?: () => void;
   onNotificationPress?: () => void;
 }
@@ -169,7 +130,6 @@ export interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   cartCount = 0,
   onMenuPress,
-  onSearchPress,
   onCartPress,
   onNotificationPress,
 }) => {
@@ -194,16 +154,6 @@ const Header: React.FC<HeaderProps> = ({
 
       {/* Right: Actions */}
       <View style={styles.actions}>
-        {/* Search */}
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={onSearchPress}
-          activeOpacity={0.7}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <SearchIcon />
-        </TouchableOpacity>
-
         {/* Cart with Badge */}
         <TouchableOpacity
           style={[styles.iconButton, styles.cartWrapper]}
@@ -293,8 +243,8 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
+    fontFamily: Typography.fontFamilies.bold,
+    color: Colors.textInverse,
     lineHeight: 14,
   },
 });

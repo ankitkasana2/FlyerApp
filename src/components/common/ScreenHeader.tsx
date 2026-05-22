@@ -187,11 +187,10 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: Typography.fontSizes.lg,
-    fontWeight: Typography.fontWeights.black,
+    fontFamily: Typography.fontFamilies.black,
     color: Colors.textPrimary,
-    letterSpacing: 3,
+    letterSpacing: 1.4,
     textAlign: 'center',
-    textTransform: 'uppercase',
     marginHorizontal: 8,
   },
   rightWrapper: {
@@ -220,7 +219,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -3,
     right: -4,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.badge,
     borderRadius: 7,
     minWidth: 14,
     height: 14,
@@ -230,8 +229,8 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 9,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
+    fontFamily: Typography.fontFamilies.bold,
+    color: Colors.textInverse,
     lineHeight: 12,
   },
   avatar: {
@@ -244,8 +243,8 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
+    fontFamily: Typography.fontFamilies.bold,
+    color: Colors.textInverse,
     letterSpacing: 0.5,
   },
 });

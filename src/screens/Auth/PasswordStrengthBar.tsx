@@ -28,10 +28,10 @@ const STRENGTH_CONFIG: Record<
   PasswordStrength,
   { label: string; color: string; filledCount: number }
 > = {
-  weak:   { label: 'WEAK',   color: Colors.primary, filledCount: 1 },
-  fair:   { label: 'FAIR',   color: '#FF9800',       filledCount: 2 },
-  good:   { label: 'GOOD',   color: '#8BC34A',       filledCount: 3 },
-  strong: { label: 'STRONG', color: '#4CAF50',       filledCount: 4 },
+  weak:   { label: 'WEAK',   color: Colors.error, filledCount: 1 },
+  fair:   { label: 'FAIR',   color: Colors.warning, filledCount: 2 },
+  good:   { label: 'GOOD',   color: '#84cc16', filledCount: 3 },
+  strong: { label: 'STRONG', color: Colors.primary, filledCount: 4 },
 };
 
 const SEGMENT_COUNT = 4;
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   },
   strengthLabel: {
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.black,
+    fontFamily: Typography.fontFamilies.black,
     letterSpacing: 1.2,
   },
 });

@@ -198,20 +198,20 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     fontSize: 26,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.textPrimary,
     marginBottom: 4,
   },
   pageSubtitle: {
     fontSize: Typography.fontSizes.sm,
-    color: '#9CA3AF',
+    color: Colors.textSecondary,
     marginBottom: 12,
     lineHeight: 20,
   },
   inputIcon: {
     width: 20,
     height: 20,
-    tintColor: '#9CA3AF',
+    tintColor: Colors.textSecondary,
   },
   resetBtn: {
     backgroundColor: Colors.primary,
@@ -226,18 +226,18 @@ const styles = StyleSheet.create({
   },
   resetBtnText: {
     fontSize: Typography.fontSizes.base,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.white,
+    fontFamily: Typography.fontFamilies.bold,
+    color: Colors.textInverse,
   },
   errorContainer: {
-    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255, 0, 0, 0.2)',
+    borderColor: 'rgba(239, 68, 68, 0.24)',
   },
   errorText: {
-    color: Colors.primary,
+    color: Colors.error,
     fontSize: Typography.fontSizes.xs,
     textAlign: 'center',
   },

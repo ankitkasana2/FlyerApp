@@ -1,47 +1,74 @@
 // theme/colors.ts
 
+const primary = '#B92025';
+
+const getReadableTextColor = (hex: string) => {
+  const normalized = hex.replace('#', '');
+  const value =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map(char => char + char)
+          .join('')
+      : normalized;
+
+  const red = parseInt(value.slice(0, 2), 16);
+  const green = parseInt(value.slice(2, 4), 16);
+  const blue = parseInt(value.slice(4, 6), 16);
+
+  // Perceived luminance keeps contrast decisions stable for brand changes.
+  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  return luminance >= 160 ? '#18181b' : '#fafafa';
+};
+
+const primaryForeground = getReadableTextColor(primary);
+
 const Colors = {
-  background: '#0E0E0E',
-  surface: '#1A1A1A',
-  surfaceElevated: '#222222',
-  card: '#1E1D2E',
-  border: '#2A2A2A',
-  borderLight: '#3D3C52',
+  background: '#09090b',
+  surface: '#18181b',
+  surfaceElevated: '#27272a',
+  card: '#18181b',
+  border: '#27272a',
+  borderLight: '#3f3f46',
 
-  primary: '#B92025', // red accent
-  primaryLight: '#FF6F6F',
-  primaryDark: '#B71C1C',
+  primary,
+  primaryForeground,
+  primaryLight: '#ffffff',
+  primaryDark: '#d4d4d8',
 
-  secondary: '#FF6584',
-  accent: '#FF8906',
+  secondary: '#27272a',
+  accent: '#d4d4d8',
+  muted: '#27272a',
+  mutedForeground: '#a1a1aa',
 
-  textPrimary: '#FFFFFF',
-  textSecondary: '#9E9E9E',
-  textMuted: '#5C5C5C',
-  textInverse: '#0E0E0E',
+  textPrimary: '#fafafa',
+  textSecondary: '#a1a1aa',
+  textMuted: '#71717a',
+  textInverse: primaryForeground,
 
-  success: '#2CB67D',
-  warning: '#FFC857',
-  error: '#EF233C',
+  success: '#22c55e',
+  warning: '#f59e0b',
+  error: '#ef4444',
 
-  badge: '#E53935',
-  heart: '#FFFFFF',
-  crownBg: '#E53935',
+  badge: '#fafafa',
+  heart: '#fafafa',
+  crownBg: '#fafafa',
 
-  searchBg: '#1C1C1C',
-  searchBorder: '#2C2C2C',
-  searchPlaceholder: '#5C5C5C',
-  searchIcon: '#5C5C5C',
+  searchBg: '#18181b',
+  searchBorder: '#27272a',
+  searchPlaceholder: '#71717a',
+  searchIcon: '#a1a1aa',
 
-  tabBarBackground: '#0E0E0E',
-  tabBarActive: '#E53935',
-  tabBarInactive: '#5C5C5C',
+  tabBarBackground: '#09090b',
+  tabBarActive: '#fafafa',
+  tabBarInactive: '#71717a',
 
-  drawerBackground: '#0E0E0E',
-  drawerActive: '#E53935',
+  drawerBackground: '#09090b',
+  drawerActive: '#fafafa',
 
-  overlay: 'rgba(0,0,0,0.45)',
-  white: '#FFFFFF',
+  overlay: 'rgba(0,0,0,0.62)',
+  white: '#ffffff',
   black: '#000000',
   transparent: 'transparent',
 } as const;

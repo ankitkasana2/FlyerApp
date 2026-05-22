@@ -14,18 +14,15 @@ import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 
 import SearchBar from '../../components/common/SearchBar';
-import CategoryTabs, { CategoryTab } from './CategoryTabs';
+import CategoryTabs from './CategoryTabs';
 import SortButton, { SortOption } from './SortButton';
 import FlyerCard, {
   CARD_GAP,
   HORIZONTAL_PADDING,
 } from '../../components/home/FlyerCard';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import type { Flyer } from '../../types/flyer';
-
-const DEFAULT_CATEGORY_TABS: CategoryTab[] = [
-  { id: 'recently_added', label: 'RECENTLY ADDED' },
-];
+import type { AppStackParamList } from '../../navigation/types';
 
 const SORT_OPTIONS: SortOption[] = [
   { id: 'newest', label: 'Newest First' },
@@ -50,21 +47,8 @@ const formatPrice = (price: number | string | undefined | null): string => {
   return priceStr.startsWith('$') ? priceStr : `$${priceStr}`;
 };
 
-const toTimestamp = (value?: string): number => {
-  if (!value) return 0;
-  const ts = Date.parse(value);
-  return Number.isNaN(ts) ? 0 : ts;
-};
-
-const toPriceNumber = (value: Flyer['price']): number => {
-  if (typeof value === 'number') return value;
-  const cleaned = String(value ?? '0').replace(/[^0-9.]/g, '');
-  const parsed = Number(cleaned);
-  return Number.isNaN(parsed) ? 0 : parsed;
-};
-
 const CategoryScreen: React.FC = observer(() => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<AppStackParamList>>();
   const { flyerStore } = useStores();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,24 +86,14 @@ const CategoryScreen: React.FC = observer(() => {
     return { sortBy, sortDir };
   }, [sortId]);
 
-  const categoryTabs = useMemo<CategoryTab[]>(() => {
-    const dynamicTabs = flyerStore.categories
-      .map(cat => ({
-        id: String(cat._id || cat.id),
-        name: String(cat.name || cat.label || ''),
-        label: String(cat.name || cat.label || '').toUpperCase(),
-      }))
-      .filter(tab => !DEFAULT_CATEGORY_TABS.some(dt => dt.label === tab.label));
-
-    return [...DEFAULT_CATEGORY_TABS, ...dynamicTabs];
-  }, [flyerStore.categories]);
+  const categoryTabs = flyerStore.orderedCategoryTabs;
 
   const queryContext = useMemo(() => {
     const isRecentlyAdded = activeTabId === 'recently_added';
     const selectedTab = categoryTabs.find(t => t.id === activeTabId);
     const categoryName = isRecentlyAdded
       ? 'Recently Added'
-      : ((selectedTab as any)?.name || activeTabId);
+      : (selectedTab?.name || activeTabId);
     const apiCategory = isRecentlyAdded ? undefined : categoryName;
     const templateType = selectedTemplates.length > 0 ? selectedTemplates.join(',') : undefined;
     const queryKey = `${categoryName}::${sortParams.sortBy}::${sortParams.sortDir}::${templateType || ''}`;
@@ -134,42 +108,14 @@ const CategoryScreen: React.FC = observer(() => {
   }, [activeTabId, categoryTabs, selectedTemplates, sortParams]);
 
   const localCategoryFlyers = useMemo(() => {
-    const categoryLower = queryContext.categoryName.toLowerCase();
-    let result = [...flyerStore.allFlyers];
-
-    if (!queryContext.isRecentlyAdded) {
-      result = result.filter(f => {
-        const primary = String(f.category || '').toLowerCase();
-        const cats = (f.categories || []).map(c => String(c).toLowerCase());
-        return primary === categoryLower || cats.includes(categoryLower);
-      });
-    }
-
-    if (selectedTemplates.length > 0) {
-      result = result.filter(f => selectedTemplates.includes(String(f.template_type)));
-    }
-
-    const stabilized = result.map((flyer, index) => ({ flyer, index }));
-    stabilized.sort((a, b) => {
-      if (sortParams.sortBy === 'price') {
-        const diff = toPriceNumber(a.flyer.price) - toPriceNumber(b.flyer.price);
-        return sortParams.sortDir === 'asc' ? diff : -diff;
-      }
-
-      if (sortParams.sortBy === 'created_at') {
-        const leftTs = toTimestamp(a.flyer.created_at ?? a.flyer.createdAt);
-        const rightTs = toTimestamp(b.flyer.created_at ?? b.flyer.createdAt);
-        const diff = leftTs - rightTs;
-        if (diff !== 0) {
-          return sortParams.sortDir === 'asc' ? diff : -diff;
-        }
-      }
-
-      return a.index - b.index;
+    return flyerStore.getLocalFlyersForCategoryTab({
+      categoryName: queryContext.categoryName,
+      isRecentlyAdded: queryContext.isRecentlyAdded,
+      sortBy: sortParams.sortBy,
+      sortDir: sortParams.sortDir,
+      templateType: selectedTemplates.length > 0 ? selectedTemplates.join(',') : undefined,
     });
-
-    return stabilized.map(item => item.flyer);
-  }, [flyerStore.allFlyers, queryContext, selectedTemplates, sortParams]);
+  }, [flyerStore, queryContext, selectedTemplates, sortParams]);
 
   useEffect(() => {
     setCategory(queryContext.categoryName);
@@ -283,7 +229,7 @@ const CategoryScreen: React.FC = observer(() => {
 
   const handleCardPress = useCallback(
     (id: string) => {
-      navigation.navigate('FlyerDetail' as never, { flyerId: id } as never);
+      navigation.navigate('FlyerDetail', { flyerId: id });
     },
     [navigation],
   );

@@ -33,6 +33,8 @@ export type AppStackParamList = {
   FAQ: undefined;
   HelpCenter: undefined;
   PrivacyPolicy: undefined;
+  RefundPolicy: undefined;
+  TermsOfService: undefined;
 };
 
 // ─── Root ─────────────────────────────────────────────────────────────────────

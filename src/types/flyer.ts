@@ -20,6 +20,24 @@ export interface Flyer {
   created_at?: string;
 }
 
+export interface CategoryUiTab {
+  id: string;
+  name: string;
+  label: string;
+}
+
+export interface CategoryTabQueryOptions {
+  categoryName: string;
+  isRecentlyAdded?: boolean;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+  templateType?: string;
+}
+
+export interface FetchFlyersForCategoryTabOptions extends CategoryTabQueryOptions {
+  limit?: number;
+}
+
 export interface FlyersPagination {
   page: number;
   limit: number;

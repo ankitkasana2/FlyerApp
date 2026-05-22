@@ -9,6 +9,9 @@ import type {
   FavoritesResponse,
   GetFlyersResponse,
   FlyersPagination,
+  CategoryUiTab,
+  CategoryTabQueryOptions,
+  FetchFlyersForCategoryTabOptions,
 } from '../types/flyer';
 
 class FlyerStore {
@@ -56,6 +59,174 @@ class FlyerStore {
   constructor() {
     makeAutoObservable(this);
   }
+
+  private get sourceFlyers(): Flyer[] {
+    return this.allFlyers.length > 0 ? this.allFlyers : this.flyers;
+  }
+
+  get orderedCategoryTabs(): CategoryUiTab[] {
+    const tabs: CategoryUiTab[] = [
+      {
+        id: 'recently_added',
+        name: 'Recently Added',
+        label: 'RECENTLY ADDED',
+      },
+    ];
+
+    const seenLabels = new Set(tabs.map(tab => tab.label));
+
+    this.categories.forEach(category => {
+      const name = String(category.name ?? category.label ?? '').trim();
+      if (!name) {
+        return;
+      }
+
+      const label = name.toUpperCase();
+      if (seenLabels.has(label)) {
+        return;
+      }
+
+      tabs.push({
+        id: String(category._id ?? category.id ?? name),
+        name,
+        label,
+      });
+      seenLabels.add(label);
+    });
+
+    return tabs;
+  }
+
+  private getFlyerId = (flyer: Flyer) => String(flyer._id ?? flyer.id);
+
+  private getNormalizedCategories = (flyer: Flyer): string[] => {
+    const categoryValues = [
+      flyer.category,
+      ...(Array.isArray(flyer.categories) ? flyer.categories : []),
+    ];
+
+    return categoryValues
+      .map(value => String(value ?? '').trim())
+      .filter(Boolean);
+  };
+
+  private dedupeFlyers = (flyers: Flyer[]): Flyer[] => {
+    const seen = new Set<string>();
+    return flyers.filter(flyer => {
+      const id = this.getFlyerId(flyer);
+      if (seen.has(id)) {
+        return false;
+      }
+      seen.add(id);
+      return true;
+    });
+  };
+
+  private getCreatedTimestamp = (flyer: Flyer): number => {
+    const value = flyer.created_at ?? flyer.createdAt;
+    const parsed = value ? Date.parse(value) : 0;
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  private getPriceNumber = (value: Flyer['price']): number => {
+    if (typeof value === 'number') return value;
+    const cleaned = String(value ?? '0').replace(/[^0-9.]/g, '');
+    const parsed = Number(cleaned);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  private sortFlyersForCategoryTab = (
+    flyers: Flyer[],
+    sortBy: string,
+    sortDir: 'asc' | 'desc',
+  ): Flyer[] => {
+    const stabilized = flyers.map((flyer, index) => ({ flyer, index }));
+
+    stabilized.sort((left, right) => {
+      if (sortBy === 'price') {
+        const diff = this.getPriceNumber(left.flyer.price) - this.getPriceNumber(right.flyer.price);
+        return sortDir === 'asc' ? diff : -diff;
+      }
+
+      if (sortBy === 'created_at') {
+        const diff =
+          this.getCreatedTimestamp(left.flyer) - this.getCreatedTimestamp(right.flyer);
+        if (diff !== 0) {
+          return sortDir === 'asc' ? diff : -diff;
+        }
+      }
+
+      return left.index - right.index;
+    });
+
+    return stabilized.map(item => item.flyer);
+  };
+
+  get recentlyAdded(): Flyer[] {
+    return [...this.dedupeFlyers(this.sourceFlyers)].sort(
+      (left, right) => this.getCreatedTimestamp(right) - this.getCreatedTimestamp(left),
+    );
+  }
+
+  get premiumFlyers(): Flyer[] {
+    return this.dedupeFlyers(this.sourceFlyers).filter(flyer => flyer.isPremium === true);
+  }
+
+  get basicFlyers(): Flyer[] {
+    return this.dedupeFlyers(this.sourceFlyers).filter(flyer => flyer.isPremium !== true);
+  }
+
+  flyersByCategory(categoryName: string): Flyer[] {
+    const normalizedTarget = categoryName.trim().toLowerCase();
+    if (!normalizedTarget) {
+      return [];
+    }
+
+    return this.dedupeFlyers(
+      this.sourceFlyers.filter(flyer =>
+        this.getNormalizedCategories(flyer).some(
+          category => category.toLowerCase() === normalizedTarget,
+        ),
+      ),
+    );
+  }
+
+  getLocalFlyersForCategoryTab = ({
+    categoryName,
+    isRecentlyAdded = false,
+    sortBy = 'created_at',
+    sortDir = 'desc',
+    templateType,
+  }: CategoryTabQueryOptions): Flyer[] => {
+    let result = [...this.allFlyers];
+
+    if (!isRecentlyAdded) {
+      const categoryLower = categoryName.trim().toLowerCase();
+      result = result.filter(flyer => {
+        const primary = String(flyer.category || '').toLowerCase();
+        const categories = (flyer.categories || []).map(category => String(category).toLowerCase());
+        return primary === categoryLower || categories.includes(categoryLower);
+      });
+    }
+
+    if (templateType) {
+      const selectedTemplates = templateType
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean);
+      if (selectedTemplates.length > 0) {
+        result = result.filter(flyer =>
+          selectedTemplates.includes(String(flyer.template_type)),
+        );
+      }
+    }
+
+    return this.sortFlyersForCategoryTab(
+      isRecentlyAdded ? [...this.recentlyAdded] : result,
+      sortBy,
+      sortDir,
+    );
+  };
 
   // ─── Actions ──────────────────────────────────────────────────────────────
 
@@ -149,6 +320,7 @@ class FlyerStore {
         this.totalPages = 0;
         this.hasMore = true;
         this.flyers = [];
+        this.allFlyers = [];
       });
     } else {
       runInAction(() => {
@@ -243,6 +415,79 @@ class FlyerStore {
         this.isFetchingNextPage = false;
       });
     }
+  };
+
+  fetchFlyersForCategoryTab = async ({
+    categoryName,
+    isRecentlyAdded = false,
+    sortBy = 'created_at',
+    sortDir = 'desc',
+    limit = 15,
+    templateType,
+  }: FetchFlyersForCategoryTabOptions): Promise<Flyer[]> => {
+    const collected: Flyer[] = [];
+    const seenIds = new Set<string>();
+    let page = 1;
+    let hasMore = true;
+    const apiCategory = isRecentlyAdded ? undefined : categoryName;
+
+    while (hasMore && collected.length < limit) {
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('limit', String(limit));
+      params.set('sort_by', sortBy);
+      params.set('sort_dir', sortDir);
+
+      if (apiCategory) {
+        params.set('category', apiCategory);
+      }
+      if (templateType) {
+        params.set('template_type', templateType);
+      }
+
+      const response = await fetch(getApiUrl(`/flyers?${params.toString()}`));
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+
+      const data = (await response.json()) as Partial<GetFlyersResponse> & {
+        data?: Flyer[];
+      };
+
+      const pageFlyers: Flyer[] = Array.isArray(data.flyers)
+        ? data.flyers
+        : Array.isArray(data.data)
+        ? data.data
+        : [];
+
+      const pagination = data.pagination;
+      hasMore = Boolean(pagination?.hasMore);
+
+      pageFlyers.forEach(flyer => {
+        const flyerId = this.getFlyerId(flyer);
+        if (seenIds.has(flyerId) || collected.length >= limit) {
+          return;
+        }
+        seenIds.add(flyerId);
+        collected.push(flyer);
+      });
+
+      if (!pagination) {
+        hasMore = false;
+      } else {
+        page += 1;
+      }
+    }
+
+    runInAction(() => {
+      const existingIds = new Set(this.allFlyers.map(flyer => this.getFlyerId(flyer)));
+      const newFlyers = collected.filter(flyer => !existingIds.has(this.getFlyerId(flyer)));
+      if (newFlyers.length > 0) {
+        this.allFlyers = [...this.allFlyers, ...newFlyers];
+      }
+    });
+
+    return collected;
   };
 
   /** Reset pagination counters without touching current list content */
@@ -362,9 +607,7 @@ class FlyerStore {
       this.resetForm(); // Reset form when fetching a new flyer
     });
     try {
-      const res = await fetch(getApiUrl(`/flyers/${id}`), {
-        cache: "no-store",
-      });
+      const res = await fetch(getApiUrl(`/flyers/${id}`));
 
       const data = await res.json();
 

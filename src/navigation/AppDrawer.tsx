@@ -142,16 +142,20 @@ const AppDrawer: React.FC<AppDrawerProps> = observer(({ onClose }) => {
             label: 'Terms of Service',
             icon: Images.terms,
             hasChevron: true,
-            onPress: () =>
-              console.log('// navigation.navigate("TermsOfService")'),
+            onPress: () => {
+              onClose?.();
+              navigation.navigate('TermsOfService');
+            },
           },
           {
             id: 'refund',
             label: 'Refund Policy',
             icon: Images.refund,
             hasChevron: true,
-            onPress: () =>
-              console.log('// navigation.navigate("RefundPolicy")'),
+            onPress: () => {
+              onClose?.();
+              navigation.navigate('RefundPolicy');
+            },
           },
         ],
       },
@@ -163,11 +167,6 @@ const AppDrawer: React.FC<AppDrawerProps> = observer(({ onClose }) => {
     onClose?.();
     authStore.logout();
   }, [authStore, onClose]);
-
-  const handleCartPress = useCallback(() => {
-    onClose?.();
-    navigation.navigate('Cart');
-  }, [navigation, onClose]);
 
   const renderMenuItem = useCallback((item: DrawerMenuItem) => {
     return (
@@ -275,9 +274,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: {
-    color: Colors.textPrimary,
+    color: Colors.textInverse,
     fontSize: Typography.fontSizes.base,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     letterSpacing: 0.5,
   },
   userInfo: {
@@ -287,12 +286,12 @@ const styles = StyleSheet.create({
   userName: {
     color: Colors.textPrimary,
     fontSize: Typography.fontSizes.base,
-    fontWeight: Typography.fontWeights.semiBold,
+    fontFamily: Typography.fontFamilies.semiBold,
   },
   userEmail: {
     color: Colors.textSecondary,
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.regular,
+    fontFamily: Typography.fontFamilies.regular,
     marginTop: 2,
   },
   cartButton: {
@@ -321,7 +320,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     color: Colors.textMuted,
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.semiBold,
+    fontFamily: Typography.fontFamilies.semiBold,
     letterSpacing: 1.2,
     marginTop: 8,
     marginBottom: 4,
@@ -357,7 +356,7 @@ const styles = StyleSheet.create({
   menuLabel: {
     color: Colors.textPrimary,
     fontSize: Typography.fontSizes.md,
-    fontWeight: Typography.fontWeights.medium,
+    fontFamily: Typography.fontFamilies.medium,
   },
   menuItemRight: {
     flexDirection: 'row',
@@ -374,9 +373,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   badgeText: {
-    color: Colors.textPrimary,
+    color: Colors.textInverse,
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
   },
   chevron: {
     width: 16,
@@ -401,19 +400,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1.5,
-    borderColor: Colors.primary,
+    borderColor: Colors.border,
     borderRadius: 12,
     paddingVertical: 14,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.primary,
   },
   logoutIcon: {
     fontSize: 18,
     // Replace emoji with your PNG icon
   },
   logoutText: {
-    color: Colors.primary,
+    color: Colors.textInverse,
     fontSize: Typography.fontSizes.base,
-    fontWeight: Typography.fontWeights.semiBold,
+    fontFamily: Typography.fontFamilies.semiBold,
   },
 });
 

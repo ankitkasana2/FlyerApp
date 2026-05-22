@@ -1,9 +1,7 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
   Image,
   ImageSourcePropType,
   StatusBar,
@@ -19,7 +17,7 @@ import {
   AppStackParamList,
 } from './types';
 import { Colors } from '../theme/colors';
-import { FontSize, FontWeight } from '../theme/typography';
+import { FontFamily, FontSize } from '../theme/typography';
 import { Spacing } from '../theme/spacing';
 import { useStores } from '../stores/StoreContext';
 import {
@@ -32,7 +30,6 @@ import Header from '../components/home/Header';
 // ─── Screen Imports ────────────────────────────────────────────────────────
 import HomeScreen from '../screens/Home/HomeScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
-import ExploreScreen from '../screens/Explore/ExploreScreen';
 import SettingsScreen from '../screens/Settings/SettingsScreen';
 import AboutScreen from '../screens/About/AboutScreen';
 import CartScreen from '../screens/cart/CartScreen';
@@ -45,6 +42,8 @@ import ContactUsScreen from '../screens/DrawerScreen/ContactUs';
 import FAQScreen from '../screens/DrawerScreen/FAQScreen';
 import HelpCenterScreen from '../screens/DrawerScreen/HelpCenterScreen';
 import PrivacyPolicyScreen from '../screens/DrawerScreen/PrivacyPolicyScreen';
+import RefundPolicyScreen from '../screens/DrawerScreen/RefundPolicyScreen';
+import TermsOfServiceScreen from '../screens/DrawerScreen/TermsOfServiceScreen';
 
 // ─── Tab Icon component ────────────────────────────────────────────────────
 const TabIcon = ({
@@ -74,7 +73,6 @@ const GlobalHeader = observer(() => {
         <Header
           cartCount={cartStore.itemCount}
           onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          onSearchPress={() => console.log('Search pressed')}
           onCartPress={() => navigation.navigate('Cart')}
           onNotificationPress={() => console.log('Notifications pressed')}
         />
@@ -152,6 +150,7 @@ const BottomTabs = () => {
 // ─── Tab Layout with Global Header ─────────────────────────────────────────
 const TabLayout = () => (
   <View style={{ flex: 1, backgroundColor: Colors.background }}>
+    <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
     <GlobalHeader />
     <BottomTabs />
   </View>
@@ -170,24 +169,24 @@ const DrawerNavigator = () => (
       drawerStyle: styles.drawer,
       drawerActiveTintColor: Colors.primary,
       drawerInactiveTintColor: Colors.textSecondary,
-      drawerActiveBackgroundColor: `${Colors.primary}22`,
+      drawerActiveBackgroundColor: `${Colors.primary}12`,
       drawerLabelStyle: styles.drawerLabel,
     }}
   >
     <Drawer.Screen
       name="MainTabs"
       component={TabLayout}
-      options={{ drawerLabel: '🏠  Home', title: 'Home' }}
+      options={{ drawerLabel: 'Home', title: 'Home' }}
     />
     <Drawer.Screen
       name="Settings"
       component={SettingsScreen}
-      options={{ drawerLabel: '⚙️  Settings', title: 'Settings' }}
+      options={{ drawerLabel: 'Settings', title: 'Settings' }}
     />
     <Drawer.Screen
       name="About"
       component={AboutScreen}
-      options={{ drawerLabel: 'ℹ️  About', title: 'About' }}
+      options={{ drawerLabel: 'About', title: 'About' }}
     />
   </Drawer.Navigator>
 );
@@ -206,6 +205,8 @@ const AppNavigator = () => (
     <AppStack.Screen name="FAQ" component={FAQScreen} />
     <AppStack.Screen name="HelpCenter" component={HelpCenterScreen} />
     <AppStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+    <AppStack.Screen name="RefundPolicy" component={RefundPolicyScreen} />
+    <AppStack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
   </AppStack.Navigator>
 );
 
@@ -237,8 +238,9 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 9,
-    fontWeight: FontWeight.medium,
+    fontFamily: FontFamily.medium,
     marginTop: 2,
+    color: Colors.textSecondary,
   },
 
   // Drawer
@@ -274,7 +276,7 @@ const styles = StyleSheet.create({
   },
   drawerAppName: {
     fontSize: FontSize.xl,
-    fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.bold,
     color: Colors.textPrimary,
     marginBottom: 2,
   },
@@ -288,7 +290,7 @@ const styles = StyleSheet.create({
   },
   drawerLabel: {
     fontSize: FontSize.base,
-    fontWeight: FontWeight.medium,
+    fontFamily: FontFamily.medium,
   },
   drawerFooter: {
     padding: Spacing.xl,
@@ -306,7 +308,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: FontSize.base,
-    fontWeight: FontWeight.medium,
+    fontFamily: FontFamily.medium,
     color: Colors.error,
   },
 });

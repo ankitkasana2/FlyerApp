@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   tag: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.primary,
     letterSpacing: 1.5,
     marginBottom: 6,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: Typography.fontSizes.xl,
-    fontWeight: Typography.fontWeights.black,
+    fontFamily: Typography.fontFamilies.black,
     color: Colors.textPrimary,
     lineHeight: 32,
     marginBottom: 8,
@@ -204,8 +204,8 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     fontSize: Typography.fontSizes.md,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
+    fontFamily: Typography.fontFamilies.bold,
+    color: Colors.textInverse,
     letterSpacing: 0.5,
   },
   dotsContainer: {

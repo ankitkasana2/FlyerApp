@@ -48,13 +48,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: Typography.fontSizes.lg,
-    fontWeight: Typography.fontWeights.bold,
+    fontFamily: Typography.fontFamilies.bold,
     color: Colors.textPrimary,
     letterSpacing: 0.3,
   },
   action: {
     fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.semiBold,
+    fontFamily: Typography.fontFamilies.semiBold,
     color: Colors.primary,
     letterSpacing: 0.2,
   },
