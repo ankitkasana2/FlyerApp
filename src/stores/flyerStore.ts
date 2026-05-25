@@ -2,7 +2,8 @@
 // MobX store for managing the flyer list fetched from the backend.
 
 import { makeAutoObservable, runInAction } from 'mobx';
-import { getApiUrl } from '../services/api';
+import { API_BASE_URL, getApiUrl } from '../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   Flyer,
   Banner,
@@ -34,6 +35,10 @@ class FlyerStore {
   banners: Banner[] = [];
   isBannersLoading: boolean = false;
   bannerError: string | null = null;
+  private bannersFetchPromise: Promise<Banner[]> | null = null;
+  private categoryTabFetchPromises = new Map<string, Promise<Flyer[]>>();
+  private homeCacheHydrationPromise: Promise<void> | null = null;
+  private readonly HOME_CACHE_KEY = '@home_cache_v1';
 
   // Categories state
   categories: any[] = [];
@@ -59,6 +64,87 @@ class FlyerStore {
   constructor() {
     makeAutoObservable(this);
   }
+
+  private normalizeBannerImageUrl = (value?: string | null) => {
+    if (!value || typeof value !== 'string') {
+      return '';
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return '';
+    }
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol === 'http:' && !parsed.hostname.includes('localhost')) {
+          return trimmed.replace(/^http:\/\//i, 'https://');
+        }
+        return parsed.toString();
+      } catch {
+        return trimmed.replace(/^http:\/\//i, 'https://');
+      }
+    }
+
+    const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, '');
+    return `${backendOrigin}/${trimmed.replace(/^\/+/, '')}`;
+  };
+
+  hydrateHomeCache = async () => {
+    if (this.homeCacheHydrationPromise) {
+      return this.homeCacheHydrationPromise;
+    }
+
+    this.homeCacheHydrationPromise = (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(this.HOME_CACHE_KEY);
+        if (!raw) {
+          return;
+        }
+
+        const parsed = JSON.parse(raw);
+        runInAction(() => {
+          if (Array.isArray(parsed?.banners) && this.banners.length === 0) {
+            this.banners = parsed.banners.map((banner: Banner) => ({
+              ...banner,
+              image_url: this.normalizeBannerImageUrl(banner.image_url),
+            }));
+          }
+
+          if (Array.isArray(parsed?.categories) && this.categories.length === 0) {
+            this.categories = parsed.categories;
+          }
+
+          if (Array.isArray(parsed?.allFlyers) && this.allFlyers.length === 0) {
+            this.allFlyers = parsed.allFlyers;
+          }
+        });
+      } catch (error) {
+        console.warn('[FlyerStore] Failed to hydrate home cache', error);
+      } finally {
+        this.homeCacheHydrationPromise = null;
+      }
+    })();
+
+    return this.homeCacheHydrationPromise;
+  };
+
+  private persistHomeCache = async () => {
+    try {
+      await AsyncStorage.setItem(
+        this.HOME_CACHE_KEY,
+        JSON.stringify({
+          banners: this.banners,
+          categories: this.categories,
+          allFlyers: this.allFlyers,
+          cachedAt: Date.now(),
+        }),
+      );
+    } catch (error) {
+      console.warn('[FlyerStore] Failed to persist home cache', error);
+    }
+  };
 
   private get sourceFlyers(): Flyer[] {
     return this.allFlyers.length > 0 ? this.allFlyers : this.flyers;
@@ -232,42 +318,63 @@ class FlyerStore {
 
   /** Fetch banners for the hero slider */
   fetchBanners = async () => {
+    if (this.bannersFetchPromise) {
+      return this.bannersFetchPromise;
+    }
+
+    if (this.banners.length > 0) {
+      return this.banners;
+    }
+
     runInAction(() => {
       this.isBannersLoading = true;
       this.bannerError = null;
     });
 
-    try {
-      const response = await fetch(getApiUrl('/banners'), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        runInAction(() => {
-          this.banners = data.data;
+    this.bannersFetchPromise = (async () => {
+      try {
+        const response = await fetch(getApiUrl('/banners?active_only=true'), {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
-      } else {
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          runInAction(() => {
+            this.banners = Array.isArray(data.data)
+              ? data.data.map((banner: Banner) => ({
+                  ...banner,
+                  image_url: this.normalizeBannerImageUrl(banner.image_url),
+                }))
+              : [];
+          });
+          void this.persistHomeCache();
+          return this.banners;
+        }
+
         throw new Error(data.message || 'Failed to fetch banners');
+      } catch (error: any) {
+        console.error("fetchBanners Error:", error);
+        runInAction(() => {
+          this.bannerError = error instanceof Error ? error.message : 'An unknown error occurred';
+        });
+        throw error;
+      } finally {
+        runInAction(() => {
+          this.isBannersLoading = false;
+          this.bannersFetchPromise = null;
+        });
       }
-    } catch (error: any) {
-      console.error("fetchBanners Error:", error);
-      runInAction(() => {
-        this.bannerError = error instanceof Error ? error.message : 'An unknown error occurred';
-      });
-    } finally {
-      runInAction(() => {
-        this.isBannersLoading = false;
-      });
-    }
+    })();
+
+    return this.bannersFetchPromise;
   };
 
   /** Fetch categories for the tabs */
@@ -284,6 +391,7 @@ class FlyerStore {
         runInAction(() => {
           this.categories = data.categories.sort((a: any, b: any) => a.rank - b.rank);
         });
+        void this.persistHomeCache();
       }
     } catch (error) {
       console.error('fetchCategories Error:', error);
@@ -425,6 +533,32 @@ class FlyerStore {
     limit = 15,
     templateType,
   }: FetchFlyersForCategoryTabOptions): Promise<Flyer[]> => {
+    const requestKey = JSON.stringify({
+      categoryName,
+      isRecentlyAdded,
+      sortBy,
+      sortDir,
+      limit,
+      templateType: templateType || '',
+    });
+    const existingPromise = this.categoryTabFetchPromises.get(requestKey);
+    if (existingPromise) {
+      return existingPromise;
+    }
+
+    const localCached = this.getLocalFlyersForCategoryTab({
+      categoryName,
+      isRecentlyAdded,
+      sortBy,
+      sortDir,
+      templateType,
+    }).slice(0, limit);
+
+    if (localCached.length >= limit) {
+      return localCached;
+    }
+
+    const requestPromise = (async () => {
     const collected: Flyer[] = [];
     const seenIds = new Set<string>();
     let page = 1;
@@ -479,15 +613,24 @@ class FlyerStore {
       }
     }
 
-    runInAction(() => {
-      const existingIds = new Set(this.allFlyers.map(flyer => this.getFlyerId(flyer)));
-      const newFlyers = collected.filter(flyer => !existingIds.has(this.getFlyerId(flyer)));
-      if (newFlyers.length > 0) {
-        this.allFlyers = [...this.allFlyers, ...newFlyers];
-      }
-    });
+      runInAction(() => {
+        const existingIds = new Set(this.allFlyers.map(flyer => this.getFlyerId(flyer)));
+        const newFlyers = collected.filter(flyer => !existingIds.has(this.getFlyerId(flyer)));
+        if (newFlyers.length > 0) {
+          this.allFlyers = [...this.allFlyers, ...newFlyers];
+        }
+      });
+      void this.persistHomeCache();
 
-    return collected;
+      return collected;
+    })();
+
+    this.categoryTabFetchPromises.set(requestKey, requestPromise);
+    try {
+      return await requestPromise;
+    } finally {
+      this.categoryTabFetchPromises.delete(requestKey);
+    }
   };
 
   /** Reset pagination counters without touching current list content */
@@ -669,14 +812,21 @@ class FlyerStore {
   /** Clear the list (e.g. on logout) */
   reset(): void {
     this.flyers = [];
+    this.allFlyers = [];
+    this.banners = [];
     this.error = null;
+    this.bannerError = null;
     this.isLoading = false;
+    this.isBannersLoading = false;
     this.isFetchingNextPage = false;
     this.page = 1;
     this.currentPage = 0;
     this.total = 0;
     this.totalPages = 0;
     this.hasMore = true;
+    this.categories = [];
+    this.bannersFetchPromise = null;
+    this.categoryTabFetchPromises.clear();
     this.resetForm();
   }
 }

@@ -6,12 +6,11 @@ import {
   Text,
   TouchableOpacity,
   ImageBackground,
+  Image,
   StyleSheet,
   FlatList,
   Dimensions,
   ImageSourcePropType,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
   ViewToken,
 } from 'react-native';
 import Colors from '../../theme/colors';
@@ -78,6 +77,8 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   const flatListRef = useRef<FlatList<BannerSlide>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [loadedBannerIds, setLoadedBannerIds] = useState<Record<string, boolean>>({});
+  const [failedBannerIds, setFailedBannerIds] = useState<Record<string, boolean>>({});
 
   const startAutoPlay = useCallback(() => {
     if (slides.length <= 1) return;
@@ -133,7 +134,48 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
           offset: SCREEN_WIDTH * index,
           index,
         })}
-        renderItem={({ item }) => <SlideItem {...item} />}
+        renderItem={({ item }) => {
+          const itemId = String(item.id);
+          const hasLoaded = !!loadedBannerIds[itemId];
+          const hasFailed = !!failedBannerIds[itemId];
+
+          return (
+            <View style={styles.slide}>
+              <ImageBackground
+                source={item.imageSource}
+                style={styles.image}
+                resizeMode="cover"
+                onLoad={() => {
+                  setLoadedBannerIds(prev => ({ ...prev, [itemId]: true }));
+                }}
+                onError={event => {
+                  console.error('[HeroBanner] failed to load banner image', {
+                    id: itemId,
+                    source: item.imageSource,
+                    error: event.nativeEvent?.error,
+                  });
+                  setFailedBannerIds(prev => ({ ...prev, [itemId]: true }));
+                }}
+              >
+                {!hasLoaded && !hasFailed ? <View style={styles.loadingOverlay} /> : null}
+                <View style={styles.content}>
+                  <Text style={styles.title}>{item.title}</Text>
+                  {item.description ? (
+                    <Text style={styles.description}>{item.description}</Text>
+                  ) : null}
+
+                  <TouchableOpacity
+                    style={styles.ctaButton}
+                    onPress={item.onCtaPress}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.ctaText}>{item.ctaLabel || 'Explore'}</Text>
+                  </TouchableOpacity>
+                </View>
+              </ImageBackground>
+            </View>
+          );
+        }}
       />
 
       {/* Pagination dots */}
@@ -167,6 +209,10 @@ const styles = StyleSheet.create({
     height: BANNER_HEIGHT,
     justifyContent: 'flex-end',
     overflow: 'hidden',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#111114',
   },
   content: {
     padding: 20,

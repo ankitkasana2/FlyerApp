@@ -6,8 +6,9 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  ActivityIndicator,
   Alert,
+  InteractionManager,
+  Image,
 } from 'react-native';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
@@ -17,6 +18,7 @@ import { useStores } from '../../stores/StoreContext';
 import SearchBar from '../../components/common/SearchBar';
 import HeroBanner, { BannerSlide } from '../../components/home/HeroBanner';
 import BannerSkeleton from '../../components/home/BannerSkeleton';
+import HomeSectionSkeleton from '../../components/home/HomeSectionSkeleton';
 import SectionHeader from '../../components/home/SectionHeader';
 import FlyerCard, {
   CARD_GAP,
@@ -29,7 +31,10 @@ type HomeSection = {
   id: string;
   title: string;
   data: Flyer[];
+  isLoaded: boolean;
 };
+
+type LocalHomeSection = Omit<HomeSection, 'isLoaded'>;
 
 const HOME_SECTION_LIMIT = 15;
 const HOME_SECTION_SORT_BY = 'created_at';
@@ -92,6 +97,22 @@ const formatPrice = (price: number | string | undefined | null): string => {
 const HomeScreen: React.FC = observer(() => {
   const navigation = useNavigation<NavigationProp<AppStackParamList>>();
   const { flyerStore, cartStore, authStore } = useStores();
+  const {
+    addToFavorites,
+    banners,
+    bannerError,
+    error: flyersError,
+    fetchBanners,
+    fetchCategories,
+    fetchFlyersForCategoryTab,
+    hydrateHomeCache,
+    getLocalFlyersForCategoryTab,
+    isBannersLoading,
+    isCategoriesLoading,
+    orderedCategoryTabs,
+  } = flyerStore;
+  const loadCart = cartStore.load;
+  const userId = authStore.user?.id;
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -99,14 +120,22 @@ const HomeScreen: React.FC = observer(() => {
   const [sectionLoadCycle, setSectionLoadCycle] = useState(0);
 
   useEffect(() => {
-    flyerStore.fetchBanners();
-    flyerStore.fetchFlyers(true);
-    flyerStore.fetchCategories();
+    void hydrateHomeCache().finally(() => {
+      void fetchBanners().catch(() => {});
+    });
 
-    if (authStore.user?.id) {
-      cartStore.load(authStore.user.id);
+    const task = InteractionManager.runAfterInteractions(() => {
+      void fetchCategories().catch(() => {});
+    });
+
+    return () => task.cancel();
+  }, [fetchBanners, fetchCategories, hydrateHomeCache]);
+
+  useEffect(() => {
+    if (userId) {
+      loadCart(userId);
     }
-  }, [flyerStore, cartStore, authStore.user?.id]);
+  }, [loadCart, userId]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -114,30 +143,27 @@ const HomeScreen: React.FC = observer(() => {
     setSectionLoadCycle(prev => prev + 1);
     try {
       await Promise.all([
-        flyerStore.fetchBanners(),
-        flyerStore.fetchFlyers(true),
-        flyerStore.fetchCategories(),
+        fetchBanners(),
+        fetchCategories(),
       ]);
     } finally {
       setIsRefreshing(false);
     }
-  }, [flyerStore]);
+  }, [fetchBanners, fetchCategories]);
 
-  const mappedBanners: BannerSlide[] = (flyerStore.banners || []).map(b => ({
-    id: b.id,
-    tag: b.tag,
-    title: b.title,
-    description: b.description,
-    ctaLabel: b.button_text || b.ctaLabel || 'Explore',
-    imageSource: { uri: b.image_url },
-    onCtaPress: () => navigation.navigate('Categories' as never),
-  }));
-
-  const handleLoadMore = useCallback(() => {
-    if (flyerStore.hasMore && !flyerStore.isLoading && !flyerStore.isFetchingNextPage) {
-      flyerStore.fetchFlyers();
-    }
-  }, [flyerStore]);
+  const mappedBanners: BannerSlide[] = useMemo(
+    () =>
+      (banners || []).map(b => ({
+        id: b.id,
+        tag: b.tag,
+        title: b.title,
+        description: b.description,
+        ctaLabel: b.button_text || b.ctaLabel || 'Explore',
+        imageSource: { uri: b.image_url },
+        onCtaPress: () => navigation.navigate('Categories' as never),
+      })),
+    [banners, navigation],
+  );
 
   const handleSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
@@ -156,7 +182,6 @@ const HomeScreen: React.FC = observer(() => {
 
   const handleFavoritePress = useCallback(
     async (id: string) => {
-      const userId = authStore.user?.id;
       if (!userId) {
         Alert.alert(
           'Sign In Required',
@@ -166,24 +191,24 @@ const HomeScreen: React.FC = observer(() => {
       }
 
       try {
-        await flyerStore.addToFavorites(userId, Number(id));
+        await addToFavorites(userId, Number(id));
       } catch (err: any) {
         console.error('Failed to add to favorites:', err);
       }
     },
-    [authStore.user?.id, flyerStore],
+    [addToFavorites, userId],
   );
 
-  const orderedTabs = flyerStore.orderedCategoryTabs;
+  const orderedTabs = orderedCategoryTabs;
   const orderedTabsKey = orderedTabs
     .map(tab => `${tab.id}:${tab.name}`)
     .join('|');
 
-  const localSections: HomeSection[] = orderedTabs
+  const localSections: LocalHomeSection[] = orderedTabs
     .map(tab => ({
       id: tab.id,
       title: tab.name,
-      data: flyerStore.getLocalFlyersForCategoryTab({
+      data: getLocalFlyersForCategoryTab({
         categoryName: tab.name,
         isRecentlyAdded: tab.id === 'recently_added',
         sortBy: HOME_SECTION_SORT_BY,
@@ -191,66 +216,80 @@ const HomeScreen: React.FC = observer(() => {
       }).slice(0, HOME_SECTION_LIMIT),
     }))
     .filter(section => section.title && section.data.length > 0);
+  const hasSectionApiData = Object.keys(sectionApiFlyersById).length > 0;
 
   useEffect(() => {
-    const tabs = flyerStore.orderedCategoryTabs;
+    const tabs = orderedTabs;
 
     if (tabs.length === 0) {
       return;
     }
 
     let isCancelled = false;
-    tabs.forEach(tab => {
-      flyerStore.fetchFlyersForCategoryTab({
-        categoryName: tab.name,
-        isRecentlyAdded: tab.id === 'recently_added',
-        sortBy: HOME_SECTION_SORT_BY,
-        sortDir: HOME_SECTION_SORT_DIR,
-        limit: HOME_SECTION_LIMIT,
-      })
-        .then(flyers => {
-          if (isCancelled) {
-            return;
-          }
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-          setSectionApiFlyersById(prev => ({
-            ...prev,
-            [tab.id]: flyers.slice(0, HOME_SECTION_LIMIT),
-          }));
+    tabs.forEach((tab, index) => {
+      const fetchSection = () => {
+        fetchFlyersForCategoryTab({
+          categoryName: tab.name,
+          isRecentlyAdded: tab.id === 'recently_added',
+          sortBy: HOME_SECTION_SORT_BY,
+          sortDir: HOME_SECTION_SORT_DIR,
+          limit: HOME_SECTION_LIMIT,
         })
-        .catch(error => {
-          if (isCancelled) {
-            return;
-          }
-          console.error(`Failed to load home section ${tab.name}:`, error);
-        });
+          .then(flyers => {
+            if (isCancelled) {
+              return;
+            }
+
+            setSectionApiFlyersById(prev => ({
+              ...prev,
+              [tab.id]: flyers.slice(0, HOME_SECTION_LIMIT),
+            }));
+          })
+          .catch(error => {
+            if (isCancelled) {
+              return;
+            }
+            console.error(`Failed to load home section ${tab.name}:`, error);
+          });
+      };
+
+      if (index < 2) {
+        fetchSection();
+        return;
+      }
+
+      const timer = setTimeout(fetchSection, 200 * (index - 1));
+      timers.push(timer);
     });
 
     return () => {
       isCancelled = true;
+      timers.forEach(clearTimeout);
     };
-  }, [flyerStore, orderedTabsKey, sectionLoadCycle]);
+  }, [fetchFlyersForCategoryTab, orderedTabs, orderedTabsKey, sectionLoadCycle]);
 
   const homeSections: HomeSection[] = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    const resolvedSections = orderedTabs
-      .map(tab => {
-        const localSection = localSections.find(section => section.id === tab.id);
-        const resolvedData = sectionApiFlyersById[tab.id] ?? localSection?.data ?? [];
-        const shuffledData = shuffleFlyersForSection(
-          resolvedData,
-          tab.id,
-          sectionLoadCycle,
-        );
+    const resolvedSections = orderedTabs.map(tab => {
+      const localSection = localSections.find(section => section.id === tab.id);
+      const hasNetworkData = Array.isArray(sectionApiFlyersById[tab.id]);
+      const resolvedData = sectionApiFlyersById[tab.id] ?? localSection?.data ?? [];
+      const shuffledData = shuffleFlyersForSection(
+        resolvedData,
+        tab.id,
+        sectionLoadCycle,
+      );
 
-        return {
-          id: tab.id,
-          title: tab.name,
-          data: shuffledData,
-        };
-      })
-      .filter(section => section.title && section.data.length > 0);
+      return {
+        id: tab.id,
+        title: tab.name,
+        data: shuffledData,
+        isLoaded: hasNetworkData || shuffledData.length > 0,
+      };
+    });
 
     return resolvedSections
       .map(section => {
@@ -273,44 +312,74 @@ const HomeScreen: React.FC = observer(() => {
           data: filteredData,
         };
       })
-      .filter(section => section.data.length > 0);
+      .filter(section => (query ? section.data.length > 0 : true))
+      .filter(section => section.title);
   }, [localSections, orderedTabs, searchQuery, sectionApiFlyersById, sectionLoadCycle]);
+
+  useEffect(() => {
+    banners.slice(0, 2).forEach(banner => {
+      if (banner?.image_url) {
+        void Image.prefetch(banner.image_url);
+      }
+    });
+  }, [banners]);
+
+  useEffect(() => {
+    homeSections.slice(0, 3).forEach(section => {
+      section.data.slice(0, 4).forEach(flyer => {
+        const url = flyer.image_url ?? flyer.imageUrl ?? flyer.image;
+        if (url) {
+          void Image.prefetch(url);
+        }
+      });
+    });
+  }, [homeSections]);
 
   const renderCategorySection = ({
     item,
   }: {
     item: HomeSection;
-  }) => (
-    <View style={styles.categorySection}>
-      <SectionHeader title={item.title} />
-      <FlatList
-        horizontal
-        data={item.data}
-        renderItem={({ item: flyer }) => {
-          const flyerId = String(flyer._id ?? flyer.id);
-          return (
-            <View style={styles.horizontalCardWrapper}>
-              <FlyerCard
-                id={flyerId}
-                title={flyer.title}
-                price={formatPrice(flyer.price)}
-                imageSource={getFlyerImage(flyer)}
-                isPremium={flyer.isPremium}
-                isFavorited={flyer.isFavorited}
-                onPress={handleCardPress}
-                onFavoritePress={handleFavoritePress}
-              />
-            </View>
-          );
-        }}
-        keyExtractor={flyer => String(flyer._id ?? flyer.id)}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.horizontalListContent}
-        snapToInterval={CARD_GAP + 160}
-        decelerationRate="fast"
-      />
-    </View>
-  );
+  }) => {
+    if (!item.isLoaded) {
+      return <HomeSectionSkeleton />;
+    }
+
+    if (item.data.length === 0) {
+      return null;
+    }
+
+    return (
+      <View style={styles.categorySection}>
+        <SectionHeader title={item.title} />
+        <FlatList
+          horizontal
+          data={item.data}
+          renderItem={({ item: flyer }) => {
+            const flyerId = String(flyer._id ?? flyer.id);
+            return (
+              <View style={styles.horizontalCardWrapper}>
+                <FlyerCard
+                  id={flyerId}
+                  title={flyer.title}
+                  price={formatPrice(flyer.price)}
+                  imageSource={getFlyerImage(flyer)}
+                  isPremium={flyer.isPremium}
+                  isFavorited={flyer.isFavorited}
+                  onPress={handleCardPress}
+                  onFavoritePress={handleFavoritePress}
+                />
+              </View>
+            );
+          }}
+          keyExtractor={flyer => String(flyer._id ?? flyer.id)}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalListContent}
+          snapToInterval={CARD_GAP + 160}
+          decelerationRate="fast"
+        />
+      </View>
+    );
+  };
 
   const renderHeader = () => (
     <View>
@@ -329,23 +398,23 @@ const HomeScreen: React.FC = observer(() => {
         <BannerSkeleton />
       )}
 
-      {flyerStore.error && !flyerStore.isLoading && (
+      {flyersError ? (
         <View style={styles.center}>
-          <Text style={styles.errorText}>{flyerStore.error}</Text>
+          <Text style={styles.errorText}>{flyersError}</Text>
         </View>
-      )}
+      ) : null}
 
-      {(flyerStore.isLoading || flyerStore.isCategoriesLoading) &&
-        homeSections.length === 0 && (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-          </View>
-        )}
+      {(isCategoriesLoading || (orderedTabs.length > 0 && !hasSectionApiData && homeSections.length === 0)) ? (
+        <View style={styles.skeletonStack}>
+          <HomeSectionSkeleton />
+          <HomeSectionSkeleton />
+        </View>
+      ) : null}
 
-      {!flyerStore.isLoading &&
-        !flyerStore.isCategoriesLoading &&
-        !flyerStore.isBannersLoading &&
-        !flyerStore.error &&
+      {!isCategoriesLoading &&
+        !isBannersLoading &&
+        !flyersError &&
+        !bannerError &&
         homeSections.length === 0 && (
           <View style={styles.center}>
             <Text style={styles.emptyText}>No flyers found.</Text>
@@ -364,15 +433,10 @@ const HomeScreen: React.FC = observer(() => {
         showsVerticalScrollIndicator={false}
         onRefresh={handleRefresh}
         refreshing={isRefreshing}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          flyerStore.isFetchingNextPage ? (
-            <View style={styles.footerLoader}>
-              <ActivityIndicator size="small" color={Colors.primary} />
-            </View>
-          ) : null
-        }
+        initialNumToRender={4}
+        maxToRenderPerBatch={4}
+        windowSize={5}
+        removeClippedSubviews
       />
     </View>
   );
@@ -401,9 +465,8 @@ const styles = StyleSheet.create({
     paddingVertical: 48,
     alignItems: 'center',
   },
-  footerLoader: {
-    paddingVertical: 20,
-    alignItems: 'center',
+  skeletonStack: {
+    gap: 2,
   },
   errorText: {
     color: '#FF6B6B',
