@@ -37,7 +37,7 @@ class FlyerStore {
   private bannersFetchPromise: Promise<Banner[]> | null = null;
   private categoryTabFetchPromises = new Map<string, Promise<Flyer[]>>();
   private homeCacheHydrationPromise: Promise<void> | null = null;
-  private readonly HOME_CACHE_KEY = '@home_cache_v1';
+  private readonly HOME_CACHE_KEY = '@home_cache_v2';
 
   categories: any[] = [];
   isCategoriesLoading: boolean = false;
@@ -100,9 +100,6 @@ class FlyerStore {
           if (Array.isArray(parsed?.categories) && this.categories.length === 0) {
             this.categories = parsed.categories;
           }
-          if (Array.isArray(parsed?.allFlyers) && this.allFlyers.length === 0) {
-            this.allFlyers = parsed.allFlyers;
-          }
         });
       } catch (error) {
         console.warn('[FlyerStore] Failed to hydrate home cache', error);
@@ -116,12 +113,12 @@ class FlyerStore {
 
   private persistHomeCache = async () => {
     try {
+      // Only persist banners + categories — allFlyers can grow very large and slow down AsyncStorage reads
       await AsyncStorage.setItem(
         this.HOME_CACHE_KEY,
         JSON.stringify({
           banners: this.banners,
           categories: this.categories,
-          allFlyers: this.allFlyers,
           cachedAt: Date.now(),
         }),
       );
@@ -263,7 +260,6 @@ class FlyerStore {
 
   fetchBanners = async () => {
     if (this.bannersFetchPromise) return this.bannersFetchPromise;
-    if (this.banners.length > 0) return this.banners;
 
     runInAction(() => {
       this.isBannersLoading = true;
@@ -274,21 +270,33 @@ class FlyerStore {
       try {
         const { data } = await flyerService.getBanners();
         if (data.success) {
-          runInAction(() => {
-            this.banners = Array.isArray(data.data)
-              ? data.data.map(banner => ({
-                  id: String(banner.id),
-                  title: banner.title,
-                  description: banner.description ?? undefined,
-                  button_text: banner.button_text ?? undefined,
-                  image_url: this.normalizeBannerImageUrl(banner.image_url),
-                  link_type: banner.link_type,
-                  link_value: banner.link_value,
-                  display_order: banner.display_order,
-                }))
-              : [];
-          });
-          void this.persistHomeCache();
+          const fresh = Array.isArray(data.data)
+            ? data.data.map(banner => ({
+                id: String(banner.id),
+                title: banner.title,
+                description: banner.description ?? undefined,
+                button_text: banner.button_text ?? undefined,
+                image_url: this.normalizeBannerImageUrl(banner.image_url),
+                link_type: banner.link_type,
+                link_value: banner.link_value,
+                display_order: banner.display_order,
+              }))
+            : [];
+
+          // Only replace the array when something actually changed to avoid
+          // unnecessary re-renders that would flash the loading overlay in HeroBanner.
+          const changed =
+            fresh.length !== this.banners.length ||
+            fresh.some(
+              (b, i) =>
+                b.id !== this.banners[i]?.id ||
+                b.image_url !== this.banners[i]?.image_url,
+            );
+
+          if (changed) {
+            runInAction(() => { this.banners = fresh; });
+            void this.persistHomeCache();
+          }
           return this.banners;
         }
         throw new Error('Failed to fetch banners');

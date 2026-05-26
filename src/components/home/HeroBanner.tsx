@@ -32,7 +32,8 @@ export interface BannerSlide {
 
 export interface HeroBannerProps {
   slides: BannerSlide[];
-  autoPlayInterval?: number; // ms, default 4000
+  autoPlayInterval?: number;
+  onFirstImageLoad?: () => void;
 }
 
 // ─── Single Slide ─────────────────────────────────────────────────────────────
@@ -73,12 +74,15 @@ const SlideItem: React.FC<BannerSlide> = ({
 const HeroBanner: React.FC<HeroBannerProps> = ({
   slides,
   autoPlayInterval = 4000,
+  onFirstImageLoad,
 }) => {
   const flatListRef = useRef<FlatList<BannerSlide>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [loadedBannerIds, setLoadedBannerIds] = useState<Record<string, boolean>>({});
-  const [failedBannerIds, setFailedBannerIds] = useState<Record<string, boolean>>({});
+  // Track by URI so re-renders with the same image never show the black overlay again
+  const [loadedUris, setLoadedUris] = useState<Set<string>>(new Set());
+  const [failedUris, setFailedUris] = useState<Set<string>>(new Set());
+  const firstImageLoadFired = useRef(false);
 
   const startAutoPlay = useCallback(() => {
     if (slides.length <= 1) return;
@@ -136,8 +140,14 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
         })}
         renderItem={({ item }) => {
           const itemId = String(item.id);
-          const hasLoaded = !!loadedBannerIds[itemId];
-          const hasFailed = !!failedBannerIds[itemId];
+          const imageUri =
+            item.imageSource &&
+            typeof item.imageSource === 'object' &&
+            'uri' in item.imageSource
+              ? (item.imageSource as { uri: string }).uri
+              : null;
+          const hasLoaded = imageUri ? loadedUris.has(imageUri) : false;
+          const hasFailed = imageUri ? failedUris.has(imageUri) : false;
 
           return (
             <View style={styles.slide}>
@@ -146,7 +156,11 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
                 style={styles.image}
                 resizeMode="cover"
                 onLoad={() => {
-                  setLoadedBannerIds(prev => ({ ...prev, [itemId]: true }));
+                  if (imageUri) setLoadedUris(prev => new Set([...prev, imageUri]));
+                  if (!firstImageLoadFired.current) {
+                    firstImageLoadFired.current = true;
+                    onFirstImageLoad?.();
+                  }
                 }}
                 onError={event => {
                   console.error('[HeroBanner] failed to load banner image', {
@@ -154,7 +168,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
                     source: item.imageSource,
                     error: event.nativeEvent?.error,
                   });
-                  setFailedBannerIds(prev => ({ ...prev, [itemId]: true }));
+                  if (imageUri) setFailedUris(prev => new Set([...prev, imageUri]));
                 }}
               >
                 {!hasLoaded && !hasFailed ? <View style={styles.loadingOverlay} /> : null}

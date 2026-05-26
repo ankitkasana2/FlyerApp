@@ -22,7 +22,6 @@ import HomeSectionSkeleton from '../../components/home/HomeSectionSkeleton';
 import SectionHeader from '../../components/home/SectionHeader';
 import FlyerCard, {
   CARD_WIDTH,
-  CARD_HEIGHT,
   CARD_GAP,
   HORIZONTAL_PADDING,
 } from '../../components/home/FlyerCard';
@@ -119,15 +118,16 @@ const HomeScreen: React.FC = observer(() => {
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [bannerImageReady, setBannerImageReady] = useState(false);
   const [sectionApiFlyersById, setSectionApiFlyersById] = useState<Record<string, Flyer[]>>({});
   const [sectionLoadCycle, setSectionLoadCycle] = useState(0);
 
   const [sectionPagination, setSectionPagination] = useState<Record<string, SectionPagination>>({});
 
   useEffect(() => {
-    void hydrateHomeCache().finally(() => {
-      void fetchBanners().catch(() => {});
-    });
+    // Banners run immediately — do NOT wait for cache hydration
+    void fetchBanners().catch(() => {});
+    void hydrateHomeCache();
 
     const task = InteractionManager.runAfterInteractions(() => {
       void fetchCategories().catch(() => {});
@@ -449,10 +449,21 @@ const HomeScreen: React.FC = observer(() => {
         />
       </View>
 
-      {mappedBanners.length > 0 ? (
-        <HeroBanner slides={mappedBanners} autoPlayInterval={5000} />
-      ) : (
-        <BannerSkeleton />
+      {/* HeroBanner renders at full height whenever data is ready so the
+          FlatList inside actually mounts and images start loading.
+          The skeleton sits on top as an absolute overlay until the first
+          image fires onLoad, then it is removed. */}
+      {mappedBanners.length > 0 && (
+        <HeroBanner
+          slides={mappedBanners}
+          autoPlayInterval={5000}
+          onFirstImageLoad={() => setBannerImageReady(true)}
+        />
+      )}
+      {!bannerImageReady && (isBannersLoading || mappedBanners.length > 0) && (
+        <View style={mappedBanners.length > 0 ? styles.bannerSkeletonOverlay : undefined}>
+          <BannerSkeleton />
+        </View>
       )}
 
       {flyersError ? (
@@ -486,7 +497,7 @@ const HomeScreen: React.FC = observer(() => {
         data={homeSections}
         renderItem={renderCategorySection}
         keyExtractor={item => item.id}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={renderHeader()}
         showsVerticalScrollIndicator={false}
         onRefresh={handleRefresh}
         refreshing={isRefreshing}
@@ -503,6 +514,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  bannerSkeletonOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   searchWrapper: {
     paddingHorizontal: HORIZONTAL_PADDING,
