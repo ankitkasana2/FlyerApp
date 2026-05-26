@@ -21,6 +21,8 @@ import BannerSkeleton from '../../components/home/BannerSkeleton';
 import HomeSectionSkeleton from '../../components/home/HomeSectionSkeleton';
 import SectionHeader from '../../components/home/SectionHeader';
 import FlyerCard, {
+  CARD_WIDTH,
+  CARD_HEIGHT,
   CARD_GAP,
   HORIZONTAL_PADDING,
 } from '../../components/home/FlyerCard';
@@ -35,6 +37,7 @@ type HomeSection = {
 };
 
 type LocalHomeSection = Omit<HomeSection, 'isLoaded'>;
+type SectionPagination = { page: number; hasMore: boolean; isLoading: boolean };
 
 const HOME_SECTION_LIMIT = 15;
 const HOME_SECTION_SORT_BY = 'created_at';
@@ -119,6 +122,8 @@ const HomeScreen: React.FC = observer(() => {
   const [sectionApiFlyersById, setSectionApiFlyersById] = useState<Record<string, Flyer[]>>({});
   const [sectionLoadCycle, setSectionLoadCycle] = useState(0);
 
+  const [sectionPagination, setSectionPagination] = useState<Record<string, SectionPagination>>({});
+
   useEffect(() => {
     void hydrateHomeCache().finally(() => {
       void fetchBanners().catch(() => {});
@@ -140,6 +145,7 @@ const HomeScreen: React.FC = observer(() => {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     setSectionApiFlyersById({});
+    setSectionPagination({});
     setSectionLoadCycle(prev => prev + 1);
     try {
       await Promise.all([
@@ -150,6 +156,45 @@ const HomeScreen: React.FC = observer(() => {
       setIsRefreshing(false);
     }
   }, [fetchBanners, fetchCategories]);
+
+  const handleSectionLoadMore = useCallback(
+    async (sectionId: string, categoryName: string) => {
+      const current = sectionPagination[sectionId];
+      if (current?.isLoading || current?.hasMore === false) return;
+
+      const nextPage = (current?.page ?? 1) + 1;
+
+      setSectionPagination(prev => ({
+        ...prev,
+        [sectionId]: { page: current?.page ?? 1, hasMore: true, isLoading: true },
+      }));
+
+      try {
+        const { flyers, hasMore } = await flyerStore.fetchNextPageForSection({
+          categoryName,
+          isRecentlyAdded: sectionId === 'recently_added',
+          sortBy: HOME_SECTION_SORT_BY,
+          sortDir: HOME_SECTION_SORT_DIR,
+          page: nextPage,
+        });
+
+        setSectionApiFlyersById(prev => ({
+          ...prev,
+          [sectionId]: [...(prev[sectionId] ?? []), ...flyers],
+        }));
+        setSectionPagination(prev => ({
+          ...prev,
+          [sectionId]: { page: nextPage, hasMore, isLoading: false },
+        }));
+      } catch {
+        setSectionPagination(prev => ({
+          ...prev,
+          [sectionId]: { ...(prev[sectionId] ?? { page: 1, hasMore: true }), isLoading: false },
+        }));
+      }
+    },
+    [flyerStore, sectionPagination],
+  );
 
   const mappedBanners: BannerSlide[] = useMemo(
     () =>
@@ -183,20 +228,21 @@ const HomeScreen: React.FC = observer(() => {
   const handleFavoritePress = useCallback(
     async (id: string) => {
       if (!userId) {
-        Alert.alert(
-          'Sign In Required',
-          'Please sign in to save flyers to your favorites.',
-        );
+        Alert.alert('Sign In Required', 'Please sign in to save flyers to your favorites.');
         return;
       }
-
       try {
-        await addToFavorites(userId, Number(id));
+        const flyer = flyerStore.allFlyers.find(f => String(f._id ?? f.id) === id);
+        if (flyer?.isFavorited) {
+          await flyerStore.removeFromFavorites(userId, Number(id));
+        } else {
+          await addToFavorites(userId, Number(id));
+        }
       } catch (err: any) {
-        console.error('Failed to add to favorites:', err);
+        console.error('Favorite toggle error:', err);
       }
     },
-    [addToFavorites, userId],
+    [addToFavorites, flyerStore, userId],
   );
 
   const orderedTabs = orderedCategoryTabs;
@@ -325,8 +371,8 @@ const HomeScreen: React.FC = observer(() => {
   }, [banners]);
 
   useEffect(() => {
-    homeSections.slice(0, 3).forEach(section => {
-      section.data.slice(0, 4).forEach(flyer => {
+    homeSections.slice(0, 5).forEach(section => {
+      section.data.slice(0, 6).forEach(flyer => {
         const url = flyer.image_url ?? flyer.imageUrl ?? flyer.image;
         if (url) {
           void Image.prefetch(url);
@@ -374,8 +420,19 @@ const HomeScreen: React.FC = observer(() => {
           keyExtractor={flyer => String(flyer._id ?? flyer.id)}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.horizontalListContent}
-          snapToInterval={CARD_GAP + 160}
+          snapToInterval={CARD_WIDTH + CARD_GAP}
           decelerationRate="fast"
+          initialNumToRender={3}
+          maxToRenderPerBatch={4}
+          windowSize={5}
+          removeClippedSubviews
+          getItemLayout={(_, index) => ({
+            length: CARD_WIDTH + CARD_GAP,
+            offset: HORIZONTAL_PADDING + index * (CARD_WIDTH + CARD_GAP),
+            index,
+          })}
+          onEndReachedThreshold={0.4}
+          onEndReached={() => handleSectionLoadMore(item.id, item.title)}
         />
       </View>
     );

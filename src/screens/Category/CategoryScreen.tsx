@@ -338,6 +338,10 @@ const CategoryScreen: React.FC = observer(() => {
         ItemSeparatorComponent={() => <View style={styles.rowGap} />}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
+        initialNumToRender={5}
+        maxToRenderPerBatch={6}
+        windowSize={7}
+        removeClippedSubviews
       />
     </View>
   );

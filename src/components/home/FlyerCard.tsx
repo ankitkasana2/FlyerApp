@@ -1,11 +1,10 @@
 // components/home/FlyerCard.tsx
 
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  ImageBackground,
   StyleSheet,
   Animated,
   ImageSourcePropType,
@@ -20,7 +19,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_GAP = 12;
 const HORIZONTAL_PADDING = 16;
 const CARD_WIDTH = (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
-const CARD_HEIGHT = CARD_WIDTH * 1.38; // portrait ratio
+const CARD_HEIGHT = Math.round(CARD_WIDTH * 1.38);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface FlyerCardProps {
@@ -50,6 +49,28 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [favorited, setFavorited] = useState(isFavorited);
   const heartScale = useRef(new Animated.Value(1)).current;
+  const imageOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    setFavorited(isFavorited);
+  }, [isFavorited]);
+
+  // Reset fade when the image URI changes (FlatList recycles component instances)
+  const imageUri =
+    imageSource && typeof imageSource === 'object' && 'uri' in imageSource
+      ? (imageSource as { uri: string }).uri
+      : null;
+  useEffect(() => {
+    imageOpacity.setValue(0);
+  }, [imageUri, imageOpacity]);
+
+  const handleImageLoad = useCallback(() => {
+    Animated.timing(imageOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [imageOpacity]);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(scaleAnim, {
@@ -87,55 +108,59 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
         onPressOut={handlePressOut}
         style={styles.touchable}
       >
-        <ImageBackground
+        {/* Skeleton shown while image loads */}
+        <View style={[StyleSheet.absoluteFill, styles.skeleton]} />
+
+        {/* Image fades in once loaded */}
+        <Animated.Image
           source={imageSource}
-          style={styles.image}
-          imageStyle={styles.imageStyle}
+          style={[StyleSheet.absoluteFill, styles.cardImage, { opacity: imageOpacity }]}
           resizeMode="cover"
-        >
-          {/* Premium Badge */}
-          {isPremium && (
-            <View style={styles.premiumBadge}>
-              <Image
-                source={AppImages.crown}
-                style={styles.crownIconImage}
-                resizeMode="contain"
-              />
-            </View>
-          )}
+          onLoadEnd={handleImageLoad}
+        />
 
-          {/* Favorite Button */}
-          <TouchableOpacity
-            style={styles.favoriteButton}
-            onPress={handleFavorite}
-            activeOpacity={0.8}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <View style={styles.favoriteInner}>
-              <Animated.View style={{ transform: [{ scale: heartScale }] }}>
-                <View style={isFavorited ? styles.filledHeartBg : null}>
-                  <Image
-                    source={AppImages.favourite}
-                    style={[
-                      styles.favoriteIconImage,
-                      {
-                        tintColor: isFavorited
-                          ? Colors.error
-                          : Colors.textPrimary,
-                      },
-                    ]}
-                    resizeMode="contain"
-                  />
-                </View>
-              </Animated.View>
-            </View>
-          </TouchableOpacity>
-
-          {/* Price Badge (Floating) */}
-          <View style={styles.priceBadge}>
-            <Text style={styles.priceText}>{price}</Text>
+        {/* Premium Badge */}
+        {isPremium && (
+          <View style={styles.premiumBadge}>
+            <Image
+              source={AppImages.crown}
+              style={styles.crownIconImage}
+              resizeMode="contain"
+            />
           </View>
-        </ImageBackground>
+        )}
+
+        {/* Favorite Button */}
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={handleFavorite}
+          activeOpacity={0.8}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <View style={styles.favoriteInner}>
+            <Animated.View style={{ transform: [{ scale: heartScale }] }}>
+              <View style={favorited ? styles.filledHeartBg : null}>
+                <Image
+                  source={AppImages.favourite}
+                  style={[
+                    styles.favoriteIconImage,
+                    {
+                      tintColor: favorited
+                        ? Colors.error
+                        : Colors.textPrimary,
+                    },
+                  ]}
+                  resizeMode="contain"
+                />
+              </View>
+            </Animated.View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Price Badge (Floating) */}
+        <View style={styles.priceBadge}>
+          <Text style={styles.priceText}>{price}</Text>
+        </View>
       </TouchableOpacity>
 
       {/* Text Info below card */}
@@ -167,10 +192,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
   },
-  image: {
-    flex: 1,
+  skeleton: {
+    borderRadius: 16,
+    backgroundColor: Colors.surface,
   },
-  imageStyle: {
+  cardImage: {
     borderRadius: 16,
   },
   premiumBadge: {
@@ -245,5 +271,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export { CARD_WIDTH, CARD_GAP, HORIZONTAL_PADDING };
+export { CARD_WIDTH, CARD_HEIGHT, CARD_GAP, HORIZONTAL_PADDING };
 export default React.memo(FlyerCard);

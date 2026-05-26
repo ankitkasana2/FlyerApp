@@ -1,6 +1,6 @@
 // screens/CartScreen.tsx
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
+import Config from 'react-native-config';
+import { useStripe } from '@stripe/stripe-react-native';
 
 // Theme
 import { Colors } from '../../theme/colors';
@@ -26,6 +28,11 @@ import ScreenHeader from '../../components/common/ScreenHeader';
 import CartItemCard, { CartItemData } from './CartItemCard';
 import OrderSummary from './OrderSummary';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  buildCheckoutPayload,
+  createPaymentSheet,
+  STRIPE_RETURN_URL,
+} from '../../services/stripeService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -103,6 +110,12 @@ const mapCartItemToCard = (item: CartItem): CartItemData => {
 const CartScreen: React.FC = observer(() => {
   const navigation = useNavigation<any>();
   const { cartStore, authStore } = useStores();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
+  const stripePublishableKey =
+    Config.STRIPE_PUBLISHABLE_KEY ||
+    Config.PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+    Config.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   // Fetch cart on mount whenever user is authenticated
   useEffect(() => {
@@ -165,10 +178,71 @@ const CartScreen: React.FC = observer(() => {
     navigation.goBack();
   }, [navigation]);
 
-  const handleProceedToCheckout = useCallback(() => {
-    console.log('Proceed to Checkout — total:', formatPrice(totalNum));
-    // navigation.navigate('Checkout', { total: totalNum });
-  }, [totalNum]);
+  const handleProceedToCheckout = useCallback(async () => {
+    if (!cartStore.cartItems.length) {
+      Alert.alert('Cart is empty', 'Add at least one flyer before checkout.');
+      return;
+    }
+
+    if (!stripePublishableKey) {
+      Alert.alert(
+        'Stripe not configured',
+        'Add `STRIPE_PUBLISHABLE_KEY` to your `.env` before testing checkout.',
+      );
+      return;
+    }
+
+    setIsProcessingCheckout(true);
+
+    try {
+      const paymentSheet = await createPaymentSheet(
+        buildCheckoutPayload(cartStore.cartItems, totalNum, authStore.user?.id),
+      );
+
+      const { error } = await initPaymentSheet({
+        merchantDisplayName: 'FlyerApp',
+        paymentIntentClientSecret: paymentSheet.paymentIntent,
+        customerId: paymentSheet.customer,
+        customerEphemeralKeySecret: paymentSheet.ephemeralKey,
+        allowsDelayedPaymentMethods: true,
+        returnURL: STRIPE_RETURN_URL,
+      });
+
+      if (error) {
+        Alert.alert('Checkout unavailable', error.message);
+        return;
+      }
+
+      const paymentResult = await presentPaymentSheet();
+
+      if (paymentResult.error) {
+        Alert.alert('Payment not completed', paymentResult.error.message);
+        return;
+      }
+
+      Alert.alert(
+        'Payment submitted',
+        'Stripe completed the client flow. Confirm the final order state from your webhook before fulfillment.',
+      );
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        'Unable to start Stripe checkout.';
+
+      Alert.alert('Checkout failed', message);
+    } finally {
+      setIsProcessingCheckout(false);
+    }
+  }, [
+    authStore.user?.id,
+    cartStore.cartItems,
+    initPaymentSheet,
+    presentPaymentSheet,
+    stripePublishableKey,
+    totalNum,
+  ]);
 
   // ── Loading State ────────────────────────────────────────────────────────────
   if (cartStore.isLoading) {
@@ -273,6 +347,7 @@ const CartScreen: React.FC = observer(() => {
               subtotal={formatPrice(subtotalNum)}
               serviceFees={formatPrice(serviceFeesNum)}
               total={formatPrice(totalNum)}
+              isProcessingCheckout={isProcessingCheckout}
               onProceedToCheckout={handleProceedToCheckout}
             />
           </>

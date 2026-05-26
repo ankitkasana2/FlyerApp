@@ -1,8 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Linking, Text, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  StripeProvider,
+  useStripe,
+} from '@stripe/stripe-react-native';
+import Config from 'react-native-config';
 import RootNavigator from './src/navigation/RootNavigator';
 import { StoreProvider } from './src/stores/StoreContext';
 import { rootStore } from './src/stores/rootStore';
@@ -35,26 +40,40 @@ TextInputWithDefaults.defaultProps.style = [
   TextInputWithDefaults.defaultProps.style,
 ].filter(Boolean);
 
-const App = () => {
-  useEffect(() => {
-    // Handle deep links when app is running or in background
-    const subscription = Linking.addEventListener('url', ({ url }) => {
+const AppShell = () => {
+  const { handleURLCallback } = useStripe();
+
+  const handleDeepLink = useCallback(
+    async (url: string | null) => {
+      if (!url) {
+        return;
+      }
+
+      const stripeHandled = await handleURLCallback(url);
+      if (stripeHandled) {
+        return;
+      }
+
       if (url.startsWith('flyerapp://auth')) {
         rootStore.authStore.handleOAuthCallback(url);
       }
+    },
+    [handleURLCallback],
+  );
+
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
     });
 
-    // Handle deep link when app is opened from a killed state
     Linking.getInitialURL().then((url) => {
-      if (url && url.startsWith('flyerapp://auth')) {
-        rootStore.authStore.handleOAuthCallback(url);
-      }
+      handleDeepLink(url);
     });
 
     return () => {
       subscription.remove();
     };
-  }, []);
+  }, [handleDeepLink]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -69,5 +88,20 @@ const App = () => {
     </GestureHandlerRootView>
   );
 };
+
+const App = () => (
+  <StripeProvider
+    publishableKey={
+      Config.STRIPE_PUBLISHABLE_KEY ||
+      Config.PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+      Config.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+      ''
+    }
+    merchantIdentifier={Config.STRIPE_MERCHANT_IDENTIFIER}
+    urlScheme="flyerapp"
+  >
+    <AppShell />
+  </StripeProvider>
+);
 
 export default App;

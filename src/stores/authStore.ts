@@ -1,9 +1,12 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import cognitoService from '../services/cognitoService';
-import { getApiUrl, COGNITO_DOMAIN, COGNITO_CLIENT_ID } from '../services/api';
+import { COGNITO_DOMAIN, COGNITO_CLIENT_ID } from '../services/api';
+import { setAccessToken } from '../services/tokenStore';
+import * as authService from '../services/authService';
 import { Linking } from 'react-native';
 import axios from 'axios';
+import type { UpdateProfilePayload, ChangePasswordPayload } from '../types/api';
 
 const STORAGE_KEY = '@auth_user';
 
@@ -32,36 +35,33 @@ export class AuthStore {
 
   async initialize() {
     try {
-      // amazon-cognito-identity-js stores tokens in its own storage keyed by pool
-      // getCurrentSession() will restore from that storage automatically
       const session = await cognitoService.getCurrentSession();
-
       if (session && session.isValid()) {
         const attrs = await cognitoService.getCurrentUserAttributes();
         const storedUserRaw = await AsyncStorage.getItem(STORAGE_KEY);
         const user = storedUserRaw ? JSON.parse(storedUserRaw) : this.mapAttributes(attrs);
-
+        const token = session.getAccessToken().getJwtToken();
+        setAccessToken(token);
         runInAction(() => {
-          this.accessToken = session.getAccessToken().getJwtToken();
+          this.accessToken = token;
           this.idToken = session.getIdToken().getJwtToken();
           this.refreshToken = session.getRefreshToken().getToken();
           this.user = user;
           this.isAuthenticated = true;
           this.isLoading = false;
         });
-        return; // Early return since we successfully restored standard session
+        return;
       }
     } catch (e) {
       console.warn('[AuthStore] Standard session restore threw an error:', e);
     }
 
-    // Fallback: check for manually stored OAuth tokens if no normal session was restored
     try {
       const storedTokensStr = await AsyncStorage.getItem('@auth_tokens');
       const storedUserRaw = await AsyncStorage.getItem(STORAGE_KEY);
-      
       if (storedTokensStr && storedUserRaw) {
         const tokens = JSON.parse(storedTokensStr);
+        setAccessToken(tokens.accessToken);
         runInAction(() => {
           this.accessToken = tokens.accessToken;
           this.idToken = tokens.idToken;
@@ -75,16 +75,13 @@ export class AuthStore {
     } catch (e) {
       console.warn('[AuthStore] Failed to restore manual tokens', e);
     } finally {
-      runInAction(() => {
-        this.isLoading = false;
-      });
+      runInAction(() => { this.isLoading = false; });
     }
   }
 
   async login(username: string, password: string) {
     try {
       const result = await cognitoService.signIn(username, password);
-
       const attrs = result.userAttributes;
       const user = {
         id: attrs.sub || '',
@@ -95,6 +92,7 @@ export class AuthStore {
       };
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      setAccessToken(result.accessToken);
 
       runInAction(() => {
         this.accessToken = result.accessToken;
@@ -112,14 +110,12 @@ export class AuthStore {
   }
 
   async logout() {
-    // 1. Sign out from Cognito (clears tokens from library storage)
     try {
       await cognitoService.signOut();
     } catch (e) {
       console.warn('[AuthStore] Cognito sign out error:', e);
     }
 
-    // 2. Clear our persisted user object and tokens
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
       await AsyncStorage.removeItem('@auth_tokens');
@@ -127,15 +123,11 @@ export class AuthStore {
       console.error('[AuthStore] Failed to clear storage during logout', e);
     }
 
-    // 3. Reset related stores (same pattern as website)
-    if (this.flyerStore) {
-      this.flyerStore.reset();
-    }
-    if (this.cartStore) {
-      this.cartStore.reset();
-    }
+    setAccessToken(null);
 
-    // 4. Clear auth state (triggers navigation via RootNavigator)
+    if (this.flyerStore) this.flyerStore.reset();
+    if (this.cartStore) this.cartStore.reset();
+
     runInAction(() => {
       this.isAuthenticated = false;
       this.user = null;
@@ -145,17 +137,69 @@ export class AuthStore {
     });
   }
 
+  // ─── Profile Management ───────────────────────────────────────────────────
+
+  updateProfile = async (payload: UpdateProfilePayload) => {
+    runInAction(() => { this.loading = true; this.error = null; });
+    try {
+      const { data } = await authService.updateProfile(payload);
+      if (data.success) {
+        const updatedUser = {
+          ...this.user,
+          name: data.user.fullname,
+          email: data.user.email,
+          phone: data.user.phone || data.user.mobile || this.user?.phone || '',
+        };
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
+        runInAction(() => {
+          this.user = updatedUser;
+          // Update token if backend rotates it on profile change
+          if (data.token) {
+            this.accessToken = data.token;
+            setAccessToken(data.token);
+          }
+          this.loading = false;
+        });
+        return { success: true };
+      }
+      throw new Error('Failed to update profile');
+    } catch (err: any) {
+      runInAction(() => {
+        this.error = err.message;
+        this.loading = false;
+      });
+      throw err;
+    }
+  };
+
+  changePassword = async (payload: ChangePasswordPayload) => {
+    runInAction(() => { this.loading = true; this.error = null; });
+    try {
+      const { data } = await authService.changePassword(payload);
+      runInAction(() => { this.loading = false; });
+      return { success: data.success };
+    } catch (err: any) {
+      runInAction(() => {
+        this.error = err.message;
+        this.loading = false;
+      });
+      throw err;
+    }
+  };
+
+  // ─── Registration & Email Verification ───────────────────────────────────
+
   private async registerUserInDatabase(params: {
     fullname: string;
     email: string;
     user_id: string;
   }) {
     try {
-      const res = await axios.post(getApiUrl('/users/register'), params);
-      return { success: true, data: res.data };
+      const { data } = await authService.registerUser(params);
+      return { success: true, data };
     } catch (err: any) {
-      console.warn('[AuthStore] DB register failed:', err?.response?.data ?? err.message);
-      return { success: false, error: err?.response?.data ?? err.message };
+      console.warn('[AuthStore] DB register failed:', err.message);
+      return { success: false, error: err.message };
     }
   }
 
@@ -163,25 +207,15 @@ export class AuthStore {
     if (!fullname?.trim() || !email?.trim() || !password) {
       throw new Error('All fields are required');
     }
-    if (fullname.trim().length < 2) {
-      throw new Error('Name must be at least 2 characters long');
-    }
+    if (fullname.trim().length < 2) throw new Error('Name must be at least 2 characters long');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new Error('Please enter a valid email address');
-    }
-    if (password.length < 8) {
-      throw new Error('Password must be at least 8 characters long');
-    }
+    if (!emailRegex.test(email)) throw new Error('Please enter a valid email address');
+    if (password.length < 8) throw new Error('Password must be at least 8 characters long');
 
     const { userId, isSignUpComplete, userConfirmed } =
       await cognitoService.signUp(email, password, fullname);
 
-    await this.registerUserInDatabase({
-      fullname,
-      email,
-      user_id: userId,
-    });
+    await this.registerUserInDatabase({ fullname, email, user_id: userId });
 
     if (isSignUpComplete || userConfirmed) {
       try {
@@ -195,6 +229,7 @@ export class AuthStore {
           provider: 'email',
         };
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        setAccessToken(result.accessToken);
         runInAction(() => {
           this.accessToken = result.accessToken;
           this.idToken = result.idToken;
@@ -216,9 +251,7 @@ export class AuthStore {
   }
 
   async resendVerificationCode() {
-    if (!this.pendingEmail) {
-      throw new Error('Session expired. Please sign up again.');
-    }
+    if (!this.pendingEmail) throw new Error('Session expired. Please sign up again.');
     await cognitoService.resendSignUpCode(this.pendingEmail);
   }
 
@@ -226,16 +259,10 @@ export class AuthStore {
     if (!this.pendingEmail || !this.pendingPassword) {
       throw new Error('Session expired. Please sign up again.');
     }
-
     await cognitoService.confirmSignUp(this.pendingEmail, code);
-
-    const result = await cognitoService.signIn(
-      this.pendingEmail,
-      this.pendingPassword,
-    );
+    const result = await cognitoService.signIn(this.pendingEmail, this.pendingPassword);
     const attrs = result.userAttributes;
     const userId = attrs.sub || this.pendingEmail;
-
     const user = {
       id: userId,
       name: attrs.name || '',
@@ -243,9 +270,8 @@ export class AuthStore {
       phone: attrs.phone_number || '',
       provider: 'email',
     };
-
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-
+    setAccessToken(result.accessToken);
     runInAction(() => {
       this.accessToken = result.accessToken;
       this.idToken = result.idToken;
@@ -255,223 +281,116 @@ export class AuthStore {
       this.pendingEmail = null;
       this.pendingPassword = null;
     });
-
     return { success: true };
   }
 
+  // ─── Password Reset ───────────────────────────────────────────────────────
+
   sendOTP = async (email: string) => {
-    runInAction(() => {
-      this.loading = true;
-      this.error = null;
-    });
-
+    runInAction(() => { this.loading = true; this.error = null; });
     try {
-      // Basic validation
-      if (!email) {
-        throw new Error('Email is required');
-      }
-
-      // Email format validation
+      if (!email) throw new Error('Email is required');
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        throw new Error('Please enter a valid email address');
-      }
+      if (!emailRegex.test(email)) throw new Error('Please enter a valid email address');
 
       await cognitoService.sendPasswordResetCode(email);
-
-      runInAction(() => {
-        this.loading = false;
-        this.resetEmail = email;
-      });
-
-      return {
-        success: true,
-        message: 'Password reset code sent to your email.',
-      };
+      runInAction(() => { this.loading = false; this.resetEmail = email; });
+      return { success: true, message: 'Password reset code sent to your email.' };
     } catch (error: any) {
-      let errorMessage = 'Failed to send password reset code';
-      const errorString = error?.message || error?.toString() || '';
-
-      // User not found scenarios - Comprehensive coverage for password reset
-      if (
-        errorString.includes('UserNotFoundException') ||
-        errorString.includes('User does not exist') ||
-        errorString.includes('user not found') ||
-        errorString.includes('USER_NOT_FOUND') ||
-        errorString.includes('User not found') ||
-        errorString.includes('Username does not exist') ||
-        errorString.includes('username does not exist') ||
-        errorString.includes('USERNAME_DOES_NOT_EXIST') ||
-        errorString.includes('Invalid username') ||
-        errorString.includes('invalid username') ||
-        errorString.includes('INVALID_USERNAME') ||
-        errorString.includes('No such user') ||
-        errorString.includes('no such user') ||
-        errorString.includes('NO_SUCH_USER')
-      ) {
-        errorMessage =
-          'No account found with this email address. Please check your email or create a new account.';
-      } else if (errorString.includes('InvalidParameterException')) {
-        if (errorString.includes('email')) {
-          errorMessage =
-            'Invalid email format. Please enter a valid email address.';
-        } else {
-          errorMessage = 'Invalid input. Please check your email address.';
-        }
-      } else if (
-        errorString.includes('LimitExceededException') ||
-        errorString.includes('TooManyRequestsException')
-      ) {
-        errorMessage =
-          'Too many password reset attempts. Please wait a moment and try again.';
-      } else if (
-        errorString.includes('Network error') ||
-        errorString.includes('fetch')
-      ) {
-        errorMessage =
-          'Network connection error. Please check your internet connection and try again.';
-      } else if (errorString.includes('timeout')) {
-        errorMessage =
-          'Request timed out. Please check your connection and try again.';
-      } else if (errorString.includes('Email is required')) {
-        errorMessage = 'Please enter your email address.';
-      } else if (errorString.includes('Please enter a valid email address')) {
-        errorMessage = 'Please enter a valid email address.';
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-
-      runInAction(() => {
-        this.loading = false;
-        this.error = errorMessage;
-      });
+      const errorMessage = this.mapCognitoError(error, 'password_reset');
+      runInAction(() => { this.loading = false; this.error = errorMessage; });
       throw new Error(errorMessage);
     }
   };
 
   verifyOTP = async (email: string, code: string, newPassword: string) => {
-    runInAction(() => {
-      this.loading = true;
-      this.error = null;
-    });
-
+    runInAction(() => { this.loading = true; this.error = null; });
     try {
-      // Basic validation
-      if (!email || !code || !newPassword) {
-        throw new Error('All fields are required');
-      }
-
-      // Email format validation
+      if (!email || !code || !newPassword) throw new Error('All fields are required');
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        throw new Error('Please enter a valid email address');
-      }
-
-      // Code validation
-      if (code.trim().length < 1) {
-        throw new Error('Verification code is required');
-      }
-
-      // Password validation (basic checks, Cognito will enforce policy)
-      if (newPassword.length < 8) {
-        throw new Error('New password must be at least 8 characters long');
-      }
+      if (!emailRegex.test(email)) throw new Error('Please enter a valid email address');
+      if (code.trim().length < 1) throw new Error('Verification code is required');
+      if (newPassword.length < 8) throw new Error('New password must be at least 8 characters long');
 
       await cognitoService.confirmPasswordReset(email, code, newPassword);
-
-      runInAction(() => {
-        this.loading = false;
-        this.resetEmail = null;
-      });
-
+      runInAction(() => { this.loading = false; this.resetEmail = null; });
       return {
         success: true,
-        message:
-          'Password reset successful. You can now sign in with your new password.',
+        message: 'Password reset successful. You can now sign in with your new password.',
       };
     } catch (error: any) {
-      let errorMessage = 'Failed to reset password';
-      const errorString = error?.message || error?.toString() || '';
-
-      // User not found scenarios - Comprehensive coverage for OTP verification
-      if (
-        errorString.includes('UserNotFoundException') ||
-        errorString.includes('User does not exist') ||
-        errorString.includes('user not found') ||
-        errorString.includes('USER_NOT_FOUND') ||
-        errorString.includes('User not found') ||
-        errorString.includes('Username does not exist') ||
-        errorString.includes('username does not exist') ||
-        errorString.includes('USERNAME_DOES_NOT_EXIST') ||
-        errorString.includes('Invalid username') ||
-        errorString.includes('invalid username') ||
-        errorString.includes('INVALID_USERNAME') ||
-        errorString.includes('No such user') ||
-        errorString.includes('no such user') ||
-        errorString.includes('NO_SUCH_USER')
-      ) {
-        errorMessage =
-          'No account found with this email address. Please check your email or create a new account.';
-      } else if (errorString.includes('InvalidParameterException')) {
-        if (errorString.includes('code')) {
-          errorMessage =
-            'Invalid verification code. Please check the code and try again.';
-        } else if (errorString.includes('password')) {
-          errorMessage =
-            'New password does not meet security requirements. Please choose a stronger password.';
-        } else {
-          errorMessage = 'Invalid input. Please check all fields and try again.';
-        }
-      } else if (errorString.includes('CodeMismatchException')) {
-        errorMessage =
-          'Invalid verification code. Please check the code and try again.';
-      } else if (errorString.includes('ExpiredCodeException')) {
-        errorMessage =
-          'The verification code has expired. Please request a new code.';
-      } else if (errorString.includes('InvalidPasswordException')) {
-        if (errorString.includes('Password did not conform with policy')) {
-          errorMessage =
-            'Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.';
-        } else {
-          errorMessage =
-            'New password does not meet security requirements. Please choose a stronger password.';
-        }
-      } else if (
-        errorString.includes('LimitExceededException') ||
-        errorString.includes('TooManyRequestsException')
-      ) {
-        errorMessage =
-          'Too many verification attempts. Please wait a moment and try again.';
-      } else if (
-        errorString.includes('Network error') ||
-        errorString.includes('fetch')
-      ) {
-        errorMessage =
-          'Network connection error. Please check your internet connection and try again.';
-      } else if (errorString.includes('timeout')) {
-        errorMessage =
-          'Request timed out. Please check your connection and try again.';
-      } else if (errorString.includes('All fields are required')) {
-        errorMessage = 'Please fill in all required fields.';
-      } else if (errorString.includes('Please enter a valid email address')) {
-        errorMessage = 'Please enter a valid email address.';
-      } else if (errorString.includes('Verification code is required')) {
-        errorMessage = 'Please enter the verification code.';
-      } else if (
-        errorString.includes('New password must be at least 8 characters long')
-      ) {
-        errorMessage = 'New password must be at least 8 characters long.';
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-
-      runInAction(() => {
-        this.loading = false;
-        this.error = errorMessage;
-      });
+      const errorMessage = this.mapCognitoError(error, 'otp_verify');
+      runInAction(() => { this.loading = false; this.error = errorMessage; });
       throw new Error(errorMessage);
     }
   };
+
+  // ─── Social / OAuth ───────────────────────────────────────────────────────
+
+  signInWithProvider = async (provider: 'google' | 'apple') => {
+    try {
+      const identityProvider = provider === 'google' ? 'Google' : 'SignInWithApple';
+      const redirectUri = encodeURIComponent('flyerapp://auth');
+      const authUrl = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=${identityProvider}&response_type=code&client_id=${COGNITO_CLIENT_ID}&redirect_uri=${redirectUri}&scope=email+openid+profile`;
+      await Linking.openURL(authUrl);
+    } catch (error: any) {
+      const errorMessage = this.mapCognitoError(error, 'social');
+      runInAction(() => { this.error = errorMessage; });
+      throw new Error(errorMessage);
+    }
+  };
+
+  handleOAuthCallback = async (url: string) => {
+    if (!url?.includes('?code=')) return;
+    const code = url.split('?code=')[1].split('&')[0];
+    runInAction(() => { this.loading = true; this.error = null; });
+    try {
+      const redirectUri = encodeURIComponent('flyerapp://auth');
+      const body = `grant_type=authorization_code&client_id=${COGNITO_CLIENT_ID}&code=${code}&redirect_uri=${redirectUri}`;
+      const tokenResponse = await axios.post(`${COGNITO_DOMAIN}/oauth2/token`, body, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
+
+      const { access_token, id_token, refresh_token } = tokenResponse.data;
+      const userInfoResponse = await axios.get(`${COGNITO_DOMAIN}/oauth2/userInfo`, {
+        headers: { Authorization: `Bearer ${access_token}` },
+      });
+
+      const payload = userInfoResponse.data;
+      const user = {
+        id: payload.sub,
+        name: payload.name || payload.given_name || payload.email || 'User',
+        email: payload.email,
+        phone: payload.phone_number || '',
+        provider: 'social',
+      };
+
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      await AsyncStorage.setItem('@auth_tokens', JSON.stringify({
+        accessToken: access_token,
+        idToken: id_token,
+        refreshToken: refresh_token,
+      }));
+      setAccessToken(access_token);
+
+      runInAction(() => {
+        this.accessToken = access_token;
+        this.idToken = id_token;
+        this.refreshToken = refresh_token;
+        this.user = user;
+        this.isAuthenticated = true;
+        this.loading = false;
+      });
+    } catch (error: any) {
+      console.error('[AuthStore] OAuth Callback Error:', error?.response?.data || error);
+      runInAction(() => {
+        this.error = 'Failed to authenticate with social provider.';
+        this.loading = false;
+      });
+    }
+  };
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
 
   private mapAttributes(attrs: Record<string, string>) {
     return {
@@ -483,109 +402,36 @@ export class AuthStore {
     };
   }
 
-  signInWithProvider = async (provider: 'google' | 'apple') => {
-    try {
-      const identityProvider = provider === 'google' ? 'Google' : 'SignInWithApple'; 
-      const redirectUri = encodeURIComponent('flyerapp://auth');
-      const authUrl = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=${identityProvider}&response_type=code&client_id=${COGNITO_CLIENT_ID}&redirect_uri=${redirectUri}&scope=email+openid+profile`;
+  private mapCognitoError(
+    error: any,
+    context: 'password_reset' | 'otp_verify' | 'social',
+  ): string {
+    const s = error?.message || error?.toString() || '';
 
-      try {
-        await Linking.openURL(authUrl);
-      } catch (openErr) {
-        console.error('[AuthStore] Linking.openURL failed:', openErr);
-        throw new Error('Cannot open web browser for sign in.');
-      }
-    } catch (error: any) {
-      let errorMessage = `Failed to sign in with ${provider}`;
-      const errorString = error?.message || error?.toString() || '';
-
-      if (errorString.includes('NotAuthorizedException')) {
-        errorMessage = `${provider} sign-in not authorized. Please check your ${provider} account settings.`;
-      } else if (errorString.includes('UserNotConfirmedException')) {
-        errorMessage = `Your ${provider} account needs to be verified. Please check your email.`;
-      } else if (errorString.includes('Network error') || errorString.includes('fetch')) {
-        errorMessage = 'Network connection error. Please check your internet connection and try again.';
-      } else if (errorString.includes('timeout')) {
-        errorMessage = 'Request timed out. Please check your connection and try again.';
-      } else if (errorString.includes('TooManyRequestsException')) {
-        errorMessage = 'Too many sign-in attempts. Please wait a moment and try again.';
-      } else if (errorString.includes('InvalidParameterException')) {
-        errorMessage = 'Invalid sign-in parameters. Please try again.';
-      } else if (errorString.includes('UserLambdaValidationException')) {
-        errorMessage = 'Unable to sign in with social account. The service is temporarily unavailable. Please try again later.';
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-
-      runInAction(() => {
-        this.error = errorMessage;
-      });
-      throw new Error(errorMessage);
+    if (
+      s.includes('UserNotFoundException') || s.includes('User does not exist') ||
+      s.includes('Username does not exist') || s.includes('user not found')
+    ) {
+      return 'No account found with this email address. Please check your email or create a new account.';
     }
-  };
-
-  handleOAuthCallback = async (url: string) => {
-    if (url && url.includes('?code=')) {
-      const code = url.split('?code=')[1].split('&')[0];
-      
-      runInAction(() => { 
-        this.loading = true; 
-        this.error = null; 
-      });
-      
-      try {
-        const redirectUri = encodeURIComponent('flyerapp://auth');
-        const tokenUrl = `${COGNITO_DOMAIN}/oauth2/token`;
-        
-        const body = `grant_type=authorization_code&client_id=${COGNITO_CLIENT_ID}&code=${code}&redirect_uri=${redirectUri}`;
-
-        const response = await axios.post(tokenUrl, body, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        });
-
-        const { access_token, id_token, refresh_token } = response.data;
-        
-        // Fetch user info using the access token
-        const userInfoResponse = await axios.get(`${COGNITO_DOMAIN}/oauth2/userInfo`, {
-          headers: {
-            Authorization: `Bearer ${access_token}`
-          }
-        });
-        
-        const payload = userInfoResponse.data;
-        const user = {
-          id: payload.sub,
-          name: payload.name || payload.given_name || payload.email || 'User',
-          email: payload.email,
-          phone: payload.phone_number || '',
-          provider: 'social',
-        };
-
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-        await AsyncStorage.setItem('@auth_tokens', JSON.stringify({
-          accessToken: access_token,
-          idToken: id_token,
-          refreshToken: refresh_token
-        }));
-
-        runInAction(() => {
-          this.accessToken = access_token;
-          this.idToken = id_token;
-          this.refreshToken = refresh_token;
-          this.user = user;
-          this.isAuthenticated = true;
-          this.loading = false;
-        });
-
-      } catch (error: any) {
-        console.error('[AuthStore] OAuth Callback Error:', error?.response?.data || error);
-        runInAction(() => {
-          this.error = 'Failed to authenticate with social provider.';
-          this.loading = false;
-        });
-      }
+    if (s.includes('CodeMismatchException')) {
+      return 'Invalid verification code. Please check the code and try again.';
     }
-  };
+    if (s.includes('ExpiredCodeException')) {
+      return 'The verification code has expired. Please request a new code.';
+    }
+    if (s.includes('InvalidPasswordException') || s.includes('Password did not conform with policy')) {
+      return 'Password must be at least 8 characters and include uppercase, lowercase, numbers, and special characters.';
+    }
+    if (s.includes('LimitExceededException') || s.includes('TooManyRequestsException')) {
+      return 'Too many attempts. Please wait a moment and try again.';
+    }
+    if (s.includes('Network error') || s.includes('fetch')) {
+      return 'Network connection error. Please check your internet connection and try again.';
+    }
+    if (s.includes('NotAuthorizedException') && context === 'social') {
+      return 'Social sign-in not authorized. Please check your account settings.';
+    }
+    return error?.message || `An error occurred. Please try again.`;
+  }
 }

@@ -41,6 +41,8 @@ export interface PickedImage {
   uri: string;
   name: string;
   type: string;
+  /** Set when the image is already hosted on the server (selected from media library). */
+  serverUrl?: string;
 }
 
 const SHARED_OPTIONS: ImageLibraryOptions = {

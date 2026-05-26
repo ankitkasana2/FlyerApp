@@ -31,6 +31,7 @@ export interface OrderSummaryProps {
   serviceFees: string;
   total: string;
   inclusions?: string[];
+  isProcessingCheckout?: boolean;
   onProceedToCheckout: () => void;
 }
 
@@ -44,6 +45,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     'Commercial use license',
     '24/7 Priority support access',
   ],
+  isProcessingCheckout = false,
   onProceedToCheckout,
 }) => (
   <View style={styles.container}>
@@ -73,11 +75,17 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
     {/* Proceed Button */}
     <TouchableOpacity
-      style={styles.proceedBtn}
+      style={[
+        styles.proceedBtn,
+        isProcessingCheckout && styles.proceedBtnDisabled,
+      ]}
       onPress={onProceedToCheckout}
+      disabled={isProcessingCheckout}
       activeOpacity={0.85}
     >
-      <Text style={styles.proceedText}>PROCEED TO CHECKOUT</Text>
+      <Text style={styles.proceedText}>
+        {isProcessingCheckout ? 'OPENING CHECKOUT...' : 'PROCEED TO CHECKOUT'}
+      </Text>
     </TouchableOpacity>
 
     {/* Inclusions */}
@@ -149,6 +157,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 18,
+  },
+  proceedBtnDisabled: {
+    opacity: 0.7,
   },
   proceedText: {
     fontSize: Typography.fontSizes.sm,

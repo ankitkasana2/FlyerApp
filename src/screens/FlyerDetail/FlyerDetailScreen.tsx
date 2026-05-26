@@ -16,6 +16,7 @@ import SelectDropdown, { SelectOption } from './SelectDropdown';
 import DynamicListField from './DynamicListField';
 import VenueLogoUpload from './VenueLogoUpload';
 import SponsorsUpload from './SponsorsUpload';
+import MediaLibraryModal from '../../components/media/MediaLibraryModal';
 import DeliveryTimeSelector, { DeliveryOption } from './DeliveryTimeSelector';
 import ExtrasSelector, { ExtraItem } from './ExtrasSelector';
 import FlyerCard from '../../components/home/FlyerCard';
@@ -72,11 +73,11 @@ const FlyerDetailScreen: React.FC = observer(() => {
 
   // ── Picked image state ──────────────────────────────────────────────────────
   const [venueLogo, setVenueLogo] = useState<PickedImage | null>(null);
-  const [sponsorImages, setSponsorImages] = useState<(PickedImage | null)[]>([
-    null,
-    null,
-    null,
-  ]);
+  const [sponsorImages, setSponsorImages] = useState<(PickedImage | null)[]>([null, null, null]);
+
+  // ── Media library modal state ────────────────────────────────────────────────
+  type MediaTarget = { type: 'venue' } | { type: 'sponsor'; index: number } | null;
+  const [mediaLibraryTarget, setMediaLibraryTarget] = useState<MediaTarget>(null);
 
   const [form, setForm] = useState<FlyerDetailFormState>({
     presenter: '',
@@ -147,20 +148,22 @@ const FlyerDetailScreen: React.FC = observer(() => {
   }, []);
 
   // ── Venue Logo pick handlers ────────────────────────────────────────────────
+  // "UPLOAD LOGO" = pick from camera OR device gallery (device-side)
   const handleVenueLogoCamera = useCallback(async () => {
-    const img = await pickFromLibrary();
+    const img = await pickWithPrompt('Venue Logo');
     if (img) setVenueLogo(img);
-  }, [pickFromLibrary]);
+  }, [pickWithPrompt]);
 
+  // "CHOOSE FROM LIBRARY" = open server media library modal (handled by VenueLogoUpload)
   const handleVenueLogoLibrary = useCallback(async () => {
-    const img = await pickFromLibrary();
-    if (img) setVenueLogo(img);
-  }, [pickFromLibrary]);
+    setMediaLibraryTarget({ type: 'venue' });
+  }, []);
 
   // ── Sponsor image pick handlers ─────────────────────────────────────────────
+  // "UPLOAD SPONSOR" = pick from camera OR device gallery
   const handleSponsorUpload = useCallback(
     async (index: number) => {
-      const img = await pickFromLibrary();
+      const img = await pickWithPrompt(`Sponsor ${index + 1}`);
       if (img) {
         setSponsorImages(prev => {
           const next = [...prev];
@@ -169,21 +172,15 @@ const FlyerDetailScreen: React.FC = observer(() => {
         });
       }
     },
-    [pickFromLibrary],
+    [pickWithPrompt],
   );
 
+  // "LIBRARY" = open server media library modal
   const handleSponsorLibrary = useCallback(
-    async (index: number) => {
-      const img = await pickFromLibrary();
-      if (img) {
-        setSponsorImages(prev => {
-          const next = [...prev];
-          next[index] = img;
-          return next;
-        });
-      }
+    (index: number) => {
+      setMediaLibraryTarget({ type: 'sponsor', index });
     },
-    [pickFromLibrary],
+    [],
   );
 
   const handleSponsorRemove = useCallback((index: number) => {
@@ -341,16 +338,18 @@ const FlyerDetailScreen: React.FC = observer(() => {
                 const userId = authStore.user?.id;
                 const id = flyerStore.flyer?.id || flyerId;
                 if (!userId) {
-                  Alert.alert(
-                    'Sign In Required',
-                    'Please sign in to save flyers to your favorites.',
-                  );
+                  Alert.alert('Sign In Required', 'Please sign in to save flyers to your favorites.');
                   return;
                 }
                 try {
-                  await flyerStore.addToFavorites(userId, Number(id));
+                  const alreadyFavorited = flyerStore.flyer?.isFavorited;
+                  if (alreadyFavorited) {
+                    await flyerStore.removeFromFavorites(userId, Number(id));
+                  } else {
+                    await flyerStore.addToFavorites(userId, Number(id));
+                  }
                 } catch (err) {
-                  console.error('Favorite error:', err);
+                  console.error('Favorite toggle error:', err);
                 }
               }}
             />
@@ -575,6 +574,26 @@ const FlyerDetailScreen: React.FC = observer(() => {
           </View>
         </View>
       )}
+
+      {/* ── Media Library Modal ── */}
+      <MediaLibraryModal
+        visible={mediaLibraryTarget !== null}
+        userId={authStore.user?.id ?? ''}
+        onSelect={img => {
+          if (mediaLibraryTarget?.type === 'venue') {
+            setVenueLogo(img);
+          } else if (mediaLibraryTarget?.type === 'sponsor') {
+            const idx = mediaLibraryTarget.index;
+            setSponsorImages(prev => {
+              const next = [...prev];
+              next[idx] = img;
+              return next;
+            });
+          }
+          setMediaLibraryTarget(null);
+        }}
+        onClose={() => setMediaLibraryTarget(null)}
+      />
     </SafeAreaView>
   );
 });

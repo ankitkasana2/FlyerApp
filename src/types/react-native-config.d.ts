@@ -8,6 +8,10 @@ declare module 'react-native-config' {
     APP_NAME?: string;
     LOCAL_URL?: string;
     ENVIRONMENT?: 'development' | 'production' | string;
+    STRIPE_PUBLISHABLE_KEY?: string;
+    PUBLIC_STRIPE_PUBLISHABLE_KEY?: string;
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?: string;
+    STRIPE_MERCHANT_IDENTIFIER?: string;
   }
 
   export const Config: NativeConfig;

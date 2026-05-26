@@ -43,13 +43,9 @@ const FavoritesScreen: React.FC = observer(() => {
   const handleFavoritePress = useCallback(async (id: string) => {
     if (!userId) return;
     try {
-      // In a real app, you might want a removeFavorite method, 
-      // but if addToFavorites toggles or if we just want to remove from list:
-      await flyerStore.addToFavorites(userId, Number(id));
-      // Refresh list to show updated favorites
-      flyerStore.fetchFavorites(userId);
+      await flyerStore.removeFromFavorites(userId, Number(id));
     } catch (err) {
-      console.error('Favorite toggle error:', err);
+      console.error('Unfavorite error:', err);
     }
   }, [userId, flyerStore]);
 
