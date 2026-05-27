@@ -64,6 +64,8 @@ const BackArrowIcon: React.FC<{ color?: string; size?: number }> = ({
 export interface ScreenHeaderProps {
   /** Screen/page title shown in the center */
   title: string;
+  /** Optional smaller line under the title (e.g. price) */
+  subtitle?: string;
   /** Called when back arrow is pressed */
   onBackPress: () => void;
   /** Optional right-side element (pass null to hide) */
@@ -87,6 +89,7 @@ export interface ScreenHeaderProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   title,
+  subtitle,
   onBackPress,
   rightSlot,
   showSearch = true,
@@ -147,10 +150,17 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
         <BackArrowIcon size={18} />
       </TouchableOpacity>
 
-      {/* Title */}
-      <Text style={styles.title} numberOfLines={1}>
-        {title}
-      </Text>
+      {/* Title + Subtitle */}
+      <View style={styles.titleWrap} pointerEvents="none">
+        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text style={styles.subtitle} numberOfLines={1} ellipsizeMode="tail">
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
 
       {/* Right Slot */}
       <View style={styles.rightWrapper}>{renderRight()}</View>
@@ -165,7 +175,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.background,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 18,
+    minHeight: 64,
+    position: 'relative',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -183,20 +195,37 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: 'center',
     alignItems: 'flex-start',
+    position: 'absolute',
+    left: 16,
+  },
+  titleWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    left: 16 + 36 + 8,
+    right: 16 + 36 + 8,
   },
   title: {
-    flex: 1,
-    fontSize: Typography.fontSizes.lg,
-    fontFamily: Typography.fontFamilies.black,
+    fontSize: Typography.fontSizes.xl,
+    fontFamily: Typography.fontFamilies.semiBold,
     color: Colors.textPrimary,
-    letterSpacing: 1.4,
+    letterSpacing: 0,
     textAlign: 'center',
-    marginHorizontal: 8,
+  },
+  subtitle: {
+    marginTop: 2,
+    fontSize: Typography.fontSizes.xs,
+    fontFamily: Typography.fontFamilies.medium,
+    color: Colors.textSecondary,
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
   rightWrapper: {
-    width: 36 + 32 + 8, // mirror back button width so title stays centered
     alignItems: 'flex-end',
     justifyContent: 'center',
+    position: 'absolute',
+    right: 16,
+    minWidth: 36,
   },
   rightGroup: {
     flexDirection: 'row',

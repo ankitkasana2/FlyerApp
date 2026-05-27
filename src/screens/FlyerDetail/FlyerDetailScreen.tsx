@@ -423,9 +423,19 @@ const FlyerDetailScreen: React.FC = observer(() => {
       {/* ── Screen Header ── */}
       <ScreenHeader
         title={flyerStore.flyer?.name || 'FLYER DETAIL'}
+        subtitle={undefined}
         onBackPress={() => navigation.goBack()}
         showSearch={false}
         showAvatar={false}
+        rightSlot={
+          parsedFlyerPrice > 0 ? (
+            <View style={styles.pricePill}>
+              <Text style={styles.pricePillText}>
+                ${parsedFlyerPrice.toFixed(2)}
+              </Text>
+            </View>
+          ) : null
+        }
       />
 
       {flyerStore.loading && !flyerStore.flyer ? (
@@ -895,6 +905,20 @@ const styles = StyleSheet.create({
   loadingText: {
     color: Colors.textSecondary,
     fontSize: Typography.fontSizes.base,
+  },
+  pricePill: {
+    borderWidth: 0.75,
+    borderColor: Colors.primary,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: 'transparent',
+  },
+  pricePillText: {
+    color: Colors.primary,
+    fontSize: Typography.fontSizes.xs,
+    fontWeight: Typography.fontWeights.semiBold,
+    letterSpacing: 0.2,
   },
 });
 
