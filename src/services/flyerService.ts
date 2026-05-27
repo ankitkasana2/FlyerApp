@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 import type {
   BannersResponse,
   CategoriesResponse,
+  CarouselsResponse,
   FlyersResponse,
   FlyerItem,
   GetFlyersParams,
@@ -14,6 +15,9 @@ export const getBanners = () =>
 
 export const getCategories = () =>
   apiClient.get<CategoriesResponse>('/categories');
+
+export const getCarousels = () =>
+  apiClient.get<CarouselsResponse>('/carousels');
 
 export const getFlyers = (params: GetFlyersParams = {}) =>
   apiClient.get<FlyersResponse>('/flyers', { params });

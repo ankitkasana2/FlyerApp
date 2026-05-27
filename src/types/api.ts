@@ -84,6 +84,20 @@ export interface CategoriesResponse {
   categories: Category[];
 }
 
+// ─── Carousels ────────────────────────────────────────────────────────────────
+
+export interface CarouselItem {
+  id: number;
+  name: string;
+  position: number;
+  is_pinned?: boolean | number;
+}
+
+export interface CarouselsResponse {
+  success: boolean;
+  carousels: CarouselItem[];
+}
+
 // ─── Flyers ───────────────────────────────────────────────────────────────────
 
 export interface FlyerItem {

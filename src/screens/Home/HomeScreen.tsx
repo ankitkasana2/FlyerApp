@@ -24,9 +24,9 @@ import FlyerCard, {
   CARD_WIDTH,
   CARD_GAP,
   HORIZONTAL_PADDING,
-} from '../../components/home/FlyerCard';
-import type { Flyer } from '../../types/flyer';
-import type { AppStackParamList } from '../../navigation/types';
+	} from '../../components/home/FlyerCard';
+	import type { Flyer } from '../../types/flyer';
+	import type { AppStackParamList } from '../../navigation/types';
 
 type HomeSection = {
   id: string;
@@ -99,20 +99,23 @@ const formatPrice = (price: number | string | undefined | null): string => {
 const HomeScreen: React.FC = observer(() => {
   const navigation = useNavigation<NavigationProp<AppStackParamList>>();
   const { flyerStore, cartStore, authStore } = useStores();
-  const {
-    addToFavorites,
-    banners,
-    bannerError,
-    error: flyersError,
-    fetchBanners,
-    fetchCategories,
-    fetchFlyersForCategoryTab,
-    hydrateHomeCache,
-    getLocalFlyersForCategoryTab,
-    isBannersLoading,
-    isCategoriesLoading,
-    orderedCategoryTabs,
-  } = flyerStore;
+	const {
+	    addToFavorites,
+	    banners,
+	    bannerError,
+	    error: flyersError,
+	    fetchBanners,
+	    fetchCarousels,
+	    fetchCategories,
+	    fetchFlyersForCategoryTab,
+	    hydrateHomeCache,
+	    getLocalFlyersForCategoryTab,
+	    isBannersLoading,
+	    isCarouselsLoading,
+	    isCategoriesLoading,
+	    orderedCategoryTabs,
+	    orderedHomeTabs,
+	  } = flyerStore;
   const loadCart = cartStore.load;
   const userId = authStore.user?.id;
 
@@ -124,17 +127,20 @@ const HomeScreen: React.FC = observer(() => {
 
   const [sectionPagination, setSectionPagination] = useState<Record<string, SectionPagination>>({});
 
-  useEffect(() => {
-    // Banners run immediately — do NOT wait for cache hydration
-    void fetchBanners().catch(() => {});
-    void hydrateHomeCache();
+	useEffect(() => {
+	    // Banners run immediately — do NOT wait for cache hydration
+	    void fetchBanners().catch(() => {});
+	    void hydrateHomeCache();
 
-    const task = InteractionManager.runAfterInteractions(() => {
-      void fetchCategories().catch(() => {});
-    });
+	    const task = InteractionManager.runAfterInteractions(() => {
+	      void fetchCategories().catch(() => {});
+	      setTimeout(() => {
+	        void fetchCarousels().catch(() => {});
+	      }, 300);
+	    });
 
-    return () => task.cancel();
-  }, [fetchBanners, fetchCategories, hydrateHomeCache]);
+	    return () => task.cancel();
+	  }, [fetchBanners, fetchCarousels, fetchCategories, hydrateHomeCache]);
 
   useEffect(() => {
     if (userId) {
@@ -142,23 +148,24 @@ const HomeScreen: React.FC = observer(() => {
     }
   }, [loadCart, userId]);
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    setSectionApiFlyersById({});
-    setSectionPagination({});
-    setSectionLoadCycle(prev => prev + 1);
-    try {
-      await Promise.all([
-        fetchBanners(),
-        fetchCategories(),
-      ]);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [fetchBanners, fetchCategories]);
+	const handleRefresh = useCallback(async () => {
+	    setIsRefreshing(true);
+	    setSectionApiFlyersById({});
+	    setSectionPagination({});
+	    setSectionLoadCycle(prev => prev + 1);
+	    try {
+	      await Promise.all([
+	        fetchBanners(),
+	        fetchCarousels(),
+	        fetchCategories(),
+	      ]);
+	    } finally {
+	      setIsRefreshing(false);
+	    }
+	  }, [fetchBanners, fetchCarousels, fetchCategories]);
 
-  const handleSectionLoadMore = useCallback(
-    async (sectionId: string, categoryName: string) => {
+	  const handleSectionLoadMore = useCallback(
+	    async (sectionId: string, categoryName: string) => {
       const current = sectionPagination[sectionId];
       if (current?.isLoading || current?.hasMore === false) return;
 
@@ -169,14 +176,14 @@ const HomeScreen: React.FC = observer(() => {
         [sectionId]: { page: current?.page ?? 1, hasMore: true, isLoading: true },
       }));
 
-      try {
-        const { flyers, hasMore } = await flyerStore.fetchNextPageForSection({
-          categoryName,
-          isRecentlyAdded: sectionId === 'recently_added',
-          sortBy: HOME_SECTION_SORT_BY,
-          sortDir: HOME_SECTION_SORT_DIR,
-          page: nextPage,
-        });
+	      try {
+	        const { flyers, hasMore } = await flyerStore.fetchNextPageForSection({
+	          categoryName,
+	          isRecentlyAdded: categoryName === 'Recently Added' || sectionId === 'recently_added',
+	          sortBy: HOME_SECTION_SORT_BY,
+	          sortDir: HOME_SECTION_SORT_DIR,
+	          page: nextPage,
+	        });
 
         setSectionApiFlyersById(prev => ({
           ...prev,
@@ -194,7 +201,7 @@ const HomeScreen: React.FC = observer(() => {
       }
     },
     [flyerStore, sectionPagination],
-  );
+	  );
 
   const mappedBanners: BannerSlide[] = useMemo(
     () =>
@@ -245,22 +252,22 @@ const HomeScreen: React.FC = observer(() => {
     [addToFavorites, flyerStore, userId],
   );
 
-  const orderedTabs = orderedCategoryTabs;
-  const orderedTabsKey = orderedTabs
-    .map(tab => `${tab.id}:${tab.name}`)
-    .join('|');
+	  const orderedTabs = orderedHomeTabs;
+	  const orderedTabsKey = orderedTabs
+	    .map(tab => `${tab.id}:${tab.name}`)
+	    .join('|');
 
-  const localSections: LocalHomeSection[] = orderedTabs
-    .map(tab => ({
-      id: tab.id,
-      title: tab.name,
-      data: getLocalFlyersForCategoryTab({
-        categoryName: tab.name,
-        isRecentlyAdded: tab.id === 'recently_added',
-        sortBy: HOME_SECTION_SORT_BY,
-        sortDir: HOME_SECTION_SORT_DIR,
-      }).slice(0, HOME_SECTION_LIMIT),
-    }))
+	  const localSections: LocalHomeSection[] = orderedTabs
+	    .map(tab => ({
+	      id: tab.id,
+	      title: tab.name,
+	      data: getLocalFlyersForCategoryTab({
+	        categoryName: tab.name,
+	        isRecentlyAdded: tab.name === 'Recently Added' || tab.id === 'recently_added',
+	        sortBy: HOME_SECTION_SORT_BY,
+	        sortDir: HOME_SECTION_SORT_DIR,
+	      }).slice(0, HOME_SECTION_LIMIT),
+	    }))
     .filter(section => section.title && section.data.length > 0);
   const hasSectionApiData = Object.keys(sectionApiFlyersById).length > 0;
 
@@ -276,13 +283,13 @@ const HomeScreen: React.FC = observer(() => {
 
     tabs.forEach((tab, index) => {
       const fetchSection = () => {
-        fetchFlyersForCategoryTab({
-          categoryName: tab.name,
-          isRecentlyAdded: tab.id === 'recently_added',
-          sortBy: HOME_SECTION_SORT_BY,
-          sortDir: HOME_SECTION_SORT_DIR,
-          limit: HOME_SECTION_LIMIT,
-        })
+	        fetchFlyersForCategoryTab({
+	          categoryName: tab.name,
+	          isRecentlyAdded: tab.name === 'Recently Added' || tab.id === 'recently_added',
+	          sortBy: HOME_SECTION_SORT_BY,
+	          sortDir: HOME_SECTION_SORT_DIR,
+	          limit: HOME_SECTION_LIMIT,
+	        })
           .then(flyers => {
             if (isCancelled) {
               return;
@@ -390,14 +397,21 @@ const HomeScreen: React.FC = observer(() => {
       return <HomeSectionSkeleton />;
     }
 
-    if (item.data.length === 0) {
-      return null;
-    }
+	    if (item.data.length === 0) {
+	      return null;
+	    }
 
-    return (
-      <View style={styles.categorySection}>
-        <SectionHeader title={item.title} />
-        <FlatList
+	    const isPremiumSection = item.title === 'Premium Flyers';
+
+	    return (
+	      <View
+	        style={[
+	          styles.categorySection,
+	          isPremiumSection ? styles.premiumCategorySection : null,
+	        ]}
+	      >
+	        <SectionHeader title={item.title} />
+	        <FlatList
           horizontal
           data={item.data}
           renderItem={({ item: flyer }) => {
@@ -472,7 +486,9 @@ const HomeScreen: React.FC = observer(() => {
         </View>
       ) : null}
 
-      {(isCategoriesLoading || (orderedTabs.length > 0 && !hasSectionApiData && homeSections.length === 0)) ? (
+      {(isCategoriesLoading ||
+        isCarouselsLoading ||
+        (orderedTabs.length > 0 && !hasSectionApiData && homeSections.length === 0)) ? (
         <View style={styles.skeletonStack}>
           <HomeSectionSkeleton />
           <HomeSectionSkeleton />
@@ -528,6 +544,11 @@ const styles = StyleSheet.create({
   },
   categorySection: {
     marginTop: 24,
+  },
+  premiumCategorySection: {
+    backgroundColor: `${Colors.primary}E6`,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   horizontalListContent: {
     paddingHorizontal: HORIZONTAL_PADDING,

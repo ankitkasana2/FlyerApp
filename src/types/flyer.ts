@@ -26,6 +26,13 @@ export interface CategoryUiTab {
   label: string;
 }
 
+export interface Carousel {
+  id: string;
+  name: string;
+  position: number;
+  is_pinned?: boolean | number;
+}
+
 export interface CategoryTabQueryOptions {
   categoryName: string;
   isRecentlyAdded?: boolean;

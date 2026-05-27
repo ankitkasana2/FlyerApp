@@ -7,8 +7,7 @@ import Toast from 'react-native-toast-message';
 import type {
   Flyer,
   Banner,
-  FavoritesResponse,
-  GetFlyersResponse,
+  Carousel,
   FlyersPagination,
   CategoryUiTab,
   CategoryTabQueryOptions,
@@ -41,6 +40,11 @@ class FlyerStore {
 
   categories: any[] = [];
   isCategoriesLoading: boolean = false;
+
+  carousels: Carousel[] = [];
+  isCarouselsLoading: boolean = false;
+  carouselError: string | null = null;
+  private carouselsFetchPromise: Promise<Carousel[]> | null = null;
 
   page: number = 1;
   limit: number = 20;
@@ -100,6 +104,9 @@ class FlyerStore {
           if (Array.isArray(parsed?.categories) && this.categories.length === 0) {
             this.categories = parsed.categories;
           }
+          if (Array.isArray(parsed?.carousels) && this.carousels.length === 0) {
+            this.carousels = parsed.carousels;
+          }
         });
       } catch (error) {
         console.warn('[FlyerStore] Failed to hydrate home cache', error);
@@ -119,6 +126,7 @@ class FlyerStore {
         JSON.stringify({
           banners: this.banners,
           categories: this.categories,
+          carousels: this.carousels,
           cachedAt: Date.now(),
         }),
       );
@@ -145,6 +153,35 @@ class FlyerStore {
       seenLabels.add(label);
     });
     return tabs;
+  }
+
+  // Web-like Home logic:
+  // - If carousels exist: show those sections (ordered by position)
+  // - Else: show ranked categories (no forced "Recently Added" section)
+  get orderedHomeTabs(): CategoryUiTab[] {
+    if (this.carousels.length > 0) {
+      return [...this.carousels]
+        .sort((a, b) => a.position - b.position)
+        .map(carousel => ({
+          id: `carousel_${carousel.id}`,
+          name: carousel.name,
+          label: String(carousel.name ?? '').toUpperCase(),
+        }))
+        .filter(tab => tab.name);
+    }
+
+    return (this.categories || [])
+      .slice()
+      .sort((a: any, b: any) => (a.rank ?? 0) - (b.rank ?? 0))
+      .map((category: any) => {
+        const name = String(category.name ?? category.label ?? '').trim();
+        return {
+          id: String(category._id ?? category.id ?? name),
+          name,
+          label: name.toUpperCase(),
+        };
+      })
+      .filter(tab => tab.name);
   }
 
   private getFlyerId = (flyer: Flyer) => String(flyer._id ?? flyer.id);
@@ -331,6 +368,62 @@ class FlyerStore {
     } finally {
       runInAction(() => { this.isCategoriesLoading = false; });
     }
+  };
+
+  fetchCarousels = async () => {
+    if (this.carouselsFetchPromise) return this.carouselsFetchPromise;
+
+    runInAction(() => {
+      this.isCarouselsLoading = true;
+      this.carouselError = null;
+    });
+
+    this.carouselsFetchPromise = (async () => {
+      try {
+        const { data } = await flyerService.getCarousels();
+        if (data.success && Array.isArray(data.carousels)) {
+          const fresh: Carousel[] = data.carousels
+            .map(item => ({
+              id: String(item.id),
+              name: String(item.name ?? '').trim(),
+              position: Number(item.position ?? 0),
+              is_pinned: (item as any).is_pinned,
+            }))
+            .filter(item => item.name);
+
+          const changed =
+            fresh.length !== this.carousels.length ||
+            fresh.some(
+              (c, index) =>
+                c.id !== this.carousels[index]?.id ||
+                c.position !== this.carousels[index]?.position ||
+                c.name !== this.carousels[index]?.name,
+            );
+
+          if (changed) {
+            runInAction(() => { this.carousels = fresh; });
+            void this.persistHomeCache();
+          }
+
+          return this.carousels;
+        }
+
+        runInAction(() => { this.carousels = []; });
+        return this.carousels;
+      } catch (error: any) {
+        runInAction(() => {
+          this.carouselError = error?.message ?? 'Failed to fetch carousels';
+        });
+        throw error;
+      } finally {
+        runInAction(() => {
+          this.isCarouselsLoading = false;
+          this.carouselsFetchPromise = null;
+        });
+      }
+    })();
+
+    return this.carouselsFetchPromise;
   };
 
   fetchFlyers = async (
