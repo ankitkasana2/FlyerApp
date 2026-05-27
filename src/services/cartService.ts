@@ -44,6 +44,9 @@ export const addToCart = (
 
   formData.append('user_id', String(payload.user_id));
   formData.append('flyer_is', String(payload.flyer_is));
+  if (payload.category_id !== undefined) {
+    formData.append('category_id', String(payload.category_id));
+  }
 
   if (payload.presenting)    formData.append('presenting',    payload.presenting);
   if (payload.event_title)   formData.append('event_title',   payload.event_title);
@@ -53,8 +56,14 @@ export const addToCart = (
   if (payload.delivery_time) formData.append('delivery_time', payload.delivery_time);
   if (payload.custom_notes)  formData.append('custom_notes',  payload.custom_notes);
   if (payload.email)         formData.append('email',         payload.email);
+  if (payload.web_user_id)   formData.append('web_user_id',   payload.web_user_id);
+  if (payload.image_url)     formData.append('image_url',     payload.image_url);
+  if (payload.venue_text)    formData.append('venue_text',    payload.venue_text);
   if (payload.total_price !== undefined) {
     formData.append('total_price', String(payload.total_price));
+  }
+  if (payload.subtotal !== undefined) {
+    formData.append('subtotal', String(payload.subtotal));
   }
 
   // Backend toBool() handles '0'/'1' strings

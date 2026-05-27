@@ -11,6 +11,8 @@ export interface Flyer {
   imageUrl?: string;
   image_url?: string;
   image?: string;
+  form_type?: string;
+  hasPhotos?: boolean;
   isPremium?: boolean;
   isFavorited?: boolean;
   category?: string;

@@ -201,6 +201,7 @@ export interface CartResponse {
 export interface AddToCartPayload {
   user_id: string;
   flyer_is: string | number;
+  category_id?: string | number;
   presenting?: string;
   event_title?: string;
   event_date?: string;
@@ -209,11 +210,15 @@ export interface AddToCartPayload {
   delivery_time?: string;
   custom_notes?: string;
   email?: string;
+  web_user_id?: string;
+  image_url?: string;
+  venue_text?: string;
   story_size_version?: boolean;
   custom_flyer?: boolean;
   animated_flyer?: boolean;
   instagram_post_size?: boolean;
   total_price?: number;
+  subtotal?: number;
   djs?: DjEntry[];
   host?: HostEntry;
   sponsors?: SponsorEntry[];

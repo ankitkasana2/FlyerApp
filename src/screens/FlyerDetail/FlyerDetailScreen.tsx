@@ -31,6 +31,7 @@ import type { AppStackParamList } from '../../navigation/types';
 import { ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useImagePicker, type PickedImage } from '../../hooks/useImagePicker';
+import PeopleListWithPhotos, { type PersonWithPhoto } from './PeopleListWithPhotos';
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -74,9 +75,28 @@ const FlyerDetailScreen: React.FC = observer(() => {
   // ── Picked image state ──────────────────────────────────────────────────────
   const [venueLogo, setVenueLogo] = useState<PickedImage | null>(null);
   const [sponsorImages, setSponsorImages] = useState<(PickedImage | null)[]>([null, null, null]);
+  const [birthdayPersonPhoto, setBirthdayPersonPhoto] = useState<PickedImage | null>(null);
+  const [venueText, setVenueText] = useState('');
+
+  const [djPeople, setDjPeople] = useState<PersonWithPhoto[]>([
+    { name: '', image: null, hasPhoto: true },
+    { name: '', image: null, hasPhoto: true },
+    { name: '', image: null, hasPhoto: true },
+    { name: '', image: null, hasPhoto: true },
+  ]);
+  const [hostPeople, setHostPeople] = useState<PersonWithPhoto[]>([
+    { name: '', image: null, hasPhoto: true },
+    { name: '', image: null, hasPhoto: true },
+  ]);
 
   // ── Media library modal state ────────────────────────────────────────────────
-  type MediaTarget = { type: 'venue' } | { type: 'sponsor'; index: number } | null;
+  type MediaTarget =
+    | { type: 'venue' }
+    | { type: 'sponsor'; index: number }
+    | { type: 'birthday' }
+    | { type: 'dj'; index: number }
+    | { type: 'host'; index: number }
+    | null;
   const [mediaLibraryTarget, setMediaLibraryTarget] = useState<MediaTarget>(null);
 
   const [form, setForm] = useState<FlyerDetailFormState>({
@@ -104,6 +124,73 @@ const FlyerDetailScreen: React.FC = observer(() => {
     flyerStore.fetchFlyer(flyerId);
   }, [flyerId, flyerStore]);
 
+  const flyer = flyerStore.flyer;
+  const flyerCategories = useMemo(() => {
+    const raw = (flyer?.categories ?? []).map(v => String(v));
+    const primary = flyer?.category ? [String(flyer.category)] : [];
+    return [...new Set([...raw, ...primary])];
+  }, [flyer?.categories, flyer?.category]);
+
+  const parsedFlyerPrice = useMemo(() => {
+    const raw = flyer?.price ?? flyerStore.basePrice ?? 0;
+    if (typeof raw === 'number') return raw;
+    const cleaned = String(raw).replace(/[^0-9.]/g, '');
+    const numeric = Number(cleaned);
+    return Number.isNaN(numeric) ? 0 : numeric;
+  }, [flyer?.price, flyerStore.basePrice]);
+
+  const isBirthdayForm = useMemo(() => {
+    if (!flyer) return false;
+    if (flyer.form_type === 'Birthday') return true;
+    if (String(flyer.category ?? '').toLowerCase() === 'birthday') return true;
+    return flyerCategories.some(cat => cat.toLowerCase() === 'birthday');
+  }, [flyer, flyerCategories]);
+
+  const isNoPhotoForm = useMemo(() => {
+    if (!flyer) return false;
+    const formType = String(flyer.form_type ?? '').toLowerCase();
+    const categoryStr = String(flyer.category ?? '').toLowerCase();
+    return (
+      formType === 'no photo' ||
+      categoryStr.includes('no-photo') ||
+      categoryStr.includes('no photo') ||
+      categoryStr.includes('nophoto') ||
+      flyerCategories.some(cat => cat.toLowerCase().includes('no photo'))
+    );
+  }, [flyer, flyerCategories]);
+
+  const isWithPhotoForm = useMemo(() => {
+    if (!flyer) return false;
+    const formType = String(flyer.form_type ?? '').toLowerCase();
+    const categoryStr = String(flyer.category ?? '').toLowerCase();
+    return (
+      formType === 'with photo' ||
+      flyer.hasPhotos === true ||
+      categoryStr.includes('with photo') ||
+      categoryStr.includes('photo')
+    );
+  }, [flyer, flyerCategories]);
+
+  // Apply the same "slot rules" as the web:
+  // - $10 with photo: DJ 1-2 have photos, DJ 3-4 text only. Host 1 has photo, Host 2 text only.
+  // - $15 with photo: DJ 1-4 have photos, Host 1-2 have photos.
+  useEffect(() => {
+    if (!isWithPhotoForm) return;
+    if (parsedFlyerPrice === 10) {
+      setDjPeople(prev =>
+        prev.slice(0, 4).map((p, i) => ({ ...p, hasPhoto: i < 2 })),
+      );
+      setHostPeople(prev =>
+        prev.slice(0, 2).map((p, i) => ({ ...p, hasPhoto: i === 0 })),
+      );
+      return;
+    }
+    if (parsedFlyerPrice === 15) {
+      setDjPeople(prev => prev.slice(0, 4).map(p => ({ ...p, hasPhoto: true })));
+      setHostPeople(prev => prev.slice(0, 2).map(p => ({ ...p, hasPhoto: true })));
+    }
+  }, [isWithPhotoForm, parsedFlyerPrice]);
+
   const similarFlyers = useMemo(() => {
     const currentCategoryId = flyerStore.flyerFormDetail.categoryId;
     const currentFlyerId = flyerStore.flyerFormDetail.flyerId || flyerId;
@@ -118,7 +205,7 @@ const FlyerDetailScreen: React.FC = observer(() => {
 
         // Must share the category
         const categories = f.categories || [];
-        return categories.includes(currentCategoryId);
+        return categories.includes(String(currentCategoryId));
       })
       .slice(0, 5); // Limit to 5
   }, [
@@ -193,7 +280,12 @@ const FlyerDetailScreen: React.FC = observer(() => {
 
   // ─── Price calculation ──────────────────────────────────────────────────
   const totalPrice = useMemo(() => {
-    let total = flyerStore.basePrice || 0;
+    const base =
+      isBirthdayForm ? 10 :
+      (isNoPhotoForm ? (parsedFlyerPrice >= 40 ? 40 : parsedFlyerPrice === 15 ? 15 : 10) :
+      (flyerStore.basePrice || parsedFlyerPrice || 0));
+
+    let total = base;
 
     // Delivery cost
     const delivery = DELIVERY_OPTIONS.find(o => o.id === form.deliveryTime);
@@ -221,6 +313,9 @@ const FlyerDetailScreen: React.FC = observer(() => {
   const handleAddToCart = useCallback(async () => {
     const userId = authStore.user?.id;
     const flyerIs = flyerStore.flyer?.id ?? flyerId;
+    const categoryId =
+      flyerStore.flyerFormDetail.categoryId ??
+      (flyerStore.flyer?.categories?.[0] ?? flyerStore.flyer?.category ?? undefined);
 
     if (!userId) {
       Alert.alert('Not Logged In', 'Please sign in to add items to your cart.');
@@ -232,13 +327,12 @@ const FlyerDetailScreen: React.FC = observer(() => {
       return;
     }
 
-    // Build DJs array from form (filter empty entries)
-    const djsPayload = form.djArtists
-      .filter(name => name.trim().length > 0)
-      .map(name => ({ name }));
+    const djsPayload = (isWithPhotoForm ? djPeople : form.djArtists.map(name => ({ name, image: null, hasPhoto: false })))
+      .map(entry => ({ name: entry.name }))
+      .filter(entry => entry.name.trim().length > 0);
 
-    // Build host from first non-empty host entry
-    const hostName = form.hosts.find(h => h.trim().length > 0) || '';
+    const hostName = (isWithPhotoForm ? hostPeople.map(h => h.name) : form.hosts)
+      .find(h => h.trim().length > 0) || '';
 
     // Build sponsors array (text + file index)
     const sponsorsPayload = sponsorImages.map((img, i) => ({
@@ -246,10 +340,19 @@ const FlyerDetailScreen: React.FC = observer(() => {
       _hasImage: !!img,
     }));
 
+    if (isNoPhotoForm) {
+      const hasVenue = !!venueLogo || !!venueText.trim();
+      if (!hasVenue) {
+        Alert.alert('Missing Venue', 'Please add a venue logo or venue text.');
+        return;
+      }
+    }
+
     const result = await cartStore.addToCart(
       {
         user_id: userId,
         flyer_is: flyerIs,
+        category_id: categoryId ? String(categoryId) : undefined,
         presenting: form.presenter,
         event_title: form.eventTitle,
         event_date: form.date
@@ -259,11 +362,14 @@ const FlyerDetailScreen: React.FC = observer(() => {
         flyer_info: form.flyerInfo,
         delivery_time: form.deliveryTime,
         custom_notes: form.designerNote,
+        image_url: flyerStore.flyer?.image_url ?? undefined,
+        venue_text: isNoPhotoForm ? venueText.trim() : undefined,
         story_size_version: form.selectedExtras.includes('story'),
         custom_flyer: form.selectedExtras.includes('diff'),
         animated_flyer: form.selectedExtras.includes('anim'),
         instagram_post_size: form.selectedExtras.includes('insta'),
         total_price: totalPrice,
+        subtotal: totalPrice,
         djs: djsPayload,
         host: { name: hostName },
         sponsors: sponsorsPayload.map(s => ({ name: s.name })),
@@ -272,6 +378,8 @@ const FlyerDetailScreen: React.FC = observer(() => {
       {
         venueLogo: venueLogo,
         sponsorImages: sponsorImages,
+        hostImage: isWithPhotoForm ? (hostPeople[0]?.image ?? null) : null,
+        djImages: isWithPhotoForm ? djPeople.map(p => p.image) : [],
       },
     );
 
@@ -294,6 +402,13 @@ const FlyerDetailScreen: React.FC = observer(() => {
     navigation,
     venueLogo,
     sponsorImages,
+    venueText,
+    isNoPhotoForm,
+    isWithPhotoForm,
+    djPeople,
+    hostPeople,
+    parsedFlyerPrice,
+    isBirthdayForm,
   ]);
 
   // ─── Checkout handler ────────────────────────────────────────────────────
@@ -414,41 +529,109 @@ const FlyerDetailScreen: React.FC = observer(() => {
               />
 
               {/* Venue Logo */}
-              <VenueLogoUpload
-                pickedImage={venueLogo}
-                onUploadPress={handleVenueLogoCamera}
-                onChooseFromLibrary={handleVenueLogoLibrary}
-                onRemove={() => setVenueLogo(null)}
-              />
+              {!isBirthdayForm && (
+                <>
+                  <VenueLogoUpload
+                    pickedImage={venueLogo}
+                    onUploadPress={handleVenueLogoCamera}
+                    onChooseFromLibrary={handleVenueLogoLibrary}
+                    onRemove={() => setVenueLogo(null)}
+                  />
+                  {isNoPhotoForm && (
+                    <FormField
+                      label="Venue Text (if no logo)"
+                      placeholder="Type venue name..."
+                      value={venueText}
+                      onChangeText={setVenueText}
+                    />
+                  )}
+                </>
+              )}
 
               {/* DJs & Artists */}
-              <DynamicListField
-                label="DJs & Artists"
-                items={form.djArtists}
-                onChange={items => setField('djArtists', items)}
-                addLabel="ADD MORE DJs"
-                placeholder="DJ/Artist"
-                maxItems={8}
-              />
+              {!isBirthdayForm && (isWithPhotoForm ? (
+                <PeopleListWithPhotos
+                  label="DJs"
+                  items={djPeople}
+                  onChange={setDjPeople}
+                  onPickImage={async index => {
+                    const img = await pickWithPrompt(`DJ ${index + 1}`);
+                    if (!img) return;
+                    setDjPeople(prev => prev.map((p, i) => (i === index ? { ...p, image: img } : p)));
+                  }}
+                  onPickFromLibrary={index => setMediaLibraryTarget({ type: 'dj', index })}
+                  onRemoveImage={index => setDjPeople(prev => prev.map((p, i) => (i === index ? { ...p, image: null } : p)))}
+                />
+              ) : (
+                <DynamicListField
+                  label="DJs & Artists"
+                  items={form.djArtists}
+                  onChange={items => setField('djArtists', items)}
+                  addLabel="ADD MORE DJs"
+                  placeholder="DJ/Artist"
+                  maxItems={4}
+                />
+              ))}
 
               {/* Hosts */}
-              <DynamicListField
-                label="Hosts"
-                items={form.hosts}
-                onChange={items => setField('hosts', items)}
-                addLabel="ADD HOST (S)"
-                placeholder="Host"
-                maxItems={5}
-              />
+              {isBirthdayForm ? (
+                <DynamicListField
+                  label="Hosts"
+                  items={form.hosts}
+                  onChange={items => setField('hosts', items)}
+                  addLabel="ADD HOST"
+                  placeholder="Host"
+                  maxItems={2}
+                />
+              ) : isWithPhotoForm ? (
+                <PeopleListWithPhotos
+                  label="Hosts"
+                  items={hostPeople}
+                  onChange={setHostPeople}
+                  onPickImage={async index => {
+                    const img = await pickWithPrompt(`Host ${index + 1}`);
+                    if (!img) return;
+                    setHostPeople(prev => prev.map((p, i) => (i === index ? { ...p, image: img } : p)));
+                  }}
+                  onPickFromLibrary={index => setMediaLibraryTarget({ type: 'host', index })}
+                  onRemoveImage={index => setHostPeople(prev => prev.map((p, i) => (i === index ? { ...p, image: null } : p)))}
+                />
+              ) : (
+                <DynamicListField
+                  label="Hosts"
+                  items={form.hosts}
+                  onChange={items => setField('hosts', items)}
+                  addLabel="ADD HOST (S)"
+                  placeholder="Host"
+                  maxItems={2}
+                />
+              )}
 
               {/* Sponsors */}
-              <SponsorsUpload
-                count={3}
-                pickedImages={sponsorImages}
-                onUploadPress={handleSponsorUpload}
-                onLibraryPress={handleSponsorLibrary}
-                onRemove={handleSponsorRemove}
-              />
+              {!isBirthdayForm && (
+                <SponsorsUpload
+                  count={3}
+                  pickedImages={sponsorImages}
+                  onUploadPress={handleSponsorUpload}
+                  onLibraryPress={handleSponsorLibrary}
+                  onRemove={handleSponsorRemove}
+                />
+              )}
+
+              {isBirthdayForm && (
+                <>
+                  <Text style={styles.sectionTitle}>Birthday Person Photo (Optional)</Text>
+                  <VenueLogoUpload
+                    pickedImage={birthdayPersonPhoto}
+                    onUploadPress={async () => {
+                      const img = await pickWithPrompt('Birthday Person Photo');
+                      if (img) setBirthdayPersonPhoto(img);
+                    }}
+                    onChooseFromLibrary={() => setMediaLibraryTarget({ type: 'birthday' })}
+                    onRemove={() => setBirthdayPersonPhoto(null)}
+                  />
+                </>
+              )}
 
               {/* Delivery Time */}
               <DeliveryTimeSelector
@@ -589,6 +772,14 @@ const FlyerDetailScreen: React.FC = observer(() => {
               next[idx] = img;
               return next;
             });
+          } else if (mediaLibraryTarget?.type === 'birthday') {
+            setBirthdayPersonPhoto(img);
+          } else if (mediaLibraryTarget?.type === 'dj') {
+            const idx = mediaLibraryTarget.index;
+            setDjPeople(prev => prev.map((p, i) => (i === idx ? { ...p, image: img } : p)));
+          } else if (mediaLibraryTarget?.type === 'host') {
+            const idx = mediaLibraryTarget.index;
+            setHostPeople(prev => prev.map((p, i) => (i === idx ? { ...p, image: img } : p)));
           }
           setMediaLibraryTarget(null);
         }}
