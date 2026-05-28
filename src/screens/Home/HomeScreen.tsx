@@ -522,8 +522,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchWrapper: {
-    paddingHorizontal: HORIZONTAL_PADDING,
-    paddingVertical: 12,
+    paddingHorizontal: 4,
+    paddingTop: 14,
+    paddingBottom: 10,
   },
   categorySection: {
     marginTop: 24,

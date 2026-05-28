@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
-  StyleSheet,
+  Text,
   Image,
-  ImageSourcePropType,
+  TouchableOpacity,
+  StyleSheet,
   StatusBar,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
@@ -18,7 +22,6 @@ import {
 } from './types';
 import { Colors } from '../theme/colors';
 import { FontFamily, FontSize } from '../theme/typography';
-import { Spacing } from '../theme/spacing';
 import { useStores } from '../stores/StoreContext';
 import {
   SafeAreaView,
@@ -27,7 +30,7 @@ import {
 import AppImages from '../assets/App';
 import Header from '../components/home/Header';
 
-// ─── Screen Imports ────────────────────────────────────────────────────────
+// ─── Screen Imports ────────────────────────────────────────────────────────────
 import HomeScreen from '../screens/Home/HomeScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import SettingsScreen from '../screens/Settings/SettingsScreen';
@@ -45,109 +48,203 @@ import PrivacyPolicyScreen from '../screens/DrawerScreen/PrivacyPolicyScreen';
 import RefundPolicyScreen from '../screens/DrawerScreen/RefundPolicyScreen';
 import TermsOfServiceScreen from '../screens/DrawerScreen/TermsOfServiceScreen';
 
-// ─── Tab Icon component ────────────────────────────────────────────────────
-const TabIcon = ({
-  icon,
-  focused,
-}: {
-  icon: ImageSourcePropType;
-  focused: boolean;
-}) => (
-  <Image
-    source={icon}
-    style={[
-      styles.tabIconImage,
-      { tintColor: focused ? Colors.tabBarActive : Colors.tabBarInactive },
-    ]}
-    resizeMode="contain"
-  />
-);
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ─── Global Header ─────────────────────────────────────────────────────────
-const GlobalHeader = observer(() => {
-  const navigation = useNavigation<any>();
-  const { cartStore } = useStores();
+// ─── Tab icon map ──────────────────────────────────────────────────────────────
+const TAB_ICONS: Record<keyof BottomTabParamList, any> = {
+  Home: AppImages.home,
+  Categories: AppImages.categories,
+  Download: AppImages.download,
+  Profile: AppImages.profile,
+};
+
+const TAB_COUNT = 4;
+const TAB_WIDTH = SCREEN_WIDTH / TAB_COUNT;
+const INDICATOR_WIDTH = 28;
+const indicatorLeft = (i: number) =>
+  i * TAB_WIDTH + TAB_WIDTH / 2 - INDICATOR_WIDTH / 2;
+
+// ─── Animated Tab Item ─────────────────────────────────────────────────────────
+const TabItem: React.FC<{
+  route: any;
+  index: number;
+  isFocused: boolean;
+  label: string;
+  onPress: () => void;
+}> = ({ route, isFocused, label, onPress }) => {
+  const activeAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(activeAnim, {
+      toValue: isFocused ? 1 : 0,
+      tension: 180,
+      friction: 14,
+      useNativeDriver: true,
+    }).start();
+  }, [isFocused]);
+
+  const translateY = activeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -3],
+  });
+  const pillOpacity = activeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+  const pillScale = activeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1],
+  });
+  const iconOpacity = activeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.38, 1],
+  });
+
+  const icon = TAB_ICONS[route.name as keyof BottomTabParamList];
+
   return (
-    <>
-      <SafeAreaView edges={['top']}>
-        <Header
-          cartCount={cartStore.itemCount}
-          onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          onCartPress={() => navigation.navigate('Cart')}
-          onNotificationPress={() => console.log('Notifications pressed')}
-        />
-      </SafeAreaView>
-    </>
-  );
-});
-
-// ─── Bottom Tab Navigator ─────────────────────────────────────────────────
-const Tab = createBottomTabNavigator<BottomTabParamList>();
-
-const BottomTabs = () => {
-  const insets = useSafeAreaInsets();
-  return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: [
-          styles.tabBar,
-          {
-            height: 60 + insets.bottom,
-            paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
-          },
-        ],
-        tabBarItemStyle: { paddingHorizontal: 0 },
-        tabBarLabelStyle: styles.tabLabel,
-        tabBarActiveTintColor: Colors.tabBarActive,
-        tabBarInactiveTintColor: Colors.tabBarInactive,
-      }}
+    <TouchableOpacity
+      style={styles.tabItem}
+      onPress={onPress}
+      activeOpacity={0.7}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={AppImages.home} focused={focused} />
-          ),
-          tabBarItemStyle: { flex: 1 },
-        }}
-      />
-      <Tab.Screen
-        name="Categories"
-        component={CategoryScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={AppImages.categories} focused={focused} />
-          ),
-          tabBarItemStyle: { flex: 1 },
-        }}
-      />
-      <Tab.Screen
-        name="Download"
-        component={DownloadsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={AppImages.download} focused={focused} />
-          ),
-          tabBarItemStyle: { flex: 1 },
-        }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={AppImages.profile} focused={focused} />
-          ),
-          tabBarItemStyle: { flex: 1 },
-        }}
-      />
-    </Tab.Navigator>
+      <Animated.View style={[styles.iconWrapper, { transform: [{ translateY }] }]}>
+        {/* Subtle pill background */}
+        <Animated.View
+          style={[
+            styles.pill,
+            { opacity: pillOpacity, transform: [{ scale: pillScale }] },
+          ]}
+        />
+        <Animated.Image
+          source={icon}
+          style={[
+            styles.tabIcon,
+            {
+              opacity: iconOpacity,
+              tintColor: isFocused ? Colors.primary : Colors.tabBarInactive,
+            },
+          ]}
+          resizeMode="contain"
+        />
+      </Animated.View>
+
+      <Text
+        style={[
+          styles.tabLabel,
+          {
+            color: isFocused ? Colors.textPrimary : Colors.tabBarInactive,
+            fontFamily: isFocused ? FontFamily.semiBold : FontFamily.regular,
+          },
+        ]}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
   );
 };
 
-// ─── Tab Layout with Global Header ─────────────────────────────────────────
+// ─── Custom Tab Bar ────────────────────────────────────────────────────────────
+const CustomTabBar: React.FC<BottomTabBarProps> = ({
+  state,
+  descriptors,
+  navigation,
+}) => {
+  const insets = useSafeAreaInsets();
+
+  // Sliding indicator translateX
+  const indicatorX = useRef(
+    new Animated.Value(indicatorLeft(state.index)),
+  ).current;
+
+  useEffect(() => {
+    Animated.spring(indicatorX, {
+      toValue: indicatorLeft(state.index),
+      tension: 90,
+      friction: 11,
+      useNativeDriver: true,
+    }).start();
+  }, [state.index]);
+
+  return (
+    <View
+      style={[
+        styles.tabBar,
+        { paddingBottom: Math.max(insets.bottom, 12) },
+      ]}
+    >
+      {/* Sliding top indicator */}
+      <Animated.View
+        style={[
+          styles.indicator,
+          { transform: [{ translateX: indicatorX }] },
+        ]}
+      />
+
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const label = String(options.title ?? route.name);
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        return (
+          <TabItem
+            key={route.key}
+            route={route}
+            index={index}
+            isFocused={isFocused}
+            label={label}
+            onPress={onPress}
+          />
+        );
+      })}
+    </View>
+  );
+};
+
+// ─── Global Header ─────────────────────────────────────────────────────────────
+const GlobalHeader = observer(() => {
+  const nav = useNavigation<any>();
+  const { cartStore } = useStores();
+
+  return (
+    <SafeAreaView edges={['top']}>
+      <Header
+        cartCount={cartStore.itemCount}
+        onMenuPress={() => nav.dispatch(DrawerActions.openDrawer())}
+        onCartPress={() => nav.navigate('Cart')}
+        onNotificationPress={() => nav.navigate('Favorites')}
+      />
+    </SafeAreaView>
+  );
+});
+
+// ─── Bottom Tab Navigator ──────────────────────────────────────────────────────
+const Tab = createBottomTabNavigator<BottomTabParamList>();
+
+const BottomTabs = () => (
+  <Tab.Navigator
+    tabBar={props => <CustomTabBar {...props} />}
+    screenOptions={{ headerShown: false }}
+  >
+    <Tab.Screen name="Home" component={HomeScreen} />
+    <Tab.Screen name="Categories" component={CategoryScreen} />
+    <Tab.Screen name="Download" component={DownloadsScreen} />
+    <Tab.Screen name="Profile" component={ProfileScreen} />
+  </Tab.Navigator>
+);
+
+// ─── Tab Layout with Global Header ─────────────────────────────────────────────
 const TabLayout = () => (
   <View style={{ flex: 1, backgroundColor: Colors.background }}>
     <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
@@ -156,7 +253,7 @@ const TabLayout = () => (
   </View>
 );
 
-// ─── Drawer Navigator ─────────────────────────────────────────────────────
+// ─── Drawer Navigator ──────────────────────────────────────────────────────────
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
 const DrawerNavigator = () => (
@@ -191,6 +288,7 @@ const DrawerNavigator = () => (
   </Drawer.Navigator>
 );
 
+// ─── App Stack ─────────────────────────────────────────────────────────────────
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 
 const AppNavigator = () => (
@@ -212,103 +310,74 @@ const AppNavigator = () => (
 
 export default AppNavigator;
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Tab bar
+  // ── Tab bar container ─────────────────────────────────────────────────────
   tabBar: {
+    flexDirection: 'row',
     backgroundColor: Colors.tabBarBackground,
-    borderTopWidth: 0,
-    elevation: 0,
-    shadowOpacity: 0,
-    height: 70,
-    paddingHorizontal: 12,
-    // paddingVertical: 8,
-  },
-  tabIcon: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 0,
-    paddingHorizontal: 0,
-    width: '100%',
-  },
-  tabIconImage: {
-    width: 18,
-    height: 18,
-    marginBottom: 2,
-  },
-  tabLabel: {
-    fontSize: 9,
-    fontFamily: FontFamily.medium,
-    marginTop: 2,
-    color: Colors.textSecondary,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.border,
+    paddingTop: 10,
   },
 
-  // Drawer
+  // ── Sliding indicator at top edge ─────────────────────────────────────────
+  indicator: {
+    position: 'absolute',
+    top: 0,
+    width: INDICATOR_WIDTH,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: Colors.primary,
+  },
+
+  // ── Each tab slot ─────────────────────────────────────────────────────────
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 8,
+    gap: 4,
+    minHeight: 60,
+  },
+
+  // ── Icon container (pill lives inside here) ───────────────────────────────
+  iconWrapper: {
+    width: 52,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // ── Pill behind active icon ───────────────────────────────────────────────
+  pill: {
+    position: 'absolute',
+    width: 52,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: `${Colors.primary}22`,
+  },
+
+  // ── Icon ──────────────────────────────────────────────────────────────────
+  tabIcon: {
+    width: 22,
+    height: 22,
+  },
+
+  // ── Label ─────────────────────────────────────────────────────────────────
+  tabLabel: {
+    fontSize: 10,
+    lineHeight: 13,
+    letterSpacing: 0.2,
+  },
+
+  // ── Drawer ────────────────────────────────────────────────────────────────
   drawer: {
     backgroundColor: Colors.drawerBackground,
     width: 280,
   },
-  drawerContainer: {
-    flex: 1,
-    backgroundColor: Colors.drawerBackground,
-  },
-  drawerHeader: {
-    paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing['3xl'],
-    paddingBottom: Spacing.xl,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    marginBottom: Spacing.md,
-  },
-  drawerAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-  },
-  drawerAvatarText: {
-    fontSize: 28,
-  },
-  drawerAppName: {
-    fontSize: FontSize.xl,
-    fontFamily: FontFamily.bold,
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  drawerTagline: {
-    fontSize: FontSize.sm,
-    color: Colors.textMuted,
-  },
-  drawerItems: {
-    flex: 1,
-    paddingHorizontal: Spacing.sm,
-  },
   drawerLabel: {
     fontSize: FontSize.base,
     fontFamily: FontFamily.medium,
-  },
-  drawerFooter: {
-    padding: Spacing.xl,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-  },
-  logoutIcon: {
-    fontSize: 18,
-  },
-  logoutText: {
-    fontSize: FontSize.base,
-    fontFamily: FontFamily.medium,
-    color: Colors.error,
   },
 });

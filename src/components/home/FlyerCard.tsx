@@ -17,7 +17,7 @@ import AppImages from '../../assets/App';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_GAP = 12;
-const HORIZONTAL_PADDING = 16;
+const HORIZONTAL_PADDING = 4;
 const CARD_WIDTH = (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
 const CARD_HEIGHT = Math.round(CARD_WIDTH * 1.38);
 

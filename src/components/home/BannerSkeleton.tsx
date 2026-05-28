@@ -56,7 +56,7 @@ const BannerSkeleton: React.FC = () => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginHorizontal: 2,
+    marginHorizontal: 4,
     borderRadius: 8,
     backgroundColor: BASE,
     overflow: 'hidden',
