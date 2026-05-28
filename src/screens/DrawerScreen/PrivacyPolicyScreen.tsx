@@ -97,7 +97,7 @@ const PrivacyPolicyScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="PRIVACY POLICY"
+        title="Privacy Policy"
         onBackPress={handleBack}
         showAvatar={false}
         showSearch={false}

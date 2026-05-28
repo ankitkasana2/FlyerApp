@@ -536,7 +536,7 @@ const FlyerDetailScreen: React.FC = observer(() => {
     <SafeAreaView style={styles.safeArea}>
       {/* ── Screen Header ── */}
       <ScreenHeader
-        title={flyerStore.flyer?.name || 'FLYER DETAIL'}
+        title={flyerStore.flyer?.name || 'Flyer Detail'}
         subtitle={undefined}
         onBackPress={() => navigation.goBack()}
         showSearch={false}

@@ -129,7 +129,7 @@ const ContactUsScreen: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScreenHeader
-          title="CONTACT US"
+          title="Contact Us"
           onBackPress={handleBack}
           showAvatar={false}
           showSearch={false}

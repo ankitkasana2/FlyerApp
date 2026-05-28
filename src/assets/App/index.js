@@ -13,6 +13,7 @@ const AppImages = {
   cart: require('./cart.png'),
   time: require('./Time.png'),
   subject: require('./subject.png'),
+  backIcon: require('./backicon.png'),
 };
 
 export default AppImages;

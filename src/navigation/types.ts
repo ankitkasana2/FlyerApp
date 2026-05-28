@@ -29,6 +29,7 @@ export type AppStackParamList = {
   Cart: undefined;
   FlyerDetail: { flyerId: string };
   Favorites: undefined;
+  Notifications: undefined;
   ContactUs: undefined;
   FAQ: undefined;
   HelpCenter: undefined;

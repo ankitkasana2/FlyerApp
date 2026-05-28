@@ -1,5 +1,27 @@
 // All API request / response shapes — mirrors every endpoint in the backend.
 
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+export type NotificationType = 'info' | 'success' | 'warning' | 'error';
+
+export interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  type: NotificationType;
+  is_read: 0 | 1;
+  created_at: string;
+  updated_at: string;
+  order_id?: number | null;
+  flyer_id?: number | null;
+}
+
+export interface NotificationsResponse {
+  success: boolean;
+  unread_count: number;
+  notifications: Notification[];
+}
+
 // ─── Shared ───────────────────────────────────────────────────────────────────
 
 export interface ApiSuccess<T = unknown> {

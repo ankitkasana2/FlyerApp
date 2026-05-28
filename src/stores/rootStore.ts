@@ -4,6 +4,7 @@ import PostStore from './postStore';
 import FlyerStore from './flyerStore';
 import CartStore from './cartStore';
 import OrderStore from './orderStore';
+import NotificationStore from './notificationStore';
 
 class RootStore {
   userStore: UserStore;
@@ -12,6 +13,7 @@ class RootStore {
   flyerStore: FlyerStore;
   cartStore: CartStore;
   orderStore: OrderStore;
+  notificationStore: NotificationStore;
 
   constructor() {
     this.flyerStore = new FlyerStore();
@@ -19,6 +21,7 @@ class RootStore {
     this.userStore = new UserStore();
     this.postStore = new PostStore();
     this.orderStore = new OrderStore();
+    this.notificationStore = new NotificationStore();
     // Pass flyerStore and cartStore so authStore can reset them on logout
     this.authStore = new AuthStore(this.flyerStore, this.cartStore);
   }

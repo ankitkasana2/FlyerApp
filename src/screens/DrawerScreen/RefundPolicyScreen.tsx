@@ -93,7 +93,7 @@ const RefundPolicyScreen: React.FC = () => {
       </View>
 
       <ScreenHeader
-        title="REFUND POLICY"
+        title="Refund Policy"
         onBackPress={handleBack}
         showAvatar={false}
         showSearch={false}

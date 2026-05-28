@@ -14,51 +14,6 @@ import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 import AppImages from '../../assets/App';
 
-// ─── Back Arrow Icon (pure View) ─────────────────────────────────────────────
-const BackArrowIcon: React.FC<{ color?: string; size?: number }> = ({
-  color = Colors.textPrimary,
-  size = 18,
-}) => (
-  <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
-    {/* Top arm of arrow */}
-    <View
-      style={{
-        position: 'absolute',
-        width: size * 0.52,
-        height: 2,
-        backgroundColor: color,
-        borderRadius: 1,
-        top: size * 0.28,
-        left: size * 0.06,
-        transform: [{ rotate: '-45deg' }],
-      }}
-    />
-    {/* Bottom arm of arrow */}
-    <View
-      style={{
-        position: 'absolute',
-        width: size * 0.52,
-        height: 2,
-        backgroundColor: color,
-        borderRadius: 1,
-        bottom: size * 0.28,
-        left: size * 0.06,
-        transform: [{ rotate: '45deg' }],
-      }}
-    />
-    {/* Horizontal shaft */}
-    <View
-      style={{
-        position: 'absolute',
-        width: size * 0.72,
-        height: 2,
-        backgroundColor: color,
-        borderRadius: 1,
-        left: size * 0.06,
-      }}
-    />
-  </View>
-);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface ScreenHeaderProps {
@@ -92,10 +47,10 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   subtitle,
   onBackPress,
   rightSlot,
-  showSearch = true,
+  showSearch = false,
   searchBadgeCount = 0,
   onSearchPress,
-  showAvatar = true,
+  showAvatar = false,
   avatarInitials = 'AK',
   onAvatarPress,
   containerStyle,
@@ -147,7 +102,11 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
         activeOpacity={0.7}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <BackArrowIcon size={18} />
+        <Image
+          source={AppImages.backIcon}
+          style={styles.backIconImg}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
 
       {/* Title + Subtitle */}
@@ -191,25 +150,30 @@ const styles = StyleSheet.create({
     }),
   },
   backBtn: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'flex-start',
     position: 'absolute',
     left: 16,
   },
+  backIconImg: {
+    width: 22,
+    height: 22,
+    tintColor: Colors.textPrimary,
+  },
   titleWrap: {
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    left: 16 + 36 + 8,
-    right: 16 + 36 + 8,
+    left: 16 + 44 + 12,
+    right: 16 + 44 + 12,
   },
   title: {
-    fontSize: Typography.fontSizes.xl,
-    fontFamily: Typography.fontFamilies.semiBold,
+    fontSize: Typography.fontSizes.lg,
+    fontFamily: Typography.fontFamilies.medium,
     color: Colors.textPrimary,
-    letterSpacing: 0,
+    letterSpacing: 0.1,
     textAlign: 'center',
   },
   subtitle: {

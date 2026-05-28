@@ -79,7 +79,7 @@ const TermsOfServiceScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="TERMS OF SERVICE"
+        title="Terms of Service"
         onBackPress={handleBack}
         showAvatar={false}
         showSearch={false}

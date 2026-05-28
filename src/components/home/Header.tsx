@@ -27,6 +27,7 @@ const HamburgerIcon: React.FC<{ color?: string }> = ({
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface HeaderProps {
   cartCount?: number;
+  notificationCount?: number;
   onMenuPress?: () => void;
   onCartPress?: () => void;
   onNotificationPress?: () => void;
@@ -35,6 +36,7 @@ export interface HeaderProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 const Header: React.FC<HeaderProps> = ({
   cartCount = 0,
+  notificationCount = 0,
   onMenuPress,
   onCartPress,
   onNotificationPress,
@@ -93,6 +95,13 @@ const Header: React.FC<HeaderProps> = ({
           style={styles.iconImg}
           resizeMode="contain"
         />
+        {notificationCount > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>
+              {notificationCount > 9 ? '9+' : notificationCount}
+            </Text>
+          </View>
+        )}
       </TouchableOpacity>
     </View>
   </View>
@@ -123,14 +132,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconBtn: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconImg: {
-    width: 20,
-    height: 20,
+    width: 28,
+    height: 28,
     tintColor: Colors.textPrimary,
   },
   badge: {

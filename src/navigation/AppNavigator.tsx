@@ -39,6 +39,7 @@ import CartScreen from '../screens/cart/CartScreen';
 import DownloadsScreen from '../screens/Download/DownloadsScreen';
 import FlyerDetailScreen from '../screens/FlyerDetail/FlyerDetailScreen';
 import FavoritesScreen from '../screens/Favorites/FavoritesScreen';
+import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import CategoryScreen from '../screens/Category/CategoryScreen';
 import AppDrawer from './AppDrawer';
 import ContactUsScreen from '../screens/DrawerScreen/ContactUs';
@@ -215,15 +216,16 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
 // ─── Global Header ─────────────────────────────────────────────────────────────
 const GlobalHeader = observer(() => {
   const nav = useNavigation<any>();
-  const { cartStore } = useStores();
+  const { cartStore, notificationStore } = useStores();
 
   return (
     <SafeAreaView edges={['top']}>
       <Header
         cartCount={cartStore.itemCount}
+        notificationCount={notificationStore.unreadCount}
         onMenuPress={() => nav.dispatch(DrawerActions.openDrawer())}
         onCartPress={() => nav.navigate('Cart')}
-        onNotificationPress={() => nav.navigate('Favorites')}
+        onNotificationPress={() => nav.navigate('Notifications')}
       />
     </SafeAreaView>
   );
@@ -299,6 +301,7 @@ const AppNavigator = () => (
     <AppStack.Screen name="Cart" component={CartScreen} />
     <AppStack.Screen name="FlyerDetail" component={FlyerDetailScreen} />
     <AppStack.Screen name="Favorites" component={FavoritesScreen} />
+    <AppStack.Screen name="Notifications" component={NotificationsScreen} />
     <AppStack.Screen name="ContactUs" component={ContactUsScreen} />
     <AppStack.Screen name="FAQ" component={FAQScreen} />
     <AppStack.Screen name="HelpCenter" component={HelpCenterScreen} />

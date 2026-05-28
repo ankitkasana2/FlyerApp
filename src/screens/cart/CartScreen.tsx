@@ -244,7 +244,7 @@ const CartScreen: React.FC = observer(() => {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <ScreenHeader
-          title="CART"
+          title="Cart"
           onBackPress={handleBack}
           showSearch
           searchBadgeCount={0}

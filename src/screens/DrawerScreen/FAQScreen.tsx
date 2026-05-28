@@ -135,7 +135,7 @@ const FAQScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="FAQ"
+        title="Faq"
         onBackPress={handleBack}
         showAvatar={false}
         showSearch={false}

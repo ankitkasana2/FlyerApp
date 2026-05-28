@@ -70,7 +70,7 @@ const FavoritesScreen: React.FC = observer(() => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader
-        title="MY FAVORITES"
+        title="My Favorites"
         onBackPress={() => navigation.goBack()}
       />
 

@@ -124,7 +124,7 @@ const HelpCenterScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="HELP CENTER"
+        title="Help Center"
         onBackPress={handleBack}
         showAvatar={false}
         showSearch={false}
