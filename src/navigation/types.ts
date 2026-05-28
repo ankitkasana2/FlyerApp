@@ -13,7 +13,7 @@ export type BottomTabParamList = {
   Home: undefined;
   Categories: undefined;
   Download: undefined;
-  Profile: undefined;
+  Cart: undefined;
 };
 
 // ─── Drawer ──────────────────────────────────────────────────────────────────
@@ -26,7 +26,10 @@ export type DrawerParamList = {
 // ─── App Stack ─────────────────────────────────────────────────────────────────
 export type AppStackParamList = {
   DrawerRoot: undefined;
-  Cart: undefined;
+  Profile: undefined;
+  EditProfile: undefined;
+  ChangePassword: undefined;
+  MediaLibrary: undefined;
   FlyerDetail: { flyerId: string };
   Favorites: undefined;
   Notifications: undefined;

@@ -39,6 +39,9 @@ import CartScreen from '../screens/cart/CartScreen';
 import DownloadsScreen from '../screens/Download/DownloadsScreen';
 import FlyerDetailScreen from '../screens/FlyerDetail/FlyerDetailScreen';
 import FavoritesScreen from '../screens/Favorites/FavoritesScreen';
+import MediaLibraryScreen from '../screens/MediaLibrary/MediaLibraryScreen';
+import EditProfileScreen from '../screens/Profile/EditProfileScreen';
+import ChangePasswordScreen from '../screens/Profile/ChangePasswordScreen';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import CategoryScreen from '../screens/Category/CategoryScreen';
 import AppDrawer from './AppDrawer';
@@ -56,7 +59,7 @@ const TAB_ICONS: Record<keyof BottomTabParamList, any> = {
   Home: AppImages.home,
   Categories: AppImages.categories,
   Download: AppImages.download,
-  Profile: AppImages.profile,
+  Cart: AppImages.cart,
 };
 
 const TAB_COUNT = 4;
@@ -72,7 +75,8 @@ const TabItem: React.FC<{
   isFocused: boolean;
   label: string;
   onPress: () => void;
-}> = ({ route, isFocused, label, onPress }) => {
+  badgeCount?: number;
+}> = ({ route, isFocused, label, onPress, badgeCount = 0 }) => {
   const activeAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
   useEffect(() => {
@@ -123,18 +127,25 @@ const TabItem: React.FC<{
             styles.tabIcon,
             {
               opacity: iconOpacity,
-              tintColor: isFocused ? Colors.primary : Colors.tabBarInactive,
+              tintColor: isFocused ? Colors.primary : '#FFFFFF',
             },
           ]}
           resizeMode="contain"
         />
+        {badgeCount > 0 && (
+          <View style={styles.tabBadge}>
+            <Text style={styles.tabBadgeText}>
+              {badgeCount > 9 ? '9+' : badgeCount}
+            </Text>
+          </View>
+        )}
       </Animated.View>
 
       <Text
         style={[
           styles.tabLabel,
           {
-            color: isFocused ? Colors.textPrimary : Colors.tabBarInactive,
+            color: isFocused ? Colors.textPrimary : '#FFFFFF',
             fontFamily: isFocused ? FontFamily.semiBold : FontFamily.regular,
           },
         ]}
@@ -146,12 +157,13 @@ const TabItem: React.FC<{
 };
 
 // ─── Custom Tab Bar ────────────────────────────────────────────────────────────
-const CustomTabBar: React.FC<BottomTabBarProps> = ({
+const CustomTabBar: React.FC<BottomTabBarProps> = observer(({
   state,
   descriptors,
   navigation,
 }) => {
   const insets = useSafeAreaInsets();
+  const { cartStore } = useStores();
 
   // Sliding indicator translateX
   const indicatorX = useRef(
@@ -206,25 +218,24 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
             isFocused={isFocused}
             label={label}
             onPress={onPress}
+            badgeCount={route.name === 'Cart' ? cartStore.itemCount : 0}
           />
         );
       })}
     </View>
   );
-};
+});
 
 // ─── Global Header ─────────────────────────────────────────────────────────────
 const GlobalHeader = observer(() => {
   const nav = useNavigation<any>();
-  const { cartStore, notificationStore } = useStores();
+  const { notificationStore } = useStores();
 
   return (
     <SafeAreaView edges={['top']}>
       <Header
-        cartCount={cartStore.itemCount}
         notificationCount={notificationStore.unreadCount}
         onMenuPress={() => nav.dispatch(DrawerActions.openDrawer())}
-        onCartPress={() => nav.navigate('Cart')}
         onNotificationPress={() => nav.navigate('Notifications')}
       />
     </SafeAreaView>
@@ -242,7 +253,7 @@ const BottomTabs = () => (
     <Tab.Screen name="Home" component={HomeScreen} />
     <Tab.Screen name="Categories" component={CategoryScreen} />
     <Tab.Screen name="Download" component={DownloadsScreen} />
-    <Tab.Screen name="Profile" component={ProfileScreen} />
+    <Tab.Screen name="Cart" component={CartScreen} options={{ title: 'Cart' }} />
   </Tab.Navigator>
 );
 
@@ -298,7 +309,10 @@ const AppNavigator = () => (
     screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}
   >
     <AppStack.Screen name="DrawerRoot" component={DrawerNavigator} />
-    <AppStack.Screen name="Cart" component={CartScreen} />
+    <AppStack.Screen name="Profile" component={ProfileScreen} />
+    <AppStack.Screen name="EditProfile" component={EditProfileScreen} />
+    <AppStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+    <AppStack.Screen name="MediaLibrary" component={MediaLibraryScreen} />
     <AppStack.Screen name="FlyerDetail" component={FlyerDetailScreen} />
     <AppStack.Screen name="Favorites" component={FavoritesScreen} />
     <AppStack.Screen name="Notifications" component={NotificationsScreen} />
@@ -372,6 +386,26 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 13,
     letterSpacing: 0.2,
+  },
+
+  // ── Cart badge on tab icon ────────────────────────────────────────────────
+  tabBadge: {
+    position: 'absolute',
+    top: -2,
+    right: 2,
+    backgroundColor: Colors.primary,
+    borderRadius: 11,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  tabBadgeText: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontFamily: FontFamily.bold,
+    lineHeight: 15,
   },
 
   // ── Drawer ────────────────────────────────────────────────────────────────

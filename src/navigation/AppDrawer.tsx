@@ -66,6 +66,16 @@ const AppDrawer: React.FC<AppDrawerProps> = observer(({ onClose }) => {
       {
         items: [
           {
+            id: 'profile',
+            label: 'My Profile',
+            icon: AppImages.profile,
+            hasChevron: true,
+            onPress: () => {
+              onClose?.();
+              navigation.navigate('Profile');
+            },
+          },
+          {
             id: 'orders',
             label: 'My Orders',
             icon: Images.myorders,

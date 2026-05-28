@@ -26,19 +26,15 @@ const HamburgerIcon: React.FC<{ color?: string }> = ({
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface HeaderProps {
-  cartCount?: number;
   notificationCount?: number;
   onMenuPress?: () => void;
-  onCartPress?: () => void;
   onNotificationPress?: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Header: React.FC<HeaderProps> = ({
-  cartCount = 0,
   notificationCount = 0,
   onMenuPress,
-  onCartPress,
   onNotificationPress,
 }) => (
   <View style={styles.container}>
@@ -60,29 +56,8 @@ const Header: React.FC<HeaderProps> = ({
       />
     </View>
 
-    {/* Right: Cart + Bell */}
+    {/* Right: Bell */}
     <View style={styles.right}>
-      {/* Cart */}
-      <TouchableOpacity
-        style={styles.iconBtn}
-        onPress={onCartPress}
-        activeOpacity={0.7}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
-        <Image
-          source={AppImages.cart}
-          style={styles.iconImg}
-          resizeMode="contain"
-        />
-        {cartCount > 0 && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>
-              {cartCount > 9 ? '9+' : cartCount}
-            </Text>
-          </View>
-        )}
-      </TouchableOpacity>
-
       {/* Bell */}
       <TouchableOpacity
         style={styles.iconBtn}
@@ -90,18 +65,20 @@ const Header: React.FC<HeaderProps> = ({
         activeOpacity={0.7}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Image
-          source={AppImages.bell}
-          style={styles.iconImg}
-          resizeMode="contain"
-        />
-        {notificationCount > 0 && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>
-              {notificationCount > 9 ? '9+' : notificationCount}
-            </Text>
-          </View>
-        )}
+        <View style={styles.iconWrapper}>
+          <Image
+            source={AppImages.bell}
+            style={styles.iconImg}
+            resizeMode="contain"
+          />
+          {notificationCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {notificationCount > 9 ? '9+' : notificationCount}
+              </Text>
+            </View>
+          )}
+        </View>
       </TouchableOpacity>
     </View>
   </View>
@@ -129,7 +106,7 @@ const styles = StyleSheet.create({
   right: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
   },
   iconBtn: {
     width: 44,
@@ -137,23 +114,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  iconWrapper: {
+    position: 'relative',
+  },
   iconImg: {
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
     tintColor: Colors.textPrimary,
   },
   badge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
+    top: -6,
+    right: -6,
     backgroundColor: Colors.primary,
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: Colors.background,
   },
   badgeText: {

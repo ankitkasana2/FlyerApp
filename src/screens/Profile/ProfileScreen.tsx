@@ -13,6 +13,7 @@ import { observer } from 'mobx-react-lite';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 import SectionHeader from '../../components/home/SectionHeader';
+import ScreenHeader from '../../components/common/ScreenHeader';
 import ProfileCard from './ProfileCard';
 import RecentOrderCard, { OrderStatus } from './RecentOrderCard';
 import QuickAccessGrid, { QuickAccessItem } from './QuickAccessGrid';
@@ -168,26 +169,26 @@ const ProfileScreen: React.FC = observer(() => {
       id: 's1',
       label: 'Edit Profile',
       icon: 'person',
-      onPress: () => console.log('Edit Profile'),
+      onPress: () => navigation.navigate('EditProfile'),
     },
     {
       id: 's2',
       label: 'Change Password',
       icon: 'lock',
-      onPress: () => console.log('Change Password'),
+      onPress: () => navigation.navigate('ChangePassword'),
     },
     {
       id: 's3',
       label: 'Manage Notifications',
       icon: 'bell',
       badge: 'NEW',
-      onPress: () => console.log('Notifications'),
+      onPress: () => navigation.navigate('Notifications'),
     },
     {
       id: 's4',
       label: 'Help Center',
       icon: 'help',
-      onPress: () => console.log('Help Center'),
+      onPress: () => navigation.navigate('HelpCenter'),
     },
   ];
 
@@ -204,7 +205,7 @@ const ProfileScreen: React.FC = observer(() => {
       label: 'Media Library',
       sublabel: 'All Downloads',
       icon: 'folder',
-      onPress: () => console.log('Media Library'),
+      onPress: () => navigation.navigate('MediaLibrary'),
     },
   ];
 
@@ -228,11 +229,17 @@ const ProfileScreen: React.FC = observer(() => {
   }, [authStore]);
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
+      <ScreenHeader
+        title="My Profile"
+        onBackPress={() => navigation.goBack()}
+      />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
       {/* ── Profile Card ── */}
       <ProfileCard
         name={displayName}
@@ -299,14 +306,18 @@ const ProfileScreen: React.FC = observer(() => {
 
       <View style={styles.bottomPadding} />
     </ScrollView>
+    </SafeAreaView>
   );
 });
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  scroll: {
+  safeArea: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  scroll: {
+    flex: 1,
   },
   scrollContent: {
     paddingTop: 16,
