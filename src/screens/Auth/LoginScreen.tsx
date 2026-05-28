@@ -4,7 +4,6 @@ import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
@@ -127,104 +126,97 @@ const LoginScreen = observer(() => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        >
-          {/* Header shared with Signup */}
-          <AuthHeader
-            title="GRODIFY"
-            subtitle="NEW FLYERS EVERY DAY"
-            // No stepLabel for Login
-            backgroundImages={LOGIN_HEADER_FLYERS}
+        {/* Header — fixed, non-scrollable */}
+        <AuthHeader
+          title="GRODIFY"
+          subtitle="NEW FLYERS EVERY DAY"
+          backgroundImages={LOGIN_HEADER_FLYERS}
+        />
+
+        {/* Form — fixed below header, grows to fill remaining space */}
+        <View style={styles.formBlock}>
+          <Text style={styles.welcomeTitle}>Welcome back</Text>
+          <Text style={styles.welcomeSub}>Sign in to access your premium flyers</Text>
+
+          {/* Email Input */}
+          <AuthInput
+            label="EMAIL ADDRESS"
+            placeholder="you@example.com"
+            value={email}
+            onChangeText={(t) => {
+              setEmail(t);
+            }}
+            keyboardType="email-address"
+            leftIcon={
+              <Image
+                source={Images.email}
+                style={styles.inputIcon}
+                resizeMode="contain"
+              />
+            }
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
           />
 
-          <View style={styles.formBlock}>
-            <Text style={styles.welcomeTitle}>Welcome back</Text>
-            <Text style={styles.welcomeSub}>Sign in to access your premium flyers</Text>
+          {/* Password Input */}
+          <AuthInput
+            label="PASSWORD"
+            placeholder="••••••••"
+            value={password}
+            onChangeText={(t) => {
+              setPassword(t);
+            }}
+            secureTextEntry
+            leftIcon={
+              <Image
+                source={Images.password}
+                style={styles.inputIcon}
+                resizeMode="contain"
+              />
+            }
+            ref={passwordRef}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+          />
 
-            {/* Email Input */}
-            <AuthInput
-              label="EMAIL ADDRESS"
-              placeholder="you@example.com"
-              value={email}
-              onChangeText={(t) => {
-                setEmail(t);
-              }}
-              keyboardType="email-address"
-              leftIcon={
-                <Image 
-                  source={Images.email} 
-                  style={styles.inputIcon} 
-                  resizeMode="contain" 
-                />
-              }
-              returnKeyType="next"
-              onSubmitEditing={() => passwordRef.current?.focus()}
-            />
+          {/* Forgot Password */}
+          <TouchableOpacity
+            style={styles.forgotBtn}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('ResetPassword')}
+          >
+            <Text style={styles.forgotText}>Forgot password?</Text>
+          </TouchableOpacity>
 
-            {/* Password Input */}
-            <AuthInput
-              label="PASSWORD"
-              placeholder="••••••••"
-              value={password}
-              onChangeText={(t) => {
-                setPassword(t);
-              }}
-              secureTextEntry
-              leftIcon={
-                <Image 
-                  source={Images.password} 
-                  style={styles.inputIcon} 
-                  resizeMode="contain" 
-                />
-              }
-              returnKeyType="done"
-              onSubmitEditing={handleLogin}
-            />
+          {/* Sign In Button */}
+          <TouchableOpacity
+            style={[styles.loginBtn, isLoading && styles.loginBtnDisabled]}
+            onPress={handleLogin}
+            activeOpacity={0.8}
+            disabled={isLoading}
+          >
+            <Text style={styles.loginBtnText}>
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Text>
+          </TouchableOpacity>
 
-            {/* Forgot Password */}
-            <TouchableOpacity 
-              style={styles.forgotBtn} 
-              activeOpacity={0.7}
-              onPress={() => navigation.navigate('ResetPassword')}
-            >
-              <Text style={styles.forgotText}>Forgot password?</Text>
-            </TouchableOpacity>
+          {/* Social Auth */}
+          <SocialAuthButtons
+            onApplePress={() => authStore.signInWithProvider('apple')}
+            onGooglePress={() => authStore.signInWithProvider('google')}
+          />
 
-            {/* Sign In Button */}
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account? </Text>
             <TouchableOpacity
-              style={[styles.loginBtn, isLoading && styles.loginBtnDisabled]}
-              onPress={handleLogin}
-              activeOpacity={0.8}
-              disabled={isLoading}
+              onPress={() => navigation.navigate('Signup')}
+              activeOpacity={0.7}
             >
-              <Text style={styles.loginBtnText}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
-              </Text>
+              <Text style={styles.footerLink}>Sign up</Text>
             </TouchableOpacity>
-
-            {/* Social Auth */}
-            <SocialAuthButtons
-              onApplePress={() => authStore.signInWithProvider('apple')}
-              onGooglePress={() => authStore.signInWithProvider('google')}
-            />
-
-            {/* Footer */}
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account? </Text>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Signup')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.footerLink}>Sign up</Text>
-              </TouchableOpacity>
-            </View>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -238,18 +230,13 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 40,
-  },
   formBlock: {
+    flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 32,
+    paddingTop: 28,
     paddingBottom: 24,
-    gap: 20,
+    gap: 18,
+    justifyContent: 'center',
   },
   welcomeTitle: {
     fontSize: 26,

@@ -8,11 +8,12 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import Config from 'react-native-config';
+import { useStripe } from '@stripe/stripe-react-native';
 import ScreenHeader from '../../components/common/ScreenHeader';
 import DatePickerField from '../../components/common/DatePickerField';
 import FlyerHeroBanner from './FlyerHeroBanner';
 import FormField from './FormField';
-import SelectDropdown, { SelectOption } from './SelectDropdown';
 import DynamicListField from './DynamicListField';
 import VenueLogoUpload from './VenueLogoUpload';
 import SponsorsUpload from './SponsorsUpload';
@@ -31,7 +32,14 @@ import type { AppStackParamList } from '../../navigation/types';
 import { ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useImagePicker, type PickedImage } from '../../hooks/useImagePicker';
-import PeopleListWithPhotos, { type PersonWithPhoto } from './PeopleListWithPhotos';
+import PeopleListWithPhotos, {
+  type PersonWithPhoto,
+} from './PeopleListWithPhotos';
+import {
+  buildCheckoutPayload,
+  createPaymentSheet,
+  STRIPE_RETURN_URL,
+} from '../../services/stripeService';
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -68,14 +76,24 @@ const FlyerDetailScreen: React.FC = observer(() => {
   const route = useRoute<RouteProp<AppStackParamList, 'FlyerDetail'>>();
   const navigation = useNavigation<any>();
   const { flyerId } = route.params;
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const stripePublishableKey =
+    Config.STRIPE_PUBLISHABLE_KEY ||
+    Config.PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+    Config.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   // ── Image picker hook ───────────────────────────────────────────────────────
   const { pickFromCamera, pickFromLibrary, pickWithPrompt } = useImagePicker();
 
   // ── Picked image state ──────────────────────────────────────────────────────
   const [venueLogo, setVenueLogo] = useState<PickedImage | null>(null);
-  const [sponsorImages, setSponsorImages] = useState<(PickedImage | null)[]>([null, null, null]);
-  const [birthdayPersonPhoto, setBirthdayPersonPhoto] = useState<PickedImage | null>(null);
+  const [sponsorImages, setSponsorImages] = useState<(PickedImage | null)[]>([
+    null,
+    null,
+    null,
+  ]);
+  const [birthdayPersonPhoto, setBirthdayPersonPhoto] =
+    useState<PickedImage | null>(null);
   const [venueText, setVenueText] = useState('');
 
   const [djPeople, setDjPeople] = useState<PersonWithPhoto[]>([
@@ -97,7 +115,8 @@ const FlyerDetailScreen: React.FC = observer(() => {
     | { type: 'dj'; index: number }
     | { type: 'host'; index: number }
     | null;
-  const [mediaLibraryTarget, setMediaLibraryTarget] = useState<MediaTarget>(null);
+  const [mediaLibraryTarget, setMediaLibraryTarget] =
+    useState<MediaTarget>(null);
 
   const [form, setForm] = useState<FlyerDetailFormState>({
     presenter: '',
@@ -186,8 +205,12 @@ const FlyerDetailScreen: React.FC = observer(() => {
       return;
     }
     if (parsedFlyerPrice === 15) {
-      setDjPeople(prev => prev.slice(0, 4).map(p => ({ ...p, hasPhoto: true })));
-      setHostPeople(prev => prev.slice(0, 2).map(p => ({ ...p, hasPhoto: true })));
+      setDjPeople(prev =>
+        prev.slice(0, 4).map(p => ({ ...p, hasPhoto: true })),
+      );
+      setHostPeople(prev =>
+        prev.slice(0, 2).map(p => ({ ...p, hasPhoto: true })),
+      );
     }
   }, [isWithPhotoForm, parsedFlyerPrice]);
 
@@ -263,12 +286,9 @@ const FlyerDetailScreen: React.FC = observer(() => {
   );
 
   // "LIBRARY" = open server media library modal
-  const handleSponsorLibrary = useCallback(
-    (index: number) => {
-      setMediaLibraryTarget({ type: 'sponsor', index });
-    },
-    [],
-  );
+  const handleSponsorLibrary = useCallback((index: number) => {
+    setMediaLibraryTarget({ type: 'sponsor', index });
+  }, []);
 
   const handleSponsorRemove = useCallback((index: number) => {
     setSponsorImages(prev => {
@@ -280,10 +300,15 @@ const FlyerDetailScreen: React.FC = observer(() => {
 
   // ─── Price calculation ──────────────────────────────────────────────────
   const totalPrice = useMemo(() => {
-    const base =
-      isBirthdayForm ? 10 :
-      (isNoPhotoForm ? (parsedFlyerPrice >= 40 ? 40 : parsedFlyerPrice === 15 ? 15 : 10) :
-      (flyerStore.basePrice || parsedFlyerPrice || 0));
+    const base = isBirthdayForm
+      ? 10
+      : isNoPhotoForm
+      ? parsedFlyerPrice >= 40
+        ? 40
+        : parsedFlyerPrice === 15
+        ? 15
+        : 10
+      : flyerStore.basePrice || parsedFlyerPrice || 0;
 
     let total = base;
 
@@ -309,44 +334,72 @@ const FlyerDetailScreen: React.FC = observer(() => {
     return total;
   }, [flyerStore.basePrice, form.deliveryTime, form.selectedExtras]);
 
+  const validateBeforeCart = useCallback((): {
+    ok: boolean;
+    message?: string;
+  } => {
+    if (!form.eventTitle.trim()) {
+      return { ok: false, message: 'Event Title is required.' };
+    }
+    if (!form.deliveryTime) {
+      return { ok: false, message: 'Please select a delivery time.' };
+    }
+    if (isNoPhotoForm) {
+      const hasVenue = !!venueLogo || !!venueText.trim();
+      if (!hasVenue) {
+        return { ok: false, message: 'Please add a venue logo or venue text.' };
+      }
+    }
+    return { ok: true };
+  }, [form.deliveryTime, form.eventTitle, isNoPhotoForm, venueLogo, venueText]);
+
   // ─── Add to Cart handler ─────────────────────────────────────────────────
-  const handleAddToCart = useCallback(async () => {
+  const doAddToCart = useCallback(async (): Promise<number | null> => {
     const userId = authStore.user?.id;
     const flyerIs = flyerStore.flyer?.id ?? flyerId;
     const categoryId =
       flyerStore.flyerFormDetail.categoryId ??
-      (flyerStore.flyer?.categories?.[0] ?? flyerStore.flyer?.category ?? undefined);
+      flyerStore.flyer?.categories?.[0] ??
+      flyerStore.flyer?.category ??
+      undefined;
 
     if (!userId) {
       Alert.alert('Not Logged In', 'Please sign in to add items to your cart.');
-      return;
+      return null;
     }
 
     if (!flyerIs) {
       Alert.alert('Error', 'Could not identify this flyer. Please try again.');
-      return;
+      return null;
     }
 
-    const djsPayload = (isWithPhotoForm ? djPeople : form.djArtists.map(name => ({ name, image: null, hasPhoto: false })))
+    const validation = validateBeforeCart();
+    if (!validation.ok) {
+      Alert.alert(
+        'Missing Details',
+        validation.message || 'Please complete the form.',
+      );
+      return null;
+    }
+
+    const djsPayload = (
+      isWithPhotoForm
+        ? djPeople
+        : form.djArtists.map(name => ({ name, image: null, hasPhoto: false }))
+    )
       .map(entry => ({ name: entry.name }))
       .filter(entry => entry.name.trim().length > 0);
 
-    const hostName = (isWithPhotoForm ? hostPeople.map(h => h.name) : form.hosts)
-      .find(h => h.trim().length > 0) || '';
+    const hostName =
+      (isWithPhotoForm ? hostPeople.map(h => h.name) : form.hosts).find(
+        h => h.trim().length > 0,
+      ) || '';
 
     // Build sponsors array (text + file index)
     const sponsorsPayload = sponsorImages.map((img, i) => ({
       name: `Sponsor ${i + 1}`,
       _hasImage: !!img,
     }));
-
-    if (isNoPhotoForm) {
-      const hasVenue = !!venueLogo || !!venueText.trim();
-      if (!hasVenue) {
-        Alert.alert('Missing Venue', 'Please add a venue logo or venue text.');
-        return;
-      }
-    }
 
     const result = await cartStore.addToCart(
       {
@@ -378,19 +431,19 @@ const FlyerDetailScreen: React.FC = observer(() => {
       {
         venueLogo: venueLogo,
         sponsorImages: sponsorImages,
-        hostImage: isWithPhotoForm ? (hostPeople[0]?.image ?? null) : null,
+        hostImage: isWithPhotoForm ? hostPeople[0]?.image ?? null : null,
         djImages: isWithPhotoForm ? djPeople.map(p => p.image) : [],
       },
     );
 
     if (result.success) {
-      // Success is handled by the Toast in cartStore.ts
-      // Optionally navigate back if desired: navigation.goBack();
+      return result.cartItemId ?? null;
     } else {
       Alert.alert(
         'Error',
         result.message || 'Failed to add to cart. Please try again.',
       );
+      return null;
     }
   }, [
     authStore.user,
@@ -409,14 +462,75 @@ const FlyerDetailScreen: React.FC = observer(() => {
     hostPeople,
     parsedFlyerPrice,
     isBirthdayForm,
+    validateBeforeCart,
   ]);
+
+  const handleAddToCart = useCallback(async () => {
+    await doAddToCart();
+  }, [doAddToCart]);
 
   // ─── Checkout handler ────────────────────────────────────────────────────
   const handleCheckoutNow = useCallback(async () => {
-    // First add to cart, then navigate
-    await handleAddToCart();
-    // Navigate to cart is handled inside handleAddToCart via alert
-  }, [handleAddToCart]);
+    const userId = authStore.user?.id;
+    if (!userId) {
+      Alert.alert('Not Logged In', 'Please sign in to checkout.');
+      return;
+    }
+
+    if (!stripePublishableKey) {
+      Alert.alert(
+        'Stripe not configured',
+        'Add `STRIPE_PUBLISHABLE_KEY` to your `.env` before testing checkout.',
+      );
+      return;
+    }
+
+    const cartItemId = await doAddToCart();
+    if (!cartItemId) return;
+
+    try {
+      const paymentSheet = await createPaymentSheet(
+        buildCheckoutPayload([{ id: cartItemId } as any], totalPrice, userId),
+      );
+
+      const { error } = await initPaymentSheet({
+        merchantDisplayName: 'FlyerApp',
+        paymentIntentClientSecret: paymentSheet.paymentIntent,
+        customerId: paymentSheet.customer,
+        customerEphemeralKeySecret: paymentSheet.ephemeralKey,
+        allowsDelayedPaymentMethods: true,
+        returnURL: STRIPE_RETURN_URL,
+      });
+
+      if (error) {
+        Alert.alert('Checkout unavailable', error.message);
+        return;
+      }
+
+      const paymentResult = await presentPaymentSheet();
+      if (paymentResult.error) {
+        Alert.alert('Payment not completed', paymentResult.error.message);
+        return;
+      }
+
+      Alert.alert(
+        'Payment submitted',
+        'Stripe completed the client flow. Confirm the final order state from your webhook before fulfillment.',
+      );
+    } catch (error: any) {
+      Alert.alert(
+        'Checkout failed',
+        error?.message || 'Unable to start Stripe checkout.',
+      );
+    }
+  }, [
+    authStore.user?.id,
+    doAddToCart,
+    initPaymentSheet,
+    presentPaymentSheet,
+    stripePublishableKey,
+    totalPrice,
+  ]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -463,7 +577,10 @@ const FlyerDetailScreen: React.FC = observer(() => {
                 const userId = authStore.user?.id;
                 const id = flyerStore.flyer?.id || flyerId;
                 if (!userId) {
-                  Alert.alert('Sign In Required', 'Please sign in to save flyers to your favorites.');
+                  Alert.alert(
+                    'Sign In Required',
+                    'Please sign in to save flyers to your favorites.',
+                  );
                   return;
                 }
                 try {
@@ -559,29 +676,42 @@ const FlyerDetailScreen: React.FC = observer(() => {
               )}
 
               {/* DJs & Artists */}
-              {!isBirthdayForm && (isWithPhotoForm ? (
-                <PeopleListWithPhotos
-                  label="DJs"
-                  items={djPeople}
-                  onChange={setDjPeople}
-                  onPickImage={async index => {
-                    const img = await pickWithPrompt(`DJ ${index + 1}`);
-                    if (!img) return;
-                    setDjPeople(prev => prev.map((p, i) => (i === index ? { ...p, image: img } : p)));
-                  }}
-                  onPickFromLibrary={index => setMediaLibraryTarget({ type: 'dj', index })}
-                  onRemoveImage={index => setDjPeople(prev => prev.map((p, i) => (i === index ? { ...p, image: null } : p)))}
-                />
-              ) : (
-                <DynamicListField
-                  label="DJs & Artists"
-                  items={form.djArtists}
-                  onChange={items => setField('djArtists', items)}
-                  addLabel="ADD MORE DJs"
-                  placeholder="DJ/Artist"
-                  maxItems={4}
-                />
-              ))}
+              {!isBirthdayForm &&
+                (isWithPhotoForm ? (
+                  <PeopleListWithPhotos
+                    label="DJs"
+                    items={djPeople}
+                    onChange={setDjPeople}
+                    onPickImage={async index => {
+                      const img = await pickWithPrompt(`DJ ${index + 1}`);
+                      if (!img) return;
+                      setDjPeople(prev =>
+                        prev.map((p, i) =>
+                          i === index ? { ...p, image: img } : p,
+                        ),
+                      );
+                    }}
+                    onPickFromLibrary={index =>
+                      setMediaLibraryTarget({ type: 'dj', index })
+                    }
+                    onRemoveImage={index =>
+                      setDjPeople(prev =>
+                        prev.map((p, i) =>
+                          i === index ? { ...p, image: null } : p,
+                        ),
+                      )
+                    }
+                  />
+                ) : (
+                  <DynamicListField
+                    label="DJs & Artists"
+                    items={form.djArtists}
+                    onChange={items => setField('djArtists', items)}
+                    addLabel="ADD MORE DJs"
+                    placeholder="DJ/Artist"
+                    maxItems={4}
+                  />
+                ))}
 
               {/* Hosts */}
               {isBirthdayForm ? (
@@ -601,10 +731,22 @@ const FlyerDetailScreen: React.FC = observer(() => {
                   onPickImage={async index => {
                     const img = await pickWithPrompt(`Host ${index + 1}`);
                     if (!img) return;
-                    setHostPeople(prev => prev.map((p, i) => (i === index ? { ...p, image: img } : p)));
+                    setHostPeople(prev =>
+                      prev.map((p, i) =>
+                        i === index ? { ...p, image: img } : p,
+                      ),
+                    );
                   }}
-                  onPickFromLibrary={index => setMediaLibraryTarget({ type: 'host', index })}
-                  onRemoveImage={index => setHostPeople(prev => prev.map((p, i) => (i === index ? { ...p, image: null } : p)))}
+                  onPickFromLibrary={index =>
+                    setMediaLibraryTarget({ type: 'host', index })
+                  }
+                  onRemoveImage={index =>
+                    setHostPeople(prev =>
+                      prev.map((p, i) =>
+                        i === index ? { ...p, image: null } : p,
+                      ),
+                    )
+                  }
                 />
               ) : (
                 <DynamicListField
@@ -630,14 +772,18 @@ const FlyerDetailScreen: React.FC = observer(() => {
 
               {isBirthdayForm && (
                 <>
-                  <Text style={styles.sectionTitle}>Birthday Person Photo (Optional)</Text>
+                  <Text style={styles.sectionTitle}>
+                    Birthday Person Photo (Optional)
+                  </Text>
                   <VenueLogoUpload
                     pickedImage={birthdayPersonPhoto}
                     onUploadPress={async () => {
                       const img = await pickWithPrompt('Birthday Person Photo');
                       if (img) setBirthdayPersonPhoto(img);
                     }}
-                    onChooseFromLibrary={() => setMediaLibraryTarget({ type: 'birthday' })}
+                    onChooseFromLibrary={() =>
+                      setMediaLibraryTarget({ type: 'birthday' })
+                    }
                     onRemove={() => setBirthdayPersonPhoto(null)}
                   />
                 </>
@@ -786,10 +932,14 @@ const FlyerDetailScreen: React.FC = observer(() => {
             setBirthdayPersonPhoto(img);
           } else if (mediaLibraryTarget?.type === 'dj') {
             const idx = mediaLibraryTarget.index;
-            setDjPeople(prev => prev.map((p, i) => (i === idx ? { ...p, image: img } : p)));
+            setDjPeople(prev =>
+              prev.map((p, i) => (i === idx ? { ...p, image: img } : p)),
+            );
           } else if (mediaLibraryTarget?.type === 'host') {
             const idx = mediaLibraryTarget.index;
-            setHostPeople(prev => prev.map((p, i) => (i === idx ? { ...p, image: img } : p)));
+            setHostPeople(prev =>
+              prev.map((p, i) => (i === idx ? { ...p, image: img } : p)),
+            );
           }
           setMediaLibraryTarget(null);
         }}

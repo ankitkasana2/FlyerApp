@@ -1,42 +1,54 @@
-// components/home/BannerSkeleton.tsx
-
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BANNER_HEIGHT = SCREEN_WIDTH * 0.56;
 
-const SKELETON_BASE = '#1E1E1E';
-const SKELETON_HIGHLIGHT = '#2A2A2A';
+const BASE = '#1A1A1D';
+const STRIPE = 'rgba(255,255,255,0.07)';
+const BLOCK = '#252528';
 
 const BannerSkeleton: React.FC = () => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const shimmer = Animated.loop(
+    const loop = Animated.loop(
       Animated.timing(shimmerAnim, {
         toValue: 1,
-        duration: 1200,
-        easing: Easing.inOut(Easing.ease),
+        duration: 1400,
+        easing: Easing.linear,
         useNativeDriver: true,
-      })
+      }),
     );
-    shimmer.start();
-    return () => shimmer.stop();
+    loop.start();
+    return () => loop.stop();
   }, [shimmerAnim]);
 
-  const opacity = shimmerAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0.4, 0.8, 0.4],
+  const translateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-SCREEN_WIDTH * 1.2, SCREEN_WIDTH * 1.2],
   });
 
   return (
     <View style={styles.wrapper}>
-      <Animated.View style={[styles.background, { opacity }]} />
+      {/* Shimmer sweep stripe */}
+      <Animated.View
+        style={[styles.shimmerStripe, { transform: [{ translateX }] }]}
+      />
+
+      {/* Skeleton content blocks at bottom */}
       <View style={styles.content}>
-        <Animated.View style={[styles.tag, { opacity }]} />
-        <Animated.View style={[styles.title, { opacity }]} />
-        <Animated.View style={[styles.cta, { opacity }]} />
+        <View style={styles.tag} />
+        <View style={styles.titleLine1} />
+        <View style={styles.titleLine2} />
+        <View style={styles.cta} />
+      </View>
+
+      {/* Dots row matching HeroBanner */}
+      <View style={styles.dotsRow}>
+        <View style={[styles.dot, styles.dotActive]} />
+        <View style={styles.dot} />
+        <View style={styles.dot} />
       </View>
     </View>
   );
@@ -44,44 +56,74 @@ const BannerSkeleton: React.FC = () => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginHorizontal: 16,
-    borderRadius: 16,
+    marginHorizontal: 2,
+    borderRadius: 8,
+    backgroundColor: BASE,
     overflow: 'hidden',
-    height: BANNER_HEIGHT,
-    backgroundColor: SKELETON_BASE,
   },
-  background: {
+  shimmerStripe: {
     position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: SKELETON_HIGHLIGHT,
-    borderRadius: 16,
+    top: 0,
+    bottom: 0,
+    width: SCREEN_WIDTH * 0.55,
+    backgroundColor: STRIPE,
+    transform: [{ skewX: '-20deg' }],
   },
+
+  // ── Content placeholder ─────────────────────────────────────────────────────
   content: {
-    position: 'absolute',
-    bottom: 22,
-    left: 20,
-    right: 20,
+    height: BANNER_HEIGHT,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingBottom: 22,
+    gap: 10,
   },
   tag: {
-    width: 70,
-    height: 14,
+    width: 72,
+    height: 13,
     borderRadius: 4,
-    marginBottom: 6,
-    backgroundColor: SKELETON_HIGHLIGHT,
+    backgroundColor: BLOCK,
   },
-  title: {
-    width: '65%',
-    height: 28,
-    borderRadius: 4,
-    marginBottom: 18,
-    backgroundColor: SKELETON_HIGHLIGHT,
+  titleLine1: {
+    width: '60%',
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: BLOCK,
+  },
+  titleLine2: {
+    width: '42%',
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: BLOCK,
+    marginTop: -2,
   },
   cta: {
-    width: 90,
+    width: 96,
     height: 36,
     borderRadius: 8,
-    backgroundColor: SKELETON_HIGHLIGHT,
+    backgroundColor: BLOCK,
+    marginTop: 6,
+  },
+
+  // ── Dots ────────────────────────────────────────────────────────────────────
+  dotsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: BLOCK,
+  },
+  dotActive: {
+    width: 20,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#333336',
   },
 });
 

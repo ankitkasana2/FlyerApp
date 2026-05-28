@@ -169,11 +169,6 @@ const CartScreen: React.FC = observer(() => {
     );
   }, [cartStore, authStore.user]);
 
-  const handleCheckout = useCallback((id: string) => {
-    console.log('Checkout item:', id);
-    // navigation.navigate('Checkout', { itemId: id });
-  }, []);
-
   const handleContinueShopping = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
@@ -334,8 +329,6 @@ const CartScreen: React.FC = observer(() => {
                 item={item}
                 onEdit={handleEdit}
                 onRemove={handleRemove}
-                onCheckout={handleCheckout}
-                onContinueShopping={handleContinueShopping}
               />
             ))}
 

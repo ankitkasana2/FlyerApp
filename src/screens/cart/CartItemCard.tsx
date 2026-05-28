@@ -138,8 +138,6 @@ export interface CartItemCardProps {
   item: CartItemData;
   onEdit: (id: string) => void;
   onRemove: (id: string) => void;
-  onCheckout: (id: string) => void;
-  onContinueShopping: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -147,12 +145,9 @@ const CartItemCard: React.FC<CartItemCardProps> = ({
   item,
   onEdit,
   onRemove,
-  onCheckout,
-  onContinueShopping,
 }) => {
   const handleEdit = useCallback(() => onEdit(item.id), [item.id, onEdit]);
   const handleRemove = useCallback(() => onRemove(item.id), [item.id, onRemove]);
-  const handleCheckout = useCallback(() => onCheckout(item.id), [item.id, onCheckout]);
 
   const statusColor =
     item.status === 'active'
@@ -240,20 +235,6 @@ const CartItemCard: React.FC<CartItemCardProps> = ({
           <Text style={styles.actionBtnText}>Remove</Text>
         </TouchableOpacity>
       </View>
-
-      {/* ── Checkout Button ── */}
-      <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout} activeOpacity={0.85}>
-        <Text style={styles.checkoutText}>Checkout</Text>
-      </TouchableOpacity>
-
-      {/* ── Continue Shopping ── */}
-      <TouchableOpacity
-        style={styles.continueBtn}
-        onPress={onContinueShopping}
-        activeOpacity={0.75}
-      >
-        <Text style={styles.continueText}>Continue Shopping</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -406,32 +387,6 @@ const styles = StyleSheet.create({
   actionDivider: {
     width: 1,
     backgroundColor: Colors.border,
-  },
-  checkoutBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  checkoutText: {
-    fontSize: Typography.fontSizes.base,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
-    letterSpacing: 0.3,
-  },
-  continueBtn: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: Colors.surfaceElevated,
-  },
-  continueText: {
-    fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.semiBold,
-    color: Colors.textPrimary,
   },
 });
 

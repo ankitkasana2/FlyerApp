@@ -134,8 +134,8 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         getItemLayout={(_, index) => ({
-          length: SCREEN_WIDTH,
-          offset: SCREEN_WIDTH * index,
+          length: SCREEN_WIDTH - 4,
+          offset: (SCREEN_WIDTH - 4) * index,
           index,
         })}
         renderItem={({ item }) => {
@@ -213,10 +213,12 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   outerWrapper: {
+    marginHorizontal: 2,
+    borderRadius: 8,
     overflow: 'hidden',
   },
   slide: {
-    width: SCREEN_WIDTH,
+    width: SCREEN_WIDTH - 4,
   },
   image: {
     width: '100%',

@@ -121,7 +121,6 @@ const HomeScreen: React.FC = observer(() => {
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [bannerImageReady, setBannerImageReady] = useState(false);
   const [sectionApiFlyersById, setSectionApiFlyersById] = useState<Record<string, Flyer[]>>({});
   const [sectionLoadCycle, setSectionLoadCycle] = useState(0);
 
@@ -463,22 +462,12 @@ const HomeScreen: React.FC = observer(() => {
         />
       </View>
 
-      {/* HeroBanner renders at full height whenever data is ready so the
-          FlatList inside actually mounts and images start loading.
-          The skeleton sits on top as an absolute overlay until the first
-          image fires onLoad, then it is removed. */}
-      {mappedBanners.length > 0 && (
-        <HeroBanner
-          slides={mappedBanners}
-          autoPlayInterval={5000}
-          onFirstImageLoad={() => setBannerImageReady(true)}
-        />
-      )}
-      {!bannerImageReady && (isBannersLoading || mappedBanners.length > 0) && (
-        <View style={mappedBanners.length > 0 ? styles.bannerSkeletonOverlay : undefined}>
-          <BannerSkeleton />
-        </View>
-      )}
+      {/* Banner: show skeleton while loading, swap to real banner once data arrives */}
+      {isBannersLoading && mappedBanners.length === 0 ? (
+        <BannerSkeleton />
+      ) : mappedBanners.length > 0 ? (
+        <HeroBanner slides={mappedBanners} autoPlayInterval={5000} />
+      ) : null}
 
       {flyersError ? (
         <View style={styles.center}>
@@ -489,10 +478,11 @@ const HomeScreen: React.FC = observer(() => {
       {(isCategoriesLoading ||
         isCarouselsLoading ||
         (orderedTabs.length > 0 && !hasSectionApiData && homeSections.length === 0)) ? (
-        <View style={styles.skeletonStack}>
+        <>
           <HomeSectionSkeleton />
           <HomeSectionSkeleton />
-        </View>
+          <HomeSectionSkeleton />
+        </>
       ) : null}
 
       {!isCategoriesLoading &&
@@ -531,13 +521,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  bannerSkeletonOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-  },
   searchWrapper: {
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingVertical: 12,
@@ -560,9 +543,6 @@ const styles = StyleSheet.create({
   center: {
     paddingVertical: 48,
     alignItems: 'center',
-  },
-  skeletonStack: {
-    gap: 2,
   },
   errorText: {
     color: '#FF6B6B',

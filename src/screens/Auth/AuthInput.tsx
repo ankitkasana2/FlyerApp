@@ -84,7 +84,6 @@ export interface AuthInputProps {
   validationState?: InputValidationState;
   errorMessage?: string;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-  autoComplete?: string;
   returnKeyType?: 'done' | 'next' | 'go' | 'search';
   onSubmitEditing?: () => void;
   containerStyle?: ViewStyle;
@@ -227,6 +226,9 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     paddingVertical: 0,
     includeFontPadding: false,
+    // iOS autofill overrides the TextInput background directly — setting it
+    // here keeps the dark theme even when credentials are auto-filled.
+    backgroundColor: Colors.surface,
   },
   leftSlot: {
     marginRight: 12,
