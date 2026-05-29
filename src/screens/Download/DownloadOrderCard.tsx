@@ -234,6 +234,30 @@ const FileIcon: React.FC<{ color?: string; size?: number }> = ({
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type OrderStatus = 'preparing' | 'new' | 'delivered';
 
+const STATUS_META: Record<
+  OrderStatus,
+  { label: string; bg: string; fg: string; iconBg: string }
+> = {
+  new: {
+    label: 'New',
+    bg: `${Colors.primary}22`,
+    fg: Colors.primary,
+    iconBg: `${Colors.primary}22`,
+  },
+  delivered: {
+    label: 'Delivered',
+    bg: `${Colors.success}1A`,
+    fg: Colors.success,
+    iconBg: Colors.surfaceElevated,
+  },
+  preparing: {
+    label: 'Preparing',
+    bg: `${Colors.warning}1A`,
+    fg: Colors.warning,
+    iconBg: Colors.surfaceElevated,
+  },
+};
+
 export interface DownloadFile {
   id: string;
   name: string;
@@ -259,12 +283,8 @@ interface DownloadOrderCardProps {
 // ─── Order Status Icon ────────────────────────────────────────────────────────
 const OrderStatusIcon: React.FC<{ status: OrderStatus }> = ({ status }) => {
   const size = 36;
-  const bg =
-    status === 'preparing'
-      ? Colors.surfaceElevated
-      : status === 'new'
-      ? Colors.primary + '22'
-      : Colors.surfaceElevated;
+  const meta = STATUS_META[status];
+  const bg = meta?.iconBg ?? Colors.surfaceElevated;
 
   return (
     <View
@@ -290,6 +310,7 @@ const DownloadOrderCard: React.FC<DownloadOrderCardProps> = ({
   onViewDetails,
   onDownloadFile,
 }) => {
+  const statusMeta = STATUS_META[order.status];
   const handleViewDetails = useCallback(
     () => onViewDetails(order.orderNumber),
     [order.orderNumber, onViewDetails],
@@ -303,26 +324,31 @@ const DownloadOrderCard: React.FC<DownloadOrderCardProps> = ({
 
         <View style={styles.orderMeta}>
           <View style={styles.orderTopRow}>
-            <Text style={styles.orderTitle}>
-              Order {order.orderNumber}
-              <Text style={styles.deliveredAt}>
-                {' '}• Delivered {order.deliveredAt}
+            <View style={styles.orderTitleWrap}>
+              <Text style={styles.orderTitle}>Order {order.orderNumber}</Text>
+              <Text style={styles.orderSub}>
+                {order.status === 'preparing'
+                  ? `Updated ${order.deliveredAt}`
+                  : `Delivered ${order.deliveredAt}`}
               </Text>
-            </Text>
-            {order.status === 'new' && (
-              <View style={styles.newBadge}>
-                <Text style={styles.newBadgeText}>NEW</Text>
-              </View>
-            )}
+            </View>
+
+            <View
+              style={[styles.statusPill, { backgroundColor: statusMeta.bg }]}
+            >
+              <Text style={[styles.statusPillText, { color: statusMeta.fg }]}>
+                {statusMeta.label}
+              </Text>
+            </View>
           </View>
 
           <TouchableOpacity
             onPress={handleViewDetails}
-            activeOpacity={0.7}
-            hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+            activeOpacity={0.72}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <View style={styles.viewDetailsRow}>
-              <Text style={styles.viewDetailsText}>View Order Details</Text>
+              <Text style={styles.viewDetailsText}>View order details</Text>
               {/* External link arrow */}
               <View style={styles.externalIcon}>
                 <View style={styles.externalArrowShaft} />
@@ -363,9 +389,13 @@ const DownloadOrderCard: React.FC<DownloadOrderCardProps> = ({
                 <Text style={styles.fileName} numberOfLines={1}>
                   {file.name}
                 </Text>
-                <Text style={styles.fileMeta}>
-                  {file.size} • {file.type}
-                </Text>
+                <View style={styles.fileMetaRow}>
+                  <Text style={styles.fileMeta}>{file.size}</Text>
+                  <View style={styles.dot} />
+                  <View style={styles.typeChip}>
+                    <Text style={styles.typeChipText}>{file.type}</Text>
+                  </View>
+                </View>
               </View>
 
               {/* Download button */}
@@ -375,7 +405,9 @@ const DownloadOrderCard: React.FC<DownloadOrderCardProps> = ({
                 activeOpacity={0.75}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <DownloadIcon color={Colors.textPrimary} size={18} />
+                <View style={styles.downloadBtnInner}>
+                  <DownloadIcon color={Colors.textPrimary} size={18} />
+                </View>
               </TouchableOpacity>
             </View>
           ))}
@@ -389,9 +421,10 @@ const DownloadOrderCard: React.FC<DownloadOrderCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.surface,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
-    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
     gap: 14,
   },
   orderHeader: {
@@ -401,37 +434,40 @@ const styles = StyleSheet.create({
   },
   orderMeta: {
     flex: 1,
-    gap: 4,
+    gap: 6,
   },
   orderTopRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 6,
+    gap: 10,
+  },
+  orderTitleWrap: {
+    flex: 1,
+    gap: 2,
   },
   orderTitle: {
-    fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.semiBold,
+    fontSize: Typography.fontSizes.md,
+    fontWeight: Typography.fontWeights.bold,
     color: Colors.textPrimary,
-    flex: 1,
-    lineHeight: 18,
+    lineHeight: 20,
   },
-  deliveredAt: {
+  orderSub: {
+    fontSize: Typography.fontSizes.xs,
     fontWeight: Typography.fontWeights.regular,
     color: Colors.textSecondary,
   },
-  newBadge: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 5,
+  statusPill: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  newBadgeText: {
-    fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.black,
-    color: Colors.textPrimary,
-    letterSpacing: 0.8,
+  statusPillText: {
+    fontSize: 12,
+    fontWeight: Typography.fontWeights.semiBold,
+    letterSpacing: 0.3,
   },
   viewDetailsRow: {
     flexDirection: 'row',
@@ -439,7 +475,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   viewDetailsText: {
-    fontSize: Typography.fontSizes.xs,
+    fontSize: 13,
     fontWeight: Typography.fontWeights.semiBold,
     color: Colors.primary,
   },
@@ -472,11 +508,11 @@ const styles = StyleSheet.create({
 
   // Preparing state
   preparingBox: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: Colors.border,
     borderStyle: 'dashed',
-    borderRadius: 12,
-    paddingVertical: 28,
+    borderRadius: 14,
+    paddingVertical: 30,
     alignItems: 'center',
     gap: 10,
     backgroundColor: Colors.surfaceElevated,
@@ -495,6 +531,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   fileThumbnailWrapper: {
     width: 48,
@@ -523,14 +564,50 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeights.semiBold,
     color: Colors.textPrimary,
   },
+  fileMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   fileMeta: {
     fontSize: Typography.fontSizes.xs,
     color: Colors.textSecondary,
     fontWeight: Typography.fontWeights.regular,
   },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.textMuted,
+    opacity: 0.8,
+  },
+  typeChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: `${Colors.primary}18`,
+    borderWidth: 1,
+    borderColor: `${Colors.primary}33`,
+  },
+  typeChipText: {
+    fontSize: 11,
+    fontWeight: Typography.fontWeights.semiBold,
+    color: Colors.primary,
+    letterSpacing: 0.4,
+  },
   fileDownloadBtn: {
     width: 36,
     height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  downloadBtnInner: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: `${Colors.primary}22`,
+    borderWidth: 1,
+    borderColor: `${Colors.primary}33`,
     justifyContent: 'center',
     alignItems: 'center',
   },

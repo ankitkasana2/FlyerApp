@@ -113,7 +113,6 @@ const HomeScreen: React.FC = observer(() => {
 	    isBannersLoading,
 	    isCarouselsLoading,
 	    isCategoriesLoading,
-	    orderedCategoryTabs,
 	    orderedHomeTabs,
 	  } = flyerStore;
   const loadCart = cartStore.load;
@@ -474,36 +473,18 @@ const HomeScreen: React.FC = observer(() => {
           <Text style={styles.errorText}>{flyersError}</Text>
         </View>
       ) : null}
-
-      {(isCategoriesLoading ||
-        isCarouselsLoading ||
-        (orderedTabs.length > 0 && !hasSectionApiData && homeSections.length === 0)) ? (
-        <>
-          <HomeSectionSkeleton />
-          <HomeSectionSkeleton />
-          <HomeSectionSkeleton />
-        </>
-      ) : null}
-
-      {!isCategoriesLoading &&
-        !isBannersLoading &&
-        !flyersError &&
-        !bannerError &&
-        homeSections.length === 0 && (
-          <View style={styles.center}>
-            <Text style={styles.emptyText}>No flyers found.</Text>
-          </View>
-        )}
     </View>
   );
 
   return (
     <View style={styles.container}>
+      {/* Keep this area fixed; only the flyer list should scroll. */}
+      {renderHeader()}
       <FlatList
         data={homeSections}
         renderItem={renderCategorySection}
         keyExtractor={item => item.id}
-        ListHeaderComponent={renderHeader()}
+        style={styles.list}
         showsVerticalScrollIndicator={false}
         onRefresh={handleRefresh}
         refreshing={isRefreshing}
@@ -511,6 +492,25 @@ const HomeScreen: React.FC = observer(() => {
         maxToRenderPerBatch={4}
         windowSize={5}
         removeClippedSubviews
+        ListEmptyComponent={
+          (isCategoriesLoading ||
+            isCarouselsLoading ||
+            (orderedTabs.length > 0 && !hasSectionApiData && homeSections.length === 0)) ? (
+            <>
+              <HomeSectionSkeleton />
+              <HomeSectionSkeleton />
+              <HomeSectionSkeleton />
+            </>
+          ) : !isCategoriesLoading &&
+            !isBannersLoading &&
+            !flyersError &&
+            !bannerError &&
+            homeSections.length === 0 ? (
+            <View style={styles.center}>
+              <Text style={styles.emptyText}>No flyers found.</Text>
+            </View>
+          ) : null
+        }
       />
     </View>
   );
@@ -520,6 +520,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  list: {
+    flex: 1,
   },
   searchWrapper: {
     paddingHorizontal: 4,

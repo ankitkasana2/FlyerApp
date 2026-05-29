@@ -1,14 +1,14 @@
 // src/screens/Download/DownloadsScreen.tsx
 
-import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, StatusBar } from 'react-native';
-import { DrawerActions, useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useMemo } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 // Theme
 import Colors from '../../theme/colors';
 
 import DownloadOrderCard, { DownloadOrder } from './DownloadOrderCard';
+
+const ItemSeparator = () => <View style={styles.separator} />;
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 const MOCK_ORDERS: DownloadOrder[] = [
@@ -58,57 +58,75 @@ const MOCK_ORDERS: DownloadOrder[] = [
 ];
 
 const DownloadsScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+  const orders = useMemo(() => MOCK_ORDERS, []);
 
-  const handleMenuPress = useCallback(() => {
-    navigation.dispatch(DrawerActions.openDrawer());
-  }, [navigation]);
-
-  const handleSearchPress = useCallback(() => {
-    console.log('Search pressed');
-  }, []);
-
-  const handleCartPress = useCallback(() => {
-    navigation.navigate('Cart');
-  }, [navigation]);
-
-  const handleNotificationPress = useCallback(() => {
-    console.log('Notifications pressed');
-  }, []);
-
-  const handleViewDetails = useCallback((orderNumber: string) => {
+  const handleViewDetails = (orderNumber: string) => {
     console.log('View details for:', orderNumber);
-  }, []);
+  };
 
-  const handleDownloadFile = useCallback((orderId: string, fileId: string) => {
+  const handleDownloadFile = (orderId: string, fileId: string) => {
     console.log('Downloading file:', fileId, 'from order:', orderId);
-  }, []);
+  };
+
+  const readyCount = useMemo(
+    () => orders.filter(order => order.status !== 'preparing').length,
+    [orders],
+  );
+
+  const newCount = useMemo(
+    () => orders.filter(order => order.status === 'new').length,
+    [orders],
+  );
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
+      <FlatList
+        data={orders}
+        keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>Downloads</Text>
-          <Text style={styles.subtitle}>
-            Access your purchased templates and resources.
-          </Text>
-        </View>
+        contentContainerStyle={styles.content}
+        ItemSeparatorComponent={ItemSeparator}
+        ListHeaderComponent={
+          <View style={styles.headerWrap}>
+            <View style={styles.titleSection}>
+              <Text style={styles.title}>Downloads</Text>
+              <Text style={styles.subtitle}>
+                Access your purchased templates and resources.
+              </Text>
+            </View>
 
-        <View style={styles.ordersList}>
-          {MOCK_ORDERS.map(order => (
-            <DownloadOrderCard
-              key={order.id}
-              order={order}
-              onViewDetails={handleViewDetails}
-              onDownloadFile={handleDownloadFile}
-            />
-          ))}
-        </View>
-      </ScrollView>
+            <View style={styles.summaryRow}>
+              <View style={styles.summaryChip}>
+                <Text style={styles.summaryValue}>{orders.length}</Text>
+                <Text style={styles.summaryLabel}>Orders</Text>
+              </View>
+              <View style={styles.summaryChip}>
+                <Text style={styles.summaryValue}>{readyCount}</Text>
+                <Text style={styles.summaryLabel}>Ready</Text>
+              </View>
+              <View style={styles.summaryChip}>
+                <Text style={styles.summaryValue}>{newCount}</Text>
+                <Text style={styles.summaryLabel}>New</Text>
+              </View>
+            </View>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <DownloadOrderCard
+            order={item}
+            onViewDetails={handleViewDetails}
+            onDownloadFile={handleDownloadFile}
+          />
+        )}
+        ListEmptyComponent={
+          <View style={styles.emptyWrap}>
+            <Text style={styles.emptyTitle}>No downloads yet</Text>
+            <Text style={styles.emptySubtitle}>
+              Your purchased files will show up here when they are delivered.
+            </Text>
+          </View>
+        }
+      />
     </View>
   );
 };
@@ -119,29 +137,73 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   content: {
-    paddingBottom: 24,
+    paddingHorizontal: 16,
+    paddingBottom: 28,
+  },
+  separator: {
+    height: 14,
+  },
+  headerWrap: {
+    paddingTop: 10,
+    paddingBottom: 6,
+    gap: 14,
   },
   titleSection: {
-    paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 28,
+    fontWeight: '900',
     color: Colors.textPrimary,
-    marginBottom: 4,
+    letterSpacing: 0.2,
+    marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
-  filterSection: {
-    marginBottom: 20,
+  summaryRow: {
+    flexDirection: 'row',
+    gap: 10,
   },
-  ordersList: {
-    gap: 16,
+  summaryChip: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  summaryValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+  },
+  emptyWrap: {
+    paddingTop: 56,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });
 
