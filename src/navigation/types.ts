@@ -29,6 +29,9 @@ export type AppStackParamList = {
   Profile: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;
+  MyOrders: undefined;
+  OrderDetail: { orderId: string };
+  HowItWorks: undefined;
   MediaLibrary: undefined;
   FlyerDetail: { flyerId: string };
   Favorites: undefined;

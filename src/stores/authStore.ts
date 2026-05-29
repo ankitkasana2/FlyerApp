@@ -25,12 +25,27 @@ export class AuthStore {
 
   private flyerStore: any;
   private cartStore: any;
+  private notificationStore: any;
 
-  constructor(flyerStore?: any, cartStore?: any) {
+  constructor(flyerStore?: any, cartStore?: any, notificationStore?: any) {
     this.flyerStore = flyerStore;
     this.cartStore = cartStore;
+    this.notificationStore = notificationStore;
     makeAutoObservable(this);
     this.initialize();
+  }
+
+  private formatCognitoUserId(userId: string, provider: string = 'cognito') {
+    if (!userId) return '';
+    return userId.includes('_') ? userId : `${provider}_${userId}`;
+  }
+
+  private getPreferredApiToken(params: {
+    backendToken?: string | null;
+    idToken?: string | null;
+    accessToken?: string | null;
+  }) {
+    return params.backendToken || params.idToken || params.accessToken || null;
   }
 
   async initialize() {
@@ -39,12 +54,16 @@ export class AuthStore {
       if (session && session.isValid()) {
         const attrs = await cognitoService.getCurrentUserAttributes();
         const storedUserRaw = await AsyncStorage.getItem(STORAGE_KEY);
-        const user = storedUserRaw ? JSON.parse(storedUserRaw) : this.mapAttributes(attrs);
-        const token = session.getAccessToken().getJwtToken();
-        setAccessToken(token);
+        const user = storedUserRaw
+          ? this.normalizeStoredUser(JSON.parse(storedUserRaw))
+          : this.mapAttributes(attrs);
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        const accessToken = session.getAccessToken().getJwtToken();
+        const idToken = session.getIdToken().getJwtToken();
+        setAccessToken(this.getPreferredApiToken({ idToken, accessToken }));
         runInAction(() => {
-          this.accessToken = token;
-          this.idToken = session.getIdToken().getJwtToken();
+          this.accessToken = accessToken;
+          this.idToken = idToken;
           this.refreshToken = session.getRefreshToken().getToken();
           this.user = user;
           this.isAuthenticated = true;
@@ -61,12 +80,14 @@ export class AuthStore {
       const storedUserRaw = await AsyncStorage.getItem(STORAGE_KEY);
       if (storedTokensStr && storedUserRaw) {
         const tokens = JSON.parse(storedTokensStr);
-        setAccessToken(tokens.accessToken);
+        const user = this.normalizeStoredUser(JSON.parse(storedUserRaw));
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        setAccessToken(this.getPreferredApiToken(tokens));
         runInAction(() => {
           this.accessToken = tokens.accessToken;
           this.idToken = tokens.idToken;
           this.refreshToken = tokens.refreshToken;
-          this.user = JSON.parse(storedUserRaw);
+          this.user = user;
           this.isAuthenticated = true;
         });
       } else {
@@ -84,7 +105,7 @@ export class AuthStore {
       const result = await cognitoService.signIn(username, password);
       const attrs = result.userAttributes;
       const user = {
-        id: attrs.sub || '',
+        id: this.formatCognitoUserId(attrs.sub || '', 'cognito'),
         name: attrs.name || attrs.given_name || attrs.email || 'User',
         email: attrs.email || username,
         phone: attrs.phone_number || '',
@@ -92,7 +113,12 @@ export class AuthStore {
       };
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-      setAccessToken(result.accessToken);
+      setAccessToken(
+        this.getPreferredApiToken({
+          idToken: result.idToken,
+          accessToken: result.accessToken,
+        }),
+      );
 
       runInAction(() => {
         this.accessToken = result.accessToken;
@@ -127,6 +153,7 @@ export class AuthStore {
 
     if (this.flyerStore) this.flyerStore.reset();
     if (this.cartStore) this.cartStore.reset();
+    if (this.notificationStore) this.notificationStore.reset();
 
     runInAction(() => {
       this.isAuthenticated = false;
@@ -139,23 +166,65 @@ export class AuthStore {
 
   // ─── Profile Management ───────────────────────────────────────────────────
 
+  private async getBackendToken() {
+    if (!this.user?.email || !this.user?.id) {
+      throw new Error('User session is missing required profile details.');
+    }
+
+    const normalizedUser = this.normalizeStoredUser(this.user);
+    if (normalizedUser.id !== this.user.id) {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedUser));
+      runInAction(() => {
+        this.user = normalizedUser;
+      });
+    }
+
+    const result = await this.registerUserInDatabase({
+      fullname: normalizedUser.name || normalizedUser.email,
+      email: normalizedUser.email,
+      user_id: normalizedUser.id,
+    });
+
+    const backendToken =
+      result.success && result.data && typeof result.data === 'object'
+        ? (result.data as { token?: string }).token
+        : null;
+    if (backendToken) {
+      setAccessToken(backendToken);
+      return backendToken as string;
+    }
+
+    const fallbackToken = this.getPreferredApiToken({
+      idToken: this.idToken,
+      accessToken: this.accessToken,
+    });
+
+    if (!fallbackToken) {
+      throw new Error('Unable to refresh your session. Please sign in again.');
+    }
+
+    setAccessToken(fallbackToken);
+    return fallbackToken;
+  }
+
   updateProfile = async (payload: UpdateProfilePayload) => {
     runInAction(() => { this.loading = true; this.error = null; });
     try {
+      await this.getBackendToken();
       const { data } = await authService.updateProfile(payload);
       if (data.success) {
+        const nextPhone = payload.phone ?? payload.mobile ?? this.user?.phone ?? '';
         const updatedUser = {
           ...this.user,
           name: data.user.fullname,
           email: data.user.email,
-          phone: data.user.phone || data.user.mobile || this.user?.phone || '',
+          phone: data.user.phone || data.user.mobile || nextPhone,
         };
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
         runInAction(() => {
           this.user = updatedUser;
           // Update token if backend rotates it on profile change
           if (data.token) {
-            this.accessToken = data.token;
             setAccessToken(data.token);
           }
           this.loading = false;
@@ -175,6 +244,7 @@ export class AuthStore {
   changePassword = async (payload: ChangePasswordPayload) => {
     runInAction(() => { this.loading = true; this.error = null; });
     try {
+      await this.getBackendToken();
       const { data } = await authService.changePassword(payload);
       runInAction(() => { this.loading = false; });
       return { success: data.success };
@@ -222,14 +292,19 @@ export class AuthStore {
         const result = await cognitoService.signIn(email, password);
         const attrs = result.userAttributes;
         const user = {
-          id: attrs.sub || userId,
+          id: this.formatCognitoUserId(attrs.sub || userId, 'cognito'),
           name: attrs.name || fullname,
           email: attrs.email || email,
           phone: attrs.phone_number || '',
           provider: 'email',
         };
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-        setAccessToken(result.accessToken);
+        setAccessToken(
+          this.getPreferredApiToken({
+            idToken: result.idToken,
+            accessToken: result.accessToken,
+          }),
+        );
         runInAction(() => {
           this.accessToken = result.accessToken;
           this.idToken = result.idToken;
@@ -262,7 +337,7 @@ export class AuthStore {
     await cognitoService.confirmSignUp(this.pendingEmail, code);
     const result = await cognitoService.signIn(this.pendingEmail, this.pendingPassword);
     const attrs = result.userAttributes;
-    const userId = attrs.sub || this.pendingEmail;
+    const userId = this.formatCognitoUserId(attrs.sub || this.pendingEmail, 'cognito');
     const user = {
       id: userId,
       name: attrs.name || '',
@@ -271,7 +346,12 @@ export class AuthStore {
       provider: 'email',
     };
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    setAccessToken(result.accessToken);
+    setAccessToken(
+      this.getPreferredApiToken({
+        idToken: result.idToken,
+        accessToken: result.accessToken,
+      }),
+    );
     runInAction(() => {
       this.accessToken = result.accessToken;
       this.idToken = result.idToken;
@@ -357,12 +437,17 @@ export class AuthStore {
       });
 
       const payload = userInfoResponse.data;
+      const provider = payload.identities?.[0]?.providerName?.toLowerCase().includes('google')
+        ? 'google'
+        : payload.identities?.[0]?.providerName?.toLowerCase().includes('apple')
+          ? 'apple'
+          : 'social';
       const user = {
-        id: payload.sub,
+        id: this.formatCognitoUserId(payload.sub, provider),
         name: payload.name || payload.given_name || payload.email || 'User',
         email: payload.email,
         phone: payload.phone_number || '',
-        provider: 'social',
+        provider,
       };
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
@@ -371,7 +456,12 @@ export class AuthStore {
         idToken: id_token,
         refreshToken: refresh_token,
       }));
-      setAccessToken(access_token);
+      setAccessToken(
+        this.getPreferredApiToken({
+          idToken: id_token,
+          accessToken: access_token,
+        }),
+      );
 
       runInAction(() => {
         this.accessToken = access_token;
@@ -394,11 +484,23 @@ export class AuthStore {
 
   private mapAttributes(attrs: Record<string, string>) {
     return {
-      id: attrs.sub || '',
+      id: this.formatCognitoUserId(attrs.sub || '', 'cognito'),
       name: attrs.name || attrs.given_name || attrs.email || 'User',
       email: attrs.email || '',
       phone: attrs.phone_number || '',
       provider: 'email',
+    };
+  }
+
+  private normalizeStoredUser(user: any) {
+    const provider =
+      user?.provider === 'google' || user?.provider === 'apple'
+        ? user.provider
+        : 'cognito';
+
+    return {
+      ...user,
+      id: this.formatCognitoUserId(String(user?.id ?? ''), provider),
     };
   }
 

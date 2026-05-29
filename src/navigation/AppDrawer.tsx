@@ -80,7 +80,10 @@ const AppDrawer: React.FC<AppDrawerProps> = observer(({ onClose }) => {
             label: 'My Orders',
             icon: Images.myorders,
             hasChevron: true,
-            onPress: () => console.log('// navigation.navigate("MyOrders")'),
+            onPress: () => {
+              onClose?.();
+              navigation.navigate('MyOrders');
+            },
           },
           {
             id: 'favorites',
@@ -99,7 +102,10 @@ const AppDrawer: React.FC<AppDrawerProps> = observer(({ onClose }) => {
             id: 'how',
             label: 'How It Works',
             icon: Images.howitworks,
-            onPress: () => console.log('// navigation.navigate("HowItWorks")'),
+            onPress: () => {
+              onClose?.();
+              navigation.navigate('HowItWorks');
+            },
           },
         ],
       },

@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -17,6 +16,7 @@ import { observer } from 'mobx-react-lite';
 
 import { useStores } from '../../stores/StoreContext';
 import ScreenHeader from '../../components/common/ScreenHeader';
+import FeedbackDialog from '../../components/common/FeedbackDialog';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 
@@ -28,10 +28,47 @@ const EditProfileScreen: React.FC = observer(() => {
   const [fullName, setFullName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [saving, setSaving] = useState(false);
+  const [dialogState, setDialogState] = useState<{
+    visible: boolean;
+    tone: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+    onClose?: () => void;
+  }>({
+    visible: false,
+    tone: 'info',
+    title: '',
+    message: '',
+  });
+
+  const openDialog = (
+    tone: 'success' | 'error' | 'info',
+    title: string,
+    message: string,
+    onClose?: () => void,
+  ) => {
+    setDialogState({
+      visible: true,
+      tone,
+      title,
+      message,
+      onClose,
+    });
+  };
+
+  const closeDialog = () => {
+    const callback = dialogState.onClose;
+    setDialogState(prev => ({
+      ...prev,
+      visible: false,
+      onClose: undefined,
+    }));
+    callback?.();
+  };
 
   const handleSave = async () => {
     if (!fullName.trim()) {
-      Alert.alert('Validation', 'Full name is required.');
+      openDialog('info', 'Full name required', 'Please enter your full name before saving.');
       return;
     }
 
@@ -43,11 +80,14 @@ const EditProfileScreen: React.FC = observer(() => {
         phone: phone.trim(),
         mobile: phone.trim(),
       });
-      Alert.alert('Success', 'Profile updated successfully.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      openDialog(
+        'success',
+        'Profile updated',
+        'Your account details were saved successfully.',
+        () => navigation.goBack(),
+      );
     } catch (err: any) {
-      Alert.alert('Error', err?.message ?? 'Could not update profile.');
+      openDialog('error', 'Update failed', err?.message ?? 'Could not update profile.');
     } finally {
       setSaving(false);
     }
@@ -127,6 +167,14 @@ const EditProfileScreen: React.FC = observer(() => {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+      <FeedbackDialog
+        visible={dialogState.visible}
+        tone={dialogState.tone}
+        title={dialogState.title}
+        message={dialogState.message}
+        buttonLabel={dialogState.tone === 'error' ? 'Try Again' : 'Done'}
+        onClose={closeDialog}
+      />
     </SafeAreaView>
   );
 });

@@ -22,8 +22,12 @@ class RootStore {
     this.postStore = new PostStore();
     this.orderStore = new OrderStore();
     this.notificationStore = new NotificationStore();
-    // Pass flyerStore and cartStore so authStore can reset them on logout
-    this.authStore = new AuthStore(this.flyerStore, this.cartStore);
+    // Pass stores that should be cleared on logout.
+    this.authStore = new AuthStore(
+      this.flyerStore,
+      this.cartStore,
+      this.notificationStore,
+    );
   }
 }
 

@@ -5,6 +5,7 @@ import type { Order } from '../types/api';
 class OrderStore {
   orders: Order[] = [];
   currentOrder: Order | null = null;
+  currentOrderId: string | null = null;
   isLoading = false;
   isLoadingDetail = false;
   error: string | null = null;
@@ -38,15 +39,21 @@ class OrderStore {
     runInAction(() => {
       this.isLoadingDetail = true;
       this.error = null;
+      this.currentOrderId = orderId;
+      // Clear so the details screen never shows the previous order while loading.
+      this.currentOrder = null;
     });
     try {
       const { data } = await orderService.getOrder(orderId);
       runInAction(() => {
+        // Ignore stale responses (e.g. user tapped a different order quickly).
+        if (this.currentOrderId !== orderId) return;
         this.currentOrder = data.success ? data.order : null;
         this.isLoadingDetail = false;
       });
     } catch (err: any) {
       runInAction(() => {
+        if (this.currentOrderId !== orderId) return;
         this.error = err.message;
         this.currentOrder = null;
         this.isLoadingDetail = false;
@@ -57,6 +64,7 @@ class OrderStore {
   reset() {
     this.orders = [];
     this.currentOrder = null;
+    this.currentOrderId = null;
     this.isLoading = false;
     this.error = null;
   }

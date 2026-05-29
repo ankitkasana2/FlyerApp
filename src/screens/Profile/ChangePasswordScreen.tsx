@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Image,
@@ -18,6 +17,7 @@ import { observer } from 'mobx-react-lite';
 
 import { useStores } from '../../stores/StoreContext';
 import ScreenHeader from '../../components/common/ScreenHeader';
+import FeedbackDialog from '../../components/common/FeedbackDialog';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 
@@ -93,33 +93,73 @@ const ChangePasswordScreen: React.FC = observer(() => {
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
   const [saving, setSaving] = useState(false);
+  const [dialogState, setDialogState] = useState<{
+    visible: boolean;
+    tone: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+    onClose?: () => void;
+  }>({
+    visible: false,
+    tone: 'info',
+    title: '',
+    message: '',
+  });
+
+  const openDialog = (
+    tone: 'success' | 'error' | 'info',
+    title: string,
+    message: string,
+    onClose?: () => void,
+  ) => {
+    setDialogState({
+      visible: true,
+      tone,
+      title,
+      message,
+      onClose,
+    });
+  };
+
+  const closeDialog = () => {
+    const callback = dialogState.onClose;
+    setDialogState(prev => ({
+      ...prev,
+      visible: false,
+      onClose: undefined,
+    }));
+    callback?.();
+  };
 
   const handleSave = async () => {
     if (!current || !next || !confirm) {
-      Alert.alert('Validation', 'All fields are required.');
+      openDialog('info', 'Complete all fields', 'Please fill in every password field before continuing.');
       return;
     }
     if (next.length < 8) {
-      Alert.alert('Validation', 'New password must be at least 8 characters.');
+      openDialog('info', 'Password too short', 'Your new password must be at least 8 characters long.');
       return;
     }
     if (next === current) {
-      Alert.alert('Validation', 'New password must be different from current password.');
+      openDialog('info', 'Choose a new password', 'Your new password should be different from your current password.');
       return;
     }
     if (next !== confirm) {
-      Alert.alert('Validation', 'Passwords do not match.');
+      openDialog('info', 'Passwords do not match', 'Please make sure both new password fields match exactly.');
       return;
     }
 
     setSaving(true);
     try {
       await authStore.changePassword({ currentPassword: current, newPassword: next });
-      Alert.alert('Success', 'Password changed successfully.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      openDialog(
+        'success',
+        'Password updated',
+        'Your password has been changed successfully.',
+        () => navigation.goBack(),
+      );
     } catch (err: any) {
-      Alert.alert('Error', err?.message ?? 'Could not change password.');
+      openDialog('error', 'Update failed', err?.message ?? 'Could not change password.');
     } finally {
       setSaving(false);
     }
@@ -187,6 +227,14 @@ const ChangePasswordScreen: React.FC = observer(() => {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+      <FeedbackDialog
+        visible={dialogState.visible}
+        tone={dialogState.tone}
+        title={dialogState.title}
+        message={dialogState.message}
+        buttonLabel={dialogState.tone === 'error' ? 'Try Again' : 'Done'}
+        onClose={closeDialog}
+      />
     </SafeAreaView>
   );
 });

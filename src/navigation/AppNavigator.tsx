@@ -42,12 +42,15 @@ import FavoritesScreen from '../screens/Favorites/FavoritesScreen';
 import MediaLibraryScreen from '../screens/MediaLibrary/MediaLibraryScreen';
 import EditProfileScreen from '../screens/Profile/EditProfileScreen';
 import ChangePasswordScreen from '../screens/Profile/ChangePasswordScreen';
+import MyOrdersScreen from '../screens/orders/MyOrdersScreen';
+import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import CategoryScreen from '../screens/Category/CategoryScreen';
 import AppDrawer from './AppDrawer';
 import ContactUsScreen from '../screens/DrawerScreen/ContactUs';
 import FAQScreen from '../screens/DrawerScreen/FAQScreen';
 import HelpCenterScreen from '../screens/DrawerScreen/HelpCenterScreen';
+import HowItWorksScreen from '../screens/DrawerScreen/HowItWorksScreen';
 import PrivacyPolicyScreen from '../screens/DrawerScreen/PrivacyPolicyScreen';
 import RefundPolicyScreen from '../screens/DrawerScreen/RefundPolicyScreen';
 import TermsOfServiceScreen from '../screens/DrawerScreen/TermsOfServiceScreen';
@@ -258,13 +261,29 @@ const BottomTabs = () => (
 );
 
 // ─── Tab Layout with Global Header ─────────────────────────────────────────────
-const TabLayout = () => (
-  <View style={{ flex: 1, backgroundColor: Colors.background }}>
-    <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
-    <GlobalHeader />
-    <BottomTabs />
-  </View>
-);
+const TabLayout = observer(() => {
+  const { notificationStore } = useStores();
+  const {
+    fetchNotifications,
+    startAutoRefresh,
+    stopAutoRefresh,
+  } = notificationStore;
+
+  useEffect(() => {
+    fetchNotifications();
+    startAutoRefresh();
+
+    return () => stopAutoRefresh();
+  }, [fetchNotifications, startAutoRefresh, stopAutoRefresh]);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: Colors.background }}>
+      <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
+      <GlobalHeader />
+      <BottomTabs />
+    </View>
+  );
+});
 
 // ─── Drawer Navigator ──────────────────────────────────────────────────────────
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -312,6 +331,9 @@ const AppNavigator = () => (
     <AppStack.Screen name="Profile" component={ProfileScreen} />
     <AppStack.Screen name="EditProfile" component={EditProfileScreen} />
     <AppStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+    <AppStack.Screen name="MyOrders" component={MyOrdersScreen} />
+    <AppStack.Screen name="OrderDetail" component={OrderDetailScreen} />
+    <AppStack.Screen name="HowItWorks" component={HowItWorksScreen} />
     <AppStack.Screen name="MediaLibrary" component={MediaLibraryScreen} />
     <AppStack.Screen name="FlyerDetail" component={FlyerDetailScreen} />
     <AppStack.Screen name="Favorites" component={FavoritesScreen} />
