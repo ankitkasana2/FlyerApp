@@ -151,9 +151,9 @@ const CartItemCard: React.FC<CartItemCardProps> = ({
 
   const statusColor =
     item.status === 'active'
-      ? '#4CAF50'
+      ? Colors.success
       : item.status === 'pending'
-      ? '#FF9800'
+      ? Colors.warning
       : Colors.textMuted;
 
   return (
@@ -167,23 +167,28 @@ const CartItemCard: React.FC<CartItemCardProps> = ({
 
         {/* Details */}
         <View style={styles.details}>
-          {/* Title + Platform Tag */}
+          {/* Title + Price */}
           <View style={styles.titleRow}>
-            <Text style={styles.productTitle}>{item.title}</Text>
+            <Text style={styles.productTitle} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={styles.priceTop}>{item.price}</Text>
+          </View>
+
+          {/* Platform + Status + Template */}
+          <View style={styles.metaRow}>
             <View style={styles.platformTag}>
               <Text style={styles.platformText}>{item.platform}</Text>
             </View>
-          </View>
-
-          {/* Status + Template */}
-          <View style={styles.metaRow}>
             <View style={[styles.statusBadge, { backgroundColor: statusColor + '22', borderColor: statusColor }]}>
               <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
               <Text style={[styles.statusText, { color: statusColor }]}>{item.status}</Text>
             </View>
-            <Text style={styles.templateText} numberOfLines={1}>
-              Template: {item.templateName}
-            </Text>
+            <View style={styles.templateChip}>
+              <Text style={styles.templateChipText} numberOfLines={1}>
+                Template {item.templateName}
+              </Text>
+            </View>
           </View>
 
           {/* Info Label */}
@@ -209,32 +214,29 @@ const CartItemCard: React.FC<CartItemCardProps> = ({
             </Text>
           </View>
 
-          {/* Price */}
-          <Text style={styles.price}>{item.price}</Text>
+          {/* Actions */}
+          <View style={styles.actionsInline}>
+            <TouchableOpacity
+              style={styles.actionTextBtn}
+              onPress={handleEdit}
+              activeOpacity={0.75}
+            >
+              <EditIcon size={14} color={Colors.textSecondary} />
+              <Text style={styles.actionText}>Edit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionTextBtn}
+              onPress={handleRemove}
+              activeOpacity={0.75}
+            >
+              <TrashIcon size={14} color={Colors.textSecondary} />
+              <Text style={[styles.actionText, styles.removeText]}>Remove</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
-      {/* ── Divider ── */}
-      <View style={styles.divider} />
-
-      {/* ── Action Buttons Row ── */}
-      <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.actionBtn} onPress={handleEdit} activeOpacity={0.75}>
-          <View style={styles.actionIcon}>
-            <EditIcon size={14} color={Colors.textSecondary} />
-          </View>
-          <Text style={styles.actionBtnText}>Edit</Text>
-        </TouchableOpacity>
-
-        <View style={styles.actionDivider} />
-
-        <TouchableOpacity style={styles.actionBtn} onPress={handleRemove} activeOpacity={0.75}>
-          <View style={styles.actionIcon}>
-            <TrashIcon size={14} color={Colors.textSecondary} />
-          </View>
-          <Text style={styles.actionBtnText}>Remove</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -246,11 +248,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 12,
   },
   productRow: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 16,
   },
   thumbnail: {
     width: 96,
@@ -266,8 +270,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    gap: 8,
-    flexWrap: 'wrap',
+    gap: 10,
   },
   productTitle: {
     fontSize: Typography.fontSizes.base,
@@ -276,16 +279,24 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 20,
   },
+  priceTop: {
+    fontSize: Typography.fontSizes.lg,
+    fontWeight: Typography.fontWeights.black,
+    color: Colors.textPrimary,
+    marginTop: -1,
+  },
   platformTag: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.surfaceElevated,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   platformText: {
     fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
+    fontWeight: Typography.fontWeights.semiBold,
+    color: Colors.textSecondary,
     lineHeight: 14,
   },
   metaRow: {
@@ -312,10 +323,19 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSizes.xs,
     fontWeight: Typography.fontWeights.semiBold,
   },
-  templateText: {
+  templateChip: {
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    maxWidth: '100%',
+  },
+  templateChipText: {
     fontSize: Typography.fontSizes.xs,
     color: Colors.textSecondary,
-    flex: 1,
+    fontWeight: Typography.fontWeights.medium,
   },
   infoLabelWrapper: {
     alignSelf: 'flex-start',
@@ -345,48 +365,26 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontWeight: Typography.fontWeights.medium,
   },
-  price: {
-    fontSize: Typography.fontSizes.xl,
-    fontWeight: Typography.fontWeights.black,
-    color: Colors.textPrimary,
+  actionsInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 16,
     marginTop: 2,
   },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginBottom: 12,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  actionBtn: {
-    flex: 1,
+  actionTextBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
     gap: 6,
-    backgroundColor: Colors.surfaceElevated,
+    paddingVertical: 6,
   },
-  actionIcon: {
-    width: 16,
-    height: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionBtnText: {
+  actionText: {
     fontSize: Typography.fontSizes.sm,
     fontWeight: Typography.fontWeights.semiBold,
     color: Colors.textSecondary,
   },
-  actionDivider: {
-    width: 1,
-    backgroundColor: Colors.border,
+  removeText: {
+    color: Colors.error,
   },
 });
 

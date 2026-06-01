@@ -478,13 +478,12 @@ const HomeScreen: React.FC = observer(() => {
 
   return (
     <View style={styles.container}>
-      {/* Keep this area fixed; only the flyer list should scroll. */}
-      {renderHeader()}
       <FlatList
         data={homeSections}
         renderItem={renderCategorySection}
         keyExtractor={item => item.id}
         style={styles.list}
+        ListHeaderComponent={renderHeader}
         showsVerticalScrollIndicator={false}
         onRefresh={handleRefresh}
         refreshing={isRefreshing}

@@ -80,6 +80,7 @@ const DatePickerField: React.FC<DatePickerFieldProps> = ({
           mode="date"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={onDateChange}
+          accentColor={Colors.primary}
           maximumDate={new Date(2100, 11, 31)}
           minimumDate={new Date(2000, 0, 1)}
         />

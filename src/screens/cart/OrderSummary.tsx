@@ -4,7 +4,6 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import Colors from '../../theme/colors';
@@ -31,8 +30,6 @@ export interface OrderSummaryProps {
   serviceFees: string;
   total: string;
   inclusions?: string[];
-  isProcessingCheckout?: boolean;
-  onProceedToCheckout: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -45,12 +42,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     'Commercial use license',
     '24/7 Priority support access',
   ],
-  isProcessingCheckout = false,
-  onProceedToCheckout,
 }) => (
   <View style={styles.container}>
     {/* Title */}
-    <Text style={styles.heading}>Order Summary</Text>
+    <Text style={styles.heading}>Summary</Text>
 
     {/* Row: Subtotal */}
     <View style={styles.row}>
@@ -72,21 +67,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
       <Text style={styles.totalLabel}>Total</Text>
       <Text style={styles.totalValue}>{total}</Text>
     </View>
-
-    {/* Proceed Button */}
-    <TouchableOpacity
-      style={[
-        styles.proceedBtn,
-        isProcessingCheckout && styles.proceedBtnDisabled,
-      ]}
-      onPress={onProceedToCheckout}
-      disabled={isProcessingCheckout}
-      activeOpacity={0.85}
-    >
-      <Text style={styles.proceedText}>
-        {isProcessingCheckout ? 'OPENING CHECKOUT...' : 'PROCEED TO CHECKOUT'}
-      </Text>
-    </TouchableOpacity>
 
     {/* Inclusions */}
     {inclusions.length > 0 && (
@@ -139,7 +119,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   totalRow: {
-    marginBottom: 18,
+    marginBottom: 14,
   },
   totalLabel: {
     fontSize: Typography.fontSizes.base,
@@ -150,22 +130,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSizes.base,
     fontWeight: Typography.fontWeights.black,
     color: Colors.primary,
-  },
-  proceedBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  proceedBtnDisabled: {
-    opacity: 0.7,
-  },
-  proceedText: {
-    fontSize: Typography.fontSizes.sm,
-    fontWeight: Typography.fontWeights.black,
-    color: Colors.textPrimary,
-    letterSpacing: 1.2,
   },
   inclusionsBlock: {
     gap: 8,

@@ -2,9 +2,12 @@
 
 import React, { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Theme
 import Colors from '../../theme/colors';
+import ScreenHeader from '../../components/common/ScreenHeader';
 
 import DownloadOrderCard, { DownloadOrder } from './DownloadOrderCard';
 
@@ -58,6 +61,7 @@ const MOCK_ORDERS: DownloadOrder[] = [
 ];
 
 const DownloadsScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
   const orders = useMemo(() => MOCK_ORDERS, []);
 
   const handleViewDetails = (orderNumber: string) => {
@@ -79,7 +83,18 @@ const DownloadsScreen: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenHeader
+        title="Downloads"
+        subtitle={undefined}
+        onBackPress={() => {
+          if (navigation.canGoBack()) navigation.goBack();
+          else navigation.navigate('Home');
+        }}
+        rightSlot={null}
+        containerStyle={styles.headerBar}
+      />
+
       <FlatList
         data={orders}
         keyExtractor={item => item.id}
@@ -88,13 +103,6 @@ const DownloadsScreen: React.FC = () => {
         ItemSeparatorComponent={ItemSeparator}
         ListHeaderComponent={
           <View style={styles.headerWrap}>
-            <View style={styles.titleSection}>
-              <Text style={styles.title}>Downloads</Text>
-              <Text style={styles.subtitle}>
-                Access your purchased templates and resources.
-              </Text>
-            </View>
-
             <View style={styles.summaryRow}>
               <View style={styles.summaryChip}>
                 <Text style={styles.summaryValue}>{orders.length}</Text>
@@ -127,7 +135,7 @@ const DownloadsScreen: React.FC = () => {
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -139,29 +147,22 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
     paddingBottom: 28,
+    paddingTop: 10,
   },
   separator: {
     height: 14,
   },
   headerWrap: {
-    paddingTop: 10,
+    paddingTop: 6,
     paddingBottom: 6,
     gap: 14,
   },
-  titleSection: {
-    paddingVertical: 12,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: Colors.textPrimary,
-    letterSpacing: 0.2,
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    lineHeight: 20,
+  headerBar: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.border,
+    paddingVertical: 10,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   summaryRow: {
     flexDirection: 'row',

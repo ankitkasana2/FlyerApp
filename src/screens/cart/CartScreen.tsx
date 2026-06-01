@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
 import Config from 'react-native-config';
 import { useStripe } from '@stripe/stripe-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Theme
 import { Colors } from '../../theme/colors';
@@ -24,10 +25,10 @@ import { useStores } from '../../stores/StoreContext';
 import type { CartItem } from '../../stores/cartStore';
 
 // Components
-import ScreenHeader from '../../components/common/ScreenHeader';
 import CartItemCard, { CartItemData } from './CartItemCard';
 import OrderSummary from './OrderSummary';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import CheckoutBar from './CheckoutBar';
+import ScreenHeader from '../../components/common/ScreenHeader';
 import {
   buildCheckoutPayload,
   createPaymentSheet,
@@ -37,6 +38,7 @@ import {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const SERVICE_FEE_RATE = 0.05; // 5%
+const CHECKOUT_BAR_SPACER = 78;
 
 const formatPrice = (num: number): string => `$${num.toFixed(2)}`;
 
@@ -134,16 +136,6 @@ const CartScreen: React.FC = observer(() => {
   const totalNum       = subtotalNum + serviceFeesNum;
 
   // ── Handlers ────────────────────────────────────────────────────────────────
-  const handleBack = useCallback(() => navigation.goBack(), [navigation]);
-
-  const handleSearchPress = useCallback(() => {
-    console.log('Search pressed');
-  }, []);
-
-  const handleAvatarPress = useCallback(() => {
-    console.log('Avatar pressed');
-  }, []);
-
   const handleEdit = useCallback((id: string) => {
     // Navigate to FlyerDetail or edit modal in the future
     console.log('Edit cart item:', id);
@@ -242,17 +234,7 @@ const CartScreen: React.FC = observer(() => {
   // ── Loading State ────────────────────────────────────────────────────────────
   if (cartStore.isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-        <ScreenHeader
-          title="Cart"
-          onBackPress={handleBack}
-          showSearch
-          searchBadgeCount={0}
-          onSearchPress={handleSearchPress}
-          showAvatar
-          avatarInitials="AK"
-          onAvatarPress={handleAvatarPress}
-        />
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
           <Text style={styles.loadingText}>Loading your cart…</Text>
@@ -286,17 +268,13 @@ const CartScreen: React.FC = observer(() => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScreenHeader
-        title="CART"
-        onBackPress={handleBack}
-        showSearch
-        searchBadgeCount={cartStore.itemCount}
-        onSearchPress={handleSearchPress}
-        showAvatar
-        avatarInitials="AK"
-        onAvatarPress={handleAvatarPress}
+        title="Cart"
+        subtitle={undefined}
+        onBackPress={handleContinueShopping}
+        rightSlot={null}
+        containerStyle={styles.header}
       />
 
       <ScrollView
@@ -304,24 +282,13 @@ const CartScreen: React.FC = observer(() => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Page Subtitle ── */}
-        <View style={styles.pageTitleBlock}>
-          <Text style={styles.pageSubtitle}>
-            Review your flyer templates and proceed to secure checkout.
-          </Text>
-        </View>
-
         {cartCardItems.length === 0 ? (
           renderEmpty()
         ) : (
           <>
-            {/* ── Items Header Row ── */}
-            <View style={styles.itemsHeaderRow}>
-              <Text style={styles.itemsCount}>
-                Items ({cartCardItems.length})
-              </Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Items</Text>
             </View>
-
             {/* ── Cart Items ── */}
             {cartCardItems.map((item) => (
               <CartItemCard
@@ -340,8 +307,6 @@ const CartScreen: React.FC = observer(() => {
               subtotal={formatPrice(subtotalNum)}
               serviceFees={formatPrice(serviceFeesNum)}
               total={formatPrice(totalNum)}
-              isProcessingCheckout={isProcessingCheckout}
-              onProceedToCheckout={handleProceedToCheckout}
             />
           </>
         )}
@@ -351,8 +316,24 @@ const CartScreen: React.FC = observer(() => {
           <Text style={styles.errorText}>{cartStore.error}</Text>
         ) : null}
 
-        <View style={styles.bottomPadding} />
+        <View
+          style={[
+            styles.bottomPadding,
+            cartCardItems.length > 0 && { height: CHECKOUT_BAR_SPACER },
+          ]}
+        />
       </ScrollView>
+
+      {cartCardItems.length > 0 ? (
+        <View style={styles.checkoutBarWrap} pointerEvents="box-none">
+          <CheckoutBar
+            total={formatPrice(totalNum)}
+            itemCount={cartCardItems.length}
+            isProcessing={isProcessingCheckout}
+            onPressCheckout={handleProceedToCheckout}
+          />
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 });
@@ -367,35 +348,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 8,
+    paddingTop: 0,
+    paddingBottom: 8,
   },
-  pageTitleBlock: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  pageSubtitle: {
-    fontSize: Typography.fontSizes.sm,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    fontWeight: Typography.fontWeights.regular,
-  },
-  itemsHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  itemsCount: {
-    fontSize: Typography.fontSizes.md,
-    fontWeight: Typography.fontWeights.semiBold,
-    color: Colors.textPrimary,
+  header: {
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.border,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   sectionGap: {
     height: 20,
   },
   bottomPadding: {
     height: 36,
+  },
+  checkoutBarWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   loadingContainer: {
     flex: 1,
@@ -414,12 +387,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginTop: 12,
   },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: Typography.fontSizes.md,
+    fontWeight: Typography.fontWeights.bold,
+    color: Colors.textPrimary,
+  },
 
   // ── Empty State ──
   emptyContainer: {
     alignItems: 'center',
     paddingHorizontal: 32,
-    paddingTop: 60,
+    paddingTop: 32,
   },
   emptyIconWrapper: {
     width: 80,

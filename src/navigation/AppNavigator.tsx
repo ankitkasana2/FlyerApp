@@ -13,7 +13,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { DrawerActions, useNavigation } from '@react-navigation/native';
+import { DrawerActions, useNavigation, useNavigationState } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
 import {
   BottomTabParamList,
@@ -260,6 +260,14 @@ const BottomTabs = () => (
   </Tab.Navigator>
 );
 
+const getActiveRouteName = (state: any): string | undefined => {
+  if (!state) return undefined;
+  const route = state.routes?.[state.index ?? 0];
+  if (!route) return undefined;
+  if (route.state) return getActiveRouteName(route.state);
+  return route.name;
+};
+
 // ─── Tab Layout with Global Header ─────────────────────────────────────────────
 const TabLayout = observer(() => {
   const { notificationStore } = useStores();
@@ -268,6 +276,10 @@ const TabLayout = observer(() => {
     startAutoRefresh,
     stopAutoRefresh,
   } = notificationStore;
+  const navState = useNavigationState(state => state as any);
+  const activeRouteName = getActiveRouteName(navState);
+  const hideGlobalHeader =
+    activeRouteName === 'Cart' || activeRouteName === 'Download';
 
   useEffect(() => {
     fetchNotifications();
@@ -279,7 +291,7 @@ const TabLayout = observer(() => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
-      <GlobalHeader />
+      {!hideGlobalHeader ? <GlobalHeader /> : null}
       <BottomTabs />
     </View>
   );
