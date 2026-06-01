@@ -24,25 +24,25 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0C401A9716924E1AACF8B60A /* Geist-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Black.ttf"; path = "../src/assets/fonts/Geist-Black.ttf"; sourceTree = "<group>"; };
+		0C401A9716924E1AACF8B60A /* Geist-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Black.ttf"; path = "../src/assets/fonts/Geist-Black.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* FlyerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlyerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = FlyerApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = FlyerApp/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = FlyerApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		364F29611E6D4070A9D329B0 /* Geist-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Bold.ttf"; path = "../src/assets/fonts/Geist-Bold.ttf"; sourceTree = "<group>"; };
-		412905F6285B4410840D1456 /* GeistMono-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Medium.ttf"; path = "../src/assets/fonts/GeistMono-Medium.ttf"; sourceTree = "<group>"; };
+		364F29611E6D4070A9D329B0 /* Geist-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Bold.ttf"; path = "../src/assets/fonts/Geist-Bold.ttf"; sourceTree = "<group>"; };
+		412905F6285B4410840D1456 /* GeistMono-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Medium.ttf"; path = "../src/assets/fonts/GeistMono-Medium.ttf"; sourceTree = "<group>"; };
 		67A4C3F86A78C39794AEE4FC /* Pods-FlyerApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.release.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.release.xcconfig"; sourceTree = "<group>"; };
-		70A48059DEE247EE948B8019 /* GeistMono-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Regular.ttf"; path = "../src/assets/fonts/GeistMono-Regular.ttf"; sourceTree = "<group>"; };
+		70A48059DEE247EE948B8019 /* GeistMono-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Regular.ttf"; path = "../src/assets/fonts/GeistMono-Regular.ttf"; sourceTree = "<group>"; };
 		72198B86E119B528230D8A73 /* Pods-FlyerApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlyerApp.debug.xcconfig"; path = "Target Support Files/Pods-FlyerApp/Pods-FlyerApp.debug.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = FlyerApp/AppDelegate.swift; sourceTree = "<group>"; };
-		769C6544D0D341968E8D6041 /* GeistMono-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-SemiBold.ttf"; path = "../src/assets/fonts/GeistMono-SemiBold.ttf"; sourceTree = "<group>"; };
-		7FEB7475F2D44AC0A5EA8B05 /* GeistMono-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Bold.ttf"; path = "../src/assets/fonts/GeistMono-Bold.ttf"; sourceTree = "<group>"; };
+		769C6544D0D341968E8D6041 /* GeistMono-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-SemiBold.ttf"; path = "../src/assets/fonts/GeistMono-SemiBold.ttf"; sourceTree = "<group>"; };
+		7FEB7475F2D44AC0A5EA8B05 /* GeistMono-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "GeistMono-Bold.ttf"; path = "../src/assets/fonts/GeistMono-Bold.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = FlyerApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		9275D432B04B4D91B40DC659 /* Geist-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Regular.ttf"; path = "../src/assets/fonts/Geist-Regular.ttf"; sourceTree = "<group>"; };
+		9275D432B04B4D91B40DC659 /* Geist-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Regular.ttf"; path = "../src/assets/fonts/Geist-Regular.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F91E30DF5007F54D22A0A173 /* libPods-FlyerApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FlyerApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F93F5C581F084D649A9E132C /* Geist-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Medium.ttf"; path = "../src/assets/fonts/Geist-Medium.ttf"; sourceTree = "<group>"; };
-		FA2E4FB79C154D58861719D2 /* Geist-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-SemiBold.ttf"; path = "../src/assets/fonts/Geist-SemiBold.ttf"; sourceTree = "<group>"; };
+		F93F5C581F084D649A9E132C /* Geist-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-Medium.ttf"; path = "../src/assets/fonts/Geist-Medium.ttf"; sourceTree = "<group>"; };
+		FA2E4FB79C154D58861719D2 /* Geist-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Geist-SemiBold.ttf"; path = "../src/assets/fonts/Geist-SemiBold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,7 +122,6 @@
 				7FEB7475F2D44AC0A5EA8B05 /* GeistMono-Bold.ttf */,
 			);
 			name = Resources;
-			path = "";
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -258,9 +257,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FlyerApp/Pods-FlyerApp-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FlyerApp/Pods-FlyerApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -275,9 +278,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FlyerApp/Pods-FlyerApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FlyerApp/Pods-FlyerApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -305,6 +312,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = FlyerApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -335,6 +343,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = FlyerApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (

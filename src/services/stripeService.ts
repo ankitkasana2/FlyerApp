@@ -1,10 +1,11 @@
-import apiClient from './apiClient';
 import type { CartItemRaw } from '../types/api';
+import apiClient from './apiClient';
 
 export const STRIPE_RETURN_URL = 'flyerapp://stripe-redirect';
 
 export interface PaymentSheetResponse {
   paymentIntent: string;
+  paymentIntentId?: string;
   ephemeralKey?: string;
   customer?: string;
   publishableKey?: string;
@@ -31,9 +32,16 @@ export const buildCheckoutPayload = (
 export const createPaymentSheet = async (
   payload: CreatePaymentSheetPayload,
 ): Promise<PaymentSheetResponse> => {
-  const { data } = await apiClient.post<PaymentSheetResponse>('/create-payment-sheet', {
-    currency: 'usd',
-    ...payload,
-  });
+  const { data } = await apiClient.post<PaymentSheetResponse>(
+    '/stripe/create-payment-sheet',
+    { currency: 'usd', ...payload },
+  );
   return data;
+};
+
+export const finalizePayment = async (paymentIntentId: string) => {
+  const { data } = await apiClient.post('/stripe/checkout/finalize', {
+    paymentIntentId,
+  });
+  return data as { success?: boolean; orders?: string[]; error?: string };
 };

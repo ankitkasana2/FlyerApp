@@ -32,6 +32,7 @@ import ScreenHeader from '../../components/common/ScreenHeader';
 import {
   buildCheckoutPayload,
   createPaymentSheet,
+  finalizePayment,
   STRIPE_RETURN_URL,
 } from '../../services/stripeService';
 
@@ -207,10 +208,26 @@ const CartScreen: React.FC = observer(() => {
         return;
       }
 
-      Alert.alert(
-        'Payment submitted',
-        'Stripe completed the client flow. Confirm the final order state from your webhook before fulfillment.',
-      );
+      try {
+        if (paymentSheet.paymentIntentId) {
+          await finalizePayment(paymentSheet.paymentIntentId);
+        }
+      } catch {
+        // Webhook may still finalize; keep UX optimistic.
+      }
+
+      const userId = authStore.user?.id;
+      if (userId) {
+        cartStore.load(userId);
+      }
+
+      Alert.alert('Payment successful', 'Your order is being processed.', [
+        {
+          text: 'View Orders',
+          onPress: () => navigation.navigate('MyOrders'),
+        },
+        { text: 'OK' },
+      ]);
     } catch (error: any) {
       const message =
         error?.response?.data?.error ||
@@ -224,8 +241,9 @@ const CartScreen: React.FC = observer(() => {
     }
   }, [
     authStore.user?.id,
-    cartStore.cartItems,
+    cartStore,
     initPaymentSheet,
+    navigation,
     presentPaymentSheet,
     stripePublishableKey,
     totalNum,
