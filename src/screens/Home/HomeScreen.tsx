@@ -450,7 +450,7 @@ const HomeScreen: React.FC = observer(() => {
     );
   };
 
-  const renderHeader = () => (
+  const renderHeader = useCallback(() => (
     <View>
       <View style={styles.searchWrapper}>
         <SearchBar
@@ -461,7 +461,7 @@ const HomeScreen: React.FC = observer(() => {
         />
       </View>
 
-      {/* Banner: show skeleton while loading, swap to real banner once data arrives */}
+      {/* Banner: show skeleton only on first load (no banners yet), keep showing banner during refresh */}
       {isBannersLoading && mappedBanners.length === 0 ? (
         <BannerSkeleton />
       ) : mappedBanners.length > 0 ? (
@@ -474,7 +474,7 @@ const HomeScreen: React.FC = observer(() => {
         </View>
       ) : null}
     </View>
-  );
+  ), [flyersError, handleSearchChange, handleSearchSubmit, isBannersLoading, mappedBanners, searchQuery]);
 
   return (
     <View style={styles.container}>

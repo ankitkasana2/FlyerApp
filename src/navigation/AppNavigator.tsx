@@ -67,7 +67,7 @@ const TAB_ICONS: Record<keyof BottomTabParamList, any> = {
 
 const TAB_COUNT = 4;
 const TAB_WIDTH = SCREEN_WIDTH / TAB_COUNT;
-const INDICATOR_WIDTH = 28;
+const INDICATOR_WIDTH = 80;
 const indicatorLeft = (i: number) =>
   i * TAB_WIDTH + TAB_WIDTH / 2 - INDICATOR_WIDTH / 2;
 
