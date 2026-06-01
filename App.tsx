@@ -14,6 +14,7 @@ import { rootStore } from './src/stores/rootStore';
 import Toast from 'react-native-toast-message';
 import Colors from './src/theme/colors';
 import Typography from './src/theme/typography';
+import { toastConfig } from './src/components/common/AppToast';
 
 const globalTextStyle = { fontFamily: Typography.fontFamilies.regular };
 const globalInputStyle = {
@@ -82,7 +83,7 @@ const AppShell = () => {
           <NavigationContainer>
             <RootNavigator />
           </NavigationContainer>
-          <Toast />
+          <Toast config={toastConfig} topOffset={52} visibilityTime={3000} />
         </StoreProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
