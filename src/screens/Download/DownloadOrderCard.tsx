@@ -264,6 +264,7 @@ export interface DownloadFile {
   size: string;
   type: string;
   thumbnail?: ImageSourcePropType;
+  url: string;
 }
 
 export interface DownloadOrder {
@@ -276,8 +277,8 @@ export interface DownloadOrder {
 
 interface DownloadOrderCardProps {
   order: DownloadOrder;
-  onViewDetails: (orderNumber: string) => void;
-  onDownloadFile: (orderId: string, fileId: string) => void;
+  onViewDetails: (orderId: string) => void;
+  onDownloadFile: (fileUrl: string) => void;
 }
 
 // ─── Order Status Icon ────────────────────────────────────────────────────────
@@ -312,8 +313,8 @@ const DownloadOrderCard: React.FC<DownloadOrderCardProps> = ({
 }) => {
   const statusMeta = STATUS_META[order.status];
   const handleViewDetails = useCallback(
-    () => onViewDetails(order.orderNumber),
-    [order.orderNumber, onViewDetails],
+    () => onViewDetails(order.id),
+    [order.id, onViewDetails],
   );
 
   return (
@@ -401,7 +402,7 @@ const DownloadOrderCard: React.FC<DownloadOrderCardProps> = ({
               {/* Download button */}
               <TouchableOpacity
                 style={styles.fileDownloadBtn}
-                onPress={() => onDownloadFile(order.id, file.id)}
+                onPress={() => onDownloadFile(file.url)}
                 activeOpacity={0.75}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >

@@ -1,85 +1,150 @@
 // src/screens/Download/DownloadsScreen.tsx
 
-import React, { useMemo } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Linking,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { observer } from 'mobx-react-lite';
 
 // Theme
 import Colors from '../../theme/colors';
 import ScreenHeader from '../../components/common/ScreenHeader';
 
 import DownloadOrderCard, { DownloadOrder } from './DownloadOrderCard';
+import { useStores } from '../../stores/StoreContext';
+import * as orderFilesService from '../../services/orderFilesService';
 
 const ItemSeparator = () => <View style={styles.separator} />;
 
-// ─── Mock Data ──────────────────────────────────────────────────────────────
-const MOCK_ORDERS: DownloadOrder[] = [
-  {
-    id: 'order_1',
-    orderNumber: '#FL-8829',
-    deliveredAt: '2 hours ago',
-    status: 'new',
-    files: [
-      {
-        id: 'file_1',
-        name: 'Elite Friday Night Poster',
-        size: '12.4 MB',
-        type: 'PSD',
-        thumbnail: { uri: 'https://picsum.photos/seed/elite-poster/200/200' },
-      },
-      {
-        id: 'file_2',
-        name: 'Social Media Assets',
-        size: '4.8 MB',
-        type: 'ZIP',
-      },
-    ],
-  },
-  {
-    id: 'order_2',
-    orderNumber: '#FL-8825',
-    deliveredAt: 'Yesterday',
-    status: 'delivered',
-    files: [
-      {
-        id: 'file_3',
-        name: 'Business Conference Flyer',
-        size: '8.2 MB',
-        type: 'PDF',
-        thumbnail: { uri: 'https://picsum.photos/seed/conf-flyer/200/200' },
-      },
-    ],
-  },
-  {
-    id: 'order_3',
-    orderNumber: '#FL-8820',
-    deliveredAt: 'Waiting...',
-    status: 'preparing',
-    files: [],
-  },
-];
+const timeAgo = (value?: string) => {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const diff = Date.now() - date.getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+};
 
-const DownloadsScreen: React.FC = () => {
+const guessFileType = (fileTypeRaw?: string, fileName?: string) => {
+  const normalized = String(fileTypeRaw || '').toLowerCase().trim();
+  if (normalized) return normalized;
+  const lowerName = String(fileName || '').toLowerCase();
+  if (lowerName.endsWith('.zip')) return 'zip';
+  if (lowerName.endsWith('.pdf')) return 'pdf';
+  if (/\.(png|jpg|jpeg|webp|gif)$/.test(lowerName)) return 'image';
+  return 'file';
+};
+
+const DownloadsScreen: React.FC = observer(() => {
   const navigation = useNavigation<any>();
-  const orders = useMemo(() => MOCK_ORDERS, []);
+  const { authStore, orderStore } = useStores();
+  const userId = authStore.user?.id;
+  const [filesByOrderId, setFilesByOrderId] = useState<
+    Record<string, orderFilesService.OrderFileRecord[]>
+  >({});
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
 
-  const handleViewDetails = (orderNumber: string) => {
-    console.log('View details for:', orderNumber);
-  };
+  const refresh = useCallback(async () => {
+    if (!userId) return;
+    await orderStore.fetchUserOrders(userId, 100);
+    setIsLoadingFiles(true);
+    try {
+      const { data } = await orderFilesService.getFilesByUser(userId);
+      const next: Record<string, orderFilesService.OrderFileRecord[]> = {};
+      if (data?.success && Array.isArray(data.files)) {
+        data.files.forEach(file => {
+          const orderKey = String(file.order_id);
+          if (!next[orderKey]) next[orderKey] = [];
+          next[orderKey].push(file);
+        });
+        // newest first
+        Object.values(next).forEach(list =>
+          list.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || '')),
+        );
+      }
+      setFilesByOrderId(next);
+    } catch {
+      setFilesByOrderId({});
+    } finally {
+      setIsLoadingFiles(false);
+    }
+  }, [orderStore, userId]);
 
-  const handleDownloadFile = (orderId: string, fileId: string) => {
-    console.log('Downloading file:', fileId, 'from order:', orderId);
-  };
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const downloadOrders: DownloadOrder[] = useMemo(() => {
+    const orders = orderStore.orders || [];
+    return orders.map(order => {
+      const orderId = String(order.id);
+      const files = filesByOrderId[orderId] || [];
+      const latestFileDate = files[0]?.created_at || order.created_at;
+
+      const status: DownloadOrder['status'] =
+        files.length === 0
+          ? 'preparing'
+          : order.status === 'completed' || order.status === 'delivered'
+          ? 'delivered'
+          : 'new';
+
+      return {
+        id: orderId,
+        orderNumber: `#${orderId}`,
+        deliveredAt: timeAgo(latestFileDate),
+        status,
+        files: files.map(f => {
+          const type = guessFileType(f.file_type, f.original_name);
+          return {
+            id: String(f.id),
+            name: f.original_name || `File #${f.id}`,
+            size: '—',
+            type: type.toUpperCase(),
+            thumbnail: type === 'image' ? { uri: f.file_url } : undefined,
+            url: f.file_url,
+          };
+        }),
+      };
+    });
+  }, [filesByOrderId, orderStore.orders]);
+
+  const handleViewDetails = useCallback(
+    (orderId: string) => {
+      navigation.navigate('OrderDetail', { orderId });
+    },
+    [navigation],
+  );
+
+  const handleDownloadFile = useCallback(async (fileUrl: string) => {
+    if (!fileUrl) return;
+    const canOpen = await Linking.canOpenURL(fileUrl);
+    if (canOpen) {
+      await Linking.openURL(fileUrl);
+    }
+  }, []);
 
   const readyCount = useMemo(
-    () => orders.filter(order => order.status !== 'preparing').length,
-    [orders],
+    () => downloadOrders.filter(order => order.status !== 'preparing').length,
+    [downloadOrders],
   );
 
   const newCount = useMemo(
-    () => orders.filter(order => order.status === 'new').length,
-    [orders],
+    () => downloadOrders.filter(order => order.status === 'new').length,
+    [downloadOrders],
   );
 
   return (
@@ -96,16 +161,24 @@ const DownloadsScreen: React.FC = () => {
       />
 
       <FlatList
-        data={orders}
+        data={downloadOrders}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
         ItemSeparatorComponent={ItemSeparator}
+        refreshControl={
+          <RefreshControl
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+            refreshing={orderStore.isLoading || isLoadingFiles}
+            onRefresh={() => refresh()}
+          />
+        }
         ListHeaderComponent={
           <View style={styles.headerWrap}>
             <View style={styles.summaryRow}>
               <View style={styles.summaryChip}>
-                <Text style={styles.summaryValue}>{orders.length}</Text>
+                <Text style={styles.summaryValue}>{downloadOrders.length}</Text>
                 <Text style={styles.summaryLabel}>Orders</Text>
               </View>
               <View style={styles.summaryChip}>
@@ -127,17 +200,23 @@ const DownloadsScreen: React.FC = () => {
           />
         )}
         ListEmptyComponent={
-          <View style={styles.emptyWrap}>
-            <Text style={styles.emptyTitle}>No downloads yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Your purchased files will show up here when they are delivered.
-            </Text>
-          </View>
+          orderStore.isLoading ? (
+            <View style={styles.emptyWrap}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+            </View>
+          ) : (
+            <View style={styles.emptyWrap}>
+              <Text style={styles.emptyTitle}>No downloads yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Your purchased files will show up here when they are delivered.
+              </Text>
+            </View>
+          )
         }
       />
     </SafeAreaView>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
