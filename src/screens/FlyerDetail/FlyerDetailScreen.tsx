@@ -916,10 +916,7 @@ const FlyerDetailScreen: React.FC = observer(() => {
               activeOpacity={0.85}
             >
               <View style={styles.checkoutContent}>
-                <View>
-                  <Text style={styles.checkoutText}>CHECKOUT</Text>
-                  <Text style={styles.checkoutText}>NOW</Text>
-                </View>
+                <Text style={styles.checkoutText}>Checkout Now</Text>
                 <Text style={styles.priceText}>${totalPrice.toFixed(2)}</Text>
               </View>
             </TouchableOpacity>
@@ -1009,7 +1006,7 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     backgroundColor: Colors.background,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
@@ -1022,7 +1019,7 @@ const styles = StyleSheet.create({
   addToCartButton: {
     flex: 1,
     backgroundColor: '#1E1E1E', // Dark grey
-    height: 56,
+    height: 48,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1038,7 +1035,7 @@ const styles = StyleSheet.create({
   checkoutButton: {
     flex: 1.5,
     backgroundColor: Colors.primary, // Red
-    height: 56,
+    height: 48,
     borderRadius: 12,
     justifyContent: 'center',
     paddingHorizontal: 20,
@@ -1052,7 +1049,8 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: Typography.fontSizes.sm,
     fontWeight: Typography.fontWeights.black,
-    lineHeight: 16,
+    lineHeight: 18,
+    textTransform: 'none',
   },
   priceText: {
     color: Colors.textPrimary,

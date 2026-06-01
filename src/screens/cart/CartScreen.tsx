@@ -368,6 +368,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 0,
     paddingBottom: 8,
+    flexGrow: 1,
   },
   header: {
     paddingVertical: 14,
@@ -418,9 +419,12 @@ const styles = StyleSheet.create({
 
   // ── Empty State ──
   emptyContainer: {
+    flex: 1,
     alignItems: 'center',
     paddingHorizontal: 32,
-    paddingTop: 32,
+    justifyContent: 'center',
+    paddingTop: 24,
+    paddingBottom: 24,
   },
   emptyIconWrapper: {
     width: 80,
