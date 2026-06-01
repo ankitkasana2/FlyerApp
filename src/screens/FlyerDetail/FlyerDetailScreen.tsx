@@ -38,6 +38,7 @@ import PeopleListWithPhotos, {
 import {
   buildCheckoutPayload,
   createPaymentSheet,
+  finalizePayment,
   STRIPE_RETURN_URL,
 } from '../../services/stripeService';
 
@@ -513,10 +514,21 @@ const FlyerDetailScreen: React.FC = observer(() => {
         return;
       }
 
-      Alert.alert(
-        'Payment submitted',
-        'Stripe completed the client flow. Confirm the final order state from your webhook before fulfillment.',
-      );
+      try {
+        if (paymentSheet.paymentIntentId) {
+          await finalizePayment(paymentSheet.paymentIntentId);
+        }
+      } catch {
+        // Webhook may still finalize; keep UX optimistic.
+      }
+
+      Alert.alert('Payment successful', 'Your order is being processed.', [
+        {
+          text: 'View Orders',
+          onPress: () => navigation.navigate('MyOrders'),
+        },
+        { text: 'OK' },
+      ]);
     } catch (error: any) {
       Alert.alert(
         'Checkout failed',
@@ -527,6 +539,7 @@ const FlyerDetailScreen: React.FC = observer(() => {
     authStore.user?.id,
     doAddToCart,
     initPaymentSheet,
+    navigation,
     presentPaymentSheet,
     stripePublishableKey,
     totalPrice,
