@@ -1,345 +1,300 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+// screens/Category/CategoryScreen.tsx
+
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
-  ListRenderItem,
-  ActivityIndicator,
+  TouchableOpacity,
+  ImageBackground,
+  Dimensions,
+  Animated,
+  Easing,
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { useStores } from '../../stores/StoreContext';
-
+import SearchBar from '../../components/common/SearchBar';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
-
-import SearchBar from '../../components/common/SearchBar';
-import CategoryTabs from './CategoryTabs';
-import SortButton, { SortOption } from './SortButton';
-import FlyerCard, {
-  CARD_GAP,
-  HORIZONTAL_PADDING,
-} from '../../components/home/FlyerCard';
-import { useNavigation, type NavigationProp } from '@react-navigation/native';
-import type { Flyer } from '../../types/flyer';
 import type { AppStackParamList } from '../../navigation/types';
 
-const SORT_OPTIONS: SortOption[] = [
-  { id: 'newest', label: 'Newest First' },
-  { id: 'oldest', label: 'Oldest First' },
-  { id: 'price_low', label: 'Price: Low to High' },
-  { id: 'price_high', label: 'Price: High to Low' },
-  { id: 'popular', label: 'Most Popular' },
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const H_PADDING = 16;
+const COLUMN_GAP = 10;
+const CARD_WIDTH  = Math.floor((SCREEN_WIDTH - H_PADDING * 2 - COLUMN_GAP) / 2);
+const CARD_HEIGHT = Math.round(CARD_WIDTH * 1.42);
+
+// ─── Gradient scrim ────────────────────────────────────────────────────────────
+const SCRIM_STRIPS: { h: number; o: number }[] = [
+  { h: 8,  o: 0.00 },
+  { h: 8,  o: 0.04 },
+  { h: 10, o: 0.12 },
+  { h: 12, o: 0.24 },
+  { h: 13, o: 0.40 },
+  { h: 14, o: 0.58 },
+  { h: 16, o: 0.74 },
+  { h: 18, o: 0.86 },
+  { h: 52, o: 0.94 },
 ];
+const SCRIM_HEIGHT = SCRIM_STRIPS.reduce((s, r) => s + r.h, 0);
 
-type FlyerRow = [Flyer, Flyer | null];
+// ─── Unique fallback colour per category name ──────────────────────────────────
+const FALLBACK_PALETTE = [
+  '#1a1a2e', '#16213e', '#0f3460', '#1b1b2f',
+  '#162447', '#1f4068', '#2c003e', '#1a0933',
+  '#0d1b2a', '#1c2541', '#0b132b', '#1d2d44',
+];
+function categoryColor(name: string): string {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = ((h * 31) + name.charCodeAt(i)) >>> 0;
+  return FALLBACK_PALETTE[h % FALLBACK_PALETTE.length];
+}
 
-const getFlyerImage = (flyer: Flyer) => {
-  const url = flyer.image_url ?? flyer.imageUrl ?? flyer.image;
-  if (url) return { uri: url };
-  return { uri: `https://picsum.photos/seed/${flyer._id ?? flyer.id}/400/550` };
+// ─── Types ─────────────────────────────────────────────────────────────────────
+type CategoryItem = {
+  id:           string;
+  name:         string;
+  thumbnailUri: string | null;
 };
 
-const formatPrice = (price: number | string | undefined | null): string => {
-  if (price === undefined || price === null) return '$0.00';
-  if (typeof price === 'number') return `$${price.toFixed(2)}`;
-  const priceStr = String(price);
-  return priceStr.startsWith('$') ? priceStr : `$${priceStr}`;
-};
+// ─── Scrim rows (shared, no re-allocation per card) ───────────────────────────
+const ScrimRows = () => (
+  <View style={styles.scrimContainer} pointerEvents="none">
+    {SCRIM_STRIPS.map((s, i) => (
+      <View key={i} style={{ height: s.h, backgroundColor: `rgba(0,0,0,${s.o})` }} />
+    ))}
+  </View>
+);
 
+// ─── Fallback placeholder (shown while lazy fetch is in flight) ────────────────
+const FallbackCard = React.memo<{ name: string }>(({ name }) => {
+  const pulse = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 950, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 950, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+
+  const shimmerOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.14] });
+
+  return (
+    <View style={[styles.cardInner, { backgroundColor: categoryColor(name) }]}>
+      <Animated.View
+        style={[StyleSheet.absoluteFillObject, { backgroundColor: '#fff', opacity: shimmerOpacity }]}
+        pointerEvents="none"
+      />
+      <ScrimRows />
+      <View style={styles.nameOverlay}>
+        <Text style={styles.categoryName} numberOfLines={2}>{name}</Text>
+      </View>
+    </View>
+  );
+});
+
+// ─── Category card ─────────────────────────────────────────────────────────────
+const CategoryCard = React.memo<{
+  item:    CategoryItem;
+  onPress: (item: CategoryItem) => void;
+}>(({ item, onPress }) => {
+  const scale        = useRef(new Animated.Value(1)).current;
+  const imageOpacity = useRef(new Animated.Value(0)).current;
+
+  const onPressIn  = useCallback(() =>
+    Animated.spring(scale, { toValue: 0.95, useNativeDriver: true, speed: 40, bounciness: 4 }).start(),
+  [scale]);
+
+  const onPressOut = useCallback(() =>
+    Animated.spring(scale, { toValue: 1,    useNativeDriver: true, friction: 5, tension: 120 }).start(),
+  [scale]);
+
+  const onImageLoad = useCallback(() =>
+    Animated.timing(imageOpacity, { toValue: 1, duration: 300, useNativeDriver: true }).start(),
+  [imageOpacity]);
+
+  const handlePress = useCallback(() => onPress(item), [item, onPress]);
+
+  return (
+    <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
+      <TouchableOpacity
+        style={styles.cardTouchable}
+        onPress={handlePress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        activeOpacity={1}
+      >
+        {item.thumbnailUri ? (
+          <ImageBackground
+            source={{ uri: item.thumbnailUri }}
+            style={styles.cardInner}
+            resizeMode="cover"
+            onLoad={onImageLoad}
+          >
+            {/* Colour skeleton fades away once the image is ready */}
+            <Animated.View
+              style={[
+                StyleSheet.absoluteFillObject,
+                { backgroundColor: categoryColor(item.name) },
+                { opacity: imageOpacity.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) },
+              ]}
+              pointerEvents="none"
+            />
+            <ScrimRows />
+            <View style={styles.nameOverlay}>
+              <Text style={styles.categoryName} numberOfLines={2}>{item.name}</Text>
+            </View>
+          </ImageBackground>
+        ) : (
+          <FallbackCard name={item.name} />
+        )}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+});
+
+// ─── Main screen ───────────────────────────────────────────────────────────────
 const CategoryScreen: React.FC = observer(() => {
   const navigation = useNavigation<NavigationProp<AppStackParamList>>();
   const { flyerStore } = useStores();
-
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTabId, setActiveTabId] = useState('recently_added');
-  const [sortId, setSortId] = useState('newest');
-  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
 
-  const [category, setCategory] = useState('Recently Added');
-  const [visibleFlyers, setVisibleFlyers] = useState<Flyer[]>([]);
-  const [flyersLoading, setFlyersLoading] = useState(false);
-  const [flyersHasMore, setFlyersHasMore] = useState(true);
-  const [isApiModeStarted, setIsApiModeStarted] = useState(false);
-  const [startedQueryKey, setStartedQueryKey] = useState<string | null>(null);
+  useEffect(() => { flyerStore.fetchCategories(); }, [flyerStore]);
 
+  // ── Lazy fetch for categories with no local data ─────────────────────────────
+  // Fetch with limit=6 so the uniqueness filter below has several URIs to choose
+  // from even if the first one is already claimed by another category.
   useEffect(() => {
-    flyerStore.fetchCategories();
-  }, [flyerStore]);
+    const tabs = flyerStore.orderedCategoryTabs;
+    if (!tabs.length) return;
 
-  const sortParams = useMemo(() => {
-    let sortBy = 'created_at';
-    let sortDir: 'asc' | 'desc' = 'desc';
+    tabs.forEach((tab, idx) => {
+      const isRecentlyAdded = tab.id === 'recently_added';
+      const hasLocal = flyerStore.getLocalFlyersForCategoryTab({
+        categoryName: tab.name, isRecentlyAdded, sortBy: 'created_at', sortDir: 'desc',
+      }).length > 0;
 
-    if (sortId === 'oldest') {
-      sortDir = 'asc';
-    } else if (sortId === 'price_low') {
-      sortBy = 'price';
-      sortDir = 'asc';
-    } else if (sortId === 'price_high') {
-      sortBy = 'price';
-      sortDir = 'desc';
-    } else if (sortId === 'popular') {
-      sortBy = 'popularity';
-    }
+      const nameLower = tab.name.toLowerCase();
+      const hasSemantic =
+        (nameLower.includes('premium') && flyerStore.premiumFlyers.length > 0) ||
+        (nameLower.includes('basic')   && flyerStore.basicFlyers.length  > 0);
 
-    return { sortBy, sortDir };
-  }, [sortId]);
-
-  const categoryTabs = flyerStore.orderedCategoryTabs;
-
-  const queryContext = useMemo(() => {
-    const isRecentlyAdded = activeTabId === 'recently_added';
-    const selectedTab = categoryTabs.find(t => t.id === activeTabId);
-    const categoryName = isRecentlyAdded
-      ? 'Recently Added'
-      : (selectedTab?.name || activeTabId);
-    const apiCategory = isRecentlyAdded ? undefined : categoryName;
-    const templateType = selectedTemplates.length > 0 ? selectedTemplates.join(',') : undefined;
-    const queryKey = `${categoryName}::${sortParams.sortBy}::${sortParams.sortDir}::${templateType || ''}`;
-
-    return {
-      categoryName,
-      apiCategory,
-      templateType,
-      isRecentlyAdded,
-      queryKey,
-    };
-  }, [activeTabId, categoryTabs, selectedTemplates, sortParams]);
-
-  const localCategoryFlyers = useMemo(() => {
-    return flyerStore.getLocalFlyersForCategoryTab({
-      categoryName: queryContext.categoryName,
-      isRecentlyAdded: queryContext.isRecentlyAdded,
-      sortBy: sortParams.sortBy,
-      sortDir: sortParams.sortDir,
-      templateType: selectedTemplates.length > 0 ? selectedTemplates.join(',') : undefined,
+      if (!hasLocal && !hasSemantic) {
+        setTimeout(() => {
+          flyerStore.fetchFlyersForCategoryTab({
+            categoryName: tab.name, isRecentlyAdded,
+            sortBy: 'created_at', sortDir: 'desc', limit: 6,
+          }).catch(() => {});
+        }, idx * 150);
+      }
     });
-  }, [flyerStore, queryContext, selectedTemplates, sortParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flyerStore.orderedCategoryTabs.length]);
 
-  useEffect(() => {
-    setCategory(queryContext.categoryName);
-    setVisibleFlyers(localCategoryFlyers);
-    setIsApiModeStarted(false);
-    setStartedQueryKey(null);
-    setFlyersHasMore(true);
-    setFlyersLoading(false);
-    flyerStore.resetPaginationState();
-  }, [queryContext, localCategoryFlyers, flyerStore]);
+  // ── Build category items — one pass, shared usedUris set ─────────────────────
+  //
+  // KEY FIX: flyers are multi-tagged, so the same flyer image can appear as the
+  // first result for several categories (e.g. "Fantastic Saturday" is tagged
+  // "drink flyers", "beach party", AND "brunch").  We solve this by keeping a
+  // Set of URIs that have already been assigned.  When a category's first
+  // candidate is taken, we walk to the next candidate in its list, guaranteeing
+  // every visible card shows a distinct image.
+  //
+  // This runs inside observer so MobX re-evaluates it whenever allFlyers or
+  // orderedCategoryTabs changes (e.g. after a lazy fetch completes).
+  const getUri = (f?: { image_url?: string | null; imageUrl?: string | null; image?: string | null } | null) =>
+    f ? (f.image_url ?? f.imageUrl ?? f.image ?? null) : null;
 
-  const handleLoadMore = useCallback(async () => {
-    if (flyersLoading || flyerStore.isLoading || flyerStore.isFetchingNextPage) {
-      return;
+  const usedUris = new Set<string>();
+
+  const categoryItems: CategoryItem[] = flyerStore.orderedCategoryTabs.map(tab => {
+    const isRecentlyAdded = tab.id === 'recently_added';
+    const nameLower       = tab.name.trim().toLowerCase();
+
+    // Gather candidates for this category (most-recent first)
+    let candidates = flyerStore.getLocalFlyersForCategoryTab({
+      categoryName: tab.name, isRecentlyAdded, sortBy: 'created_at', sortDir: 'desc',
+    });
+
+    // Semantic fallbacks when exact match returns nothing
+    if (candidates.length === 0 && !isRecentlyAdded) {
+      if (nameLower.includes('premium')) candidates = [...flyerStore.premiumFlyers];
+      else if (nameLower.includes('basic')) candidates = [...flyerStore.basicFlyers];
     }
 
-    if (!isApiModeStarted) {
-      if (startedQueryKey === queryContext.queryKey) {
-        return;
+    // Walk the candidate list until we find a URI not yet used by another card
+    let thumbnailUri: string | null = null;
+    for (const flyer of candidates) {
+      const uri = getUri(flyer);
+      if (uri && !usedUris.has(uri)) {
+        thumbnailUri = uri;
+        usedUris.add(uri);
+        break;
       }
-
-      setStartedQueryKey(queryContext.queryKey);
-      setIsApiModeStarted(true);
-      setFlyersLoading(true);
-
-      try {
-        flyerStore.resetPaginationState();
-        flyerStore.limit = 15;
-
-        await flyerStore.fetchFlyers(
-          true,
-          sortParams.sortBy,
-          sortParams.sortDir,
-          queryContext.apiCategory,
-          queryContext.templateType,
-        );
-
-        setVisibleFlyers([...flyerStore.flyers]);
-        setFlyersHasMore(flyerStore.hasMore);
-      } finally {
-        setFlyersLoading(false);
-      }
-      return;
     }
 
-    if (!flyersHasMore) {
-      return;
-    }
+    return { id: tab.id, name: tab.name, thumbnailUri };
+  });
 
-    setFlyersLoading(true);
-    try {
-      flyerStore.limit = 15;
-      await flyerStore.fetchFlyers(
-        false,
-        sortParams.sortBy,
-        sortParams.sortDir,
-        queryContext.apiCategory,
-        queryContext.templateType,
-      );
-      setVisibleFlyers([...flyerStore.flyers]);
-      setFlyersHasMore(flyerStore.hasMore);
-    } finally {
-      setFlyersLoading(false);
-    }
-  }, [
-    flyersLoading,
-    flyerStore,
-    isApiModeStarted,
-    startedQueryKey,
-    queryContext,
-    sortParams,
-    flyersHasMore,
-  ]);
+  // ── Search filter ─────────────────────────────────────────────────────────────
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return categoryItems;
+    return categoryItems.filter(i => i.name.toLowerCase().includes(q));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, categoryItems.length, flyerStore.allFlyers.length]);
 
-  const activeTabLabel = useMemo(
-    () => categoryTabs.find(t => t.id === activeTabId)?.label ?? '',
-    [activeTabId, categoryTabs],
-  );
+  const rows = useMemo(() => {
+    const r: [CategoryItem, CategoryItem | null][] = [];
+    for (let i = 0; i < filtered.length; i += 2) r.push([filtered[i], filtered[i + 1] ?? null]);
+    return r;
+  }, [filtered]);
 
-  const filteredFlyers = useMemo(() => {
-    let result = [...visibleFlyers];
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        f =>
-          f.title.toLowerCase().includes(q) ||
-          (f.category && String(f.category).toLowerCase().includes(q)) ||
-          (f.categories && f.categories.some(c => String(c).toLowerCase().includes(q))),
-      );
-    }
-    return result;
-  }, [visibleFlyers, searchQuery]);
-
-  const flyerRows = useMemo<FlyerRow[]>(() => {
-    const rows: FlyerRow[] = [];
-    for (let i = 0; i < filteredFlyers.length; i += 2) {
-      rows.push([filteredFlyers[i], filteredFlyers[i + 1] ?? null]);
-    }
-    return rows;
-  }, [filteredFlyers]);
-
-  const handleToggleTemplate = (id: string) => {
-    setSelectedTemplates(prev =>
-      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id],
-    );
-  };
-
-  const handleFavorite = useCallback((id: string) => {
-    flyerStore.toggleFavourite(id);
-  }, [flyerStore]);
-
-  const handleCardPress = useCallback(
-    (id: string) => {
-      navigation.navigate('FlyerDetail', { flyerId: id });
-    },
+  const handlePress = useCallback(
+    (item: CategoryItem) => navigation.navigate('CategoryFlyers', { categoryId: item.id, categoryName: item.name }),
     [navigation],
   );
 
-  const handleTabPress = useCallback((id: string) => {
-    setActiveTabId(id);
-  }, []);
-
-  const renderRow: ListRenderItem<FlyerRow> = useCallback(
-    ({ item: [left, right] }) => (
+  const renderRow = useCallback(
+    ({ item: [left, right] }: { item: [CategoryItem, CategoryItem | null] }) => (
       <View style={styles.row}>
-        <FlyerCard
-          id={String(left._id ?? left.id)}
-          title={left.title}
-          brand={left.category || (left.categories && left.categories[0])}
-          price={formatPrice(left.price)}
-          imageSource={getFlyerImage(left)}
-          isPremium={left.isPremium}
-          isFavorited={left.isFavorited}
-          onPress={handleCardPress}
-          onFavoritePress={handleFavorite}
-        />
-
-        {right ? (
-          <FlyerCard
-            id={String(right._id ?? right.id)}
-            title={right.title}
-            brand={right.category || (right.categories && right.categories[0])}
-            price={formatPrice(right.price)}
-            imageSource={getFlyerImage(right)}
-            isPremium={right.isPremium}
-            isFavorited={right.isFavorited}
-            onPress={handleCardPress}
-            onFavoritePress={handleFavorite}
-          />
-        ) : (
-          <View style={styles.emptyCardSpacer} />
-        )}
+        <CategoryCard item={left}  onPress={handlePress} />
+        {right ? <CategoryCard item={right} onPress={handlePress} /> : <View style={styles.spacer} />}
       </View>
     ),
-    [handleCardPress, handleFavorite],
-  );
-
-  const ListHeader = (
-    <View style={styles.listHeader}>
-      <View style={styles.searchWrapper}>
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search premium flyers..."
-        />
-      </View>
-
-      <View style={styles.tabsWrapper}>
-        <CategoryTabs
-          tabs={categoryTabs}
-          activeTabId={activeTabId}
-          onTabPress={handleTabPress}
-        />
-      </View>
-
-      <View style={styles.sectionHeaderRow}>
-        <Text style={styles.sectionTitle}>{activeTabLabel || category.toUpperCase()}</Text>
-        <SortButton
-          options={SORT_OPTIONS}
-          selectedId={sortId}
-          onSelect={setSortId}
-          selectedTemplates={selectedTemplates}
-          onToggleTemplate={handleToggleTemplate}
-        />
-      </View>
-    </View>
-  );
-
-  const ListFooter = () => {
-    if (flyersLoading || flyerStore.isFetchingNextPage) {
-      return (
-        <View style={styles.footerLoader}>
-          <ActivityIndicator size="small" color={Colors.primary} />
-        </View>
-      );
-    }
-    return null;
-  };
-
-  const ListEmpty = (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyTitle}>No flyers found</Text>
-      <Text style={styles.emptySubtitle}>
-        Try a different search term or category.
-      </Text>
-    </View>
+    [handlePress],
   );
 
   return (
-    <View style={styles.safeArea}>
+    <View style={styles.container}>
       <FlatList
-        data={flyerRows}
-        keyExtractor={(_, index) => `row_${index}`}
+        data={rows}
+        keyExtractor={(_, i) => `cat_row_${i}`}
         renderItem={renderRow}
-        ListHeaderComponent={ListHeader}
-        ListEmptyComponent={!flyersLoading ? ListEmpty : null}
-        ListFooterComponent={ListFooter}
-        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={styles.rowGap} />}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        initialNumToRender={5}
-        maxToRenderPerBatch={6}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text style={styles.pageTitle}>Categories</Text>
+            <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search categories..." />
+          </View>
+        }
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>{searchQuery ? 'No categories found' : 'Loading categories…'}</Text>
+            {searchQuery ? <Text style={styles.emptySubtitle}>Try a different search term.</Text> : null}
+          </View>
+        }
+        ItemSeparatorComponent={() => <View style={{ height: COLUMN_GAP }} />}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
         windowSize={7}
         removeClippedSubviews
       />
@@ -347,70 +302,56 @@ const CategoryScreen: React.FC = observer(() => {
   );
 });
 
+// ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.background,
+  container:   { flex: 1, backgroundColor: Colors.background },
+  listContent: { paddingHorizontal: H_PADDING, paddingBottom: 32 },
+
+  header:    { paddingTop: 14, paddingBottom: 18, gap: 14 },
+  pageTitle: {
+    fontSize:    Typography.fontSizes['2xl'],
+    fontFamily:  Typography.fontFamilies.black,
+    color:       Colors.textPrimary,
+    letterSpacing: 0.2,
   },
-  listContent: {
-    paddingBottom: 32,
+
+  row:    { flexDirection: 'row', gap: COLUMN_GAP },
+  spacer: { width: CARD_WIDTH },
+
+  card: {
+    width: CARD_WIDTH, height: CARD_HEIGHT,
+    borderRadius: 18, overflow: 'hidden',
+    backgroundColor: Colors.surface,
   },
-  listHeader: {
-    gap: 0,
-    marginBottom: 20,
+  cardTouchable: { flex: 1 },
+  cardInner:     { width: '100%', height: '100%', justifyContent: 'flex-end' },
+
+  scrimContainer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    height: SCRIM_HEIGHT,
   },
-  searchWrapper: {
-    paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 12,
-    paddingBottom: 16,
+
+  nameOverlay: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    height: 52,
+    justifyContent: 'center', alignItems: 'center',
+    paddingHorizontal: 10, paddingBottom: 6,
   },
-  tabsWrapper: {
-    marginBottom: 22,
+  categoryName: {
+    fontSize:     13,
+    fontFamily:   Typography.fontFamilies.black,
+    color:        '#FFFFFF',
+    textAlign:    'center',
+    letterSpacing: 0.4,
+    lineHeight:   18,
+    textShadowColor:  'rgba(0,0,0,0.9)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: HORIZONTAL_PADDING,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: Typography.fontSizes.lg,
-    fontWeight: Typography.fontWeights.black,
-    color: Colors.textPrimary,
-  },
-  row: {
-    flexDirection: 'row',
-    paddingHorizontal: HORIZONTAL_PADDING,
-    gap: CARD_GAP,
-  },
-  rowGap: {
-    height: CARD_GAP + 6,
-  },
-  emptyCardSpacer: {
-    flex: 1,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 32,
-    gap: 10,
-  },
-  emptyTitle: {
-    fontSize: Typography.fontSizes.lg,
-    fontWeight: Typography.fontWeights.bold,
-    color: Colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: Typography.fontSizes.sm,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  footerLoader: {
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
+
+  empty: { alignItems: 'center', paddingTop: 60, gap: 8 },
+  emptyTitle:    { fontSize: Typography.fontSizes.base, fontFamily: Typography.fontFamilies.semiBold, color: Colors.textPrimary },
+  emptySubtitle: { fontSize: Typography.fontSizes.sm,   color: Colors.textSecondary },
 });
 
 export default CategoryScreen;
