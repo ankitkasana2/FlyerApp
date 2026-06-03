@@ -9,6 +9,7 @@ import {
   Alert,
   InteractionManager,
   Image,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
@@ -493,8 +494,14 @@ const HomeScreen: React.FC = observer(() => {
         style={styles.list}
         ListHeaderComponent={renderHeader}
         showsVerticalScrollIndicator={false}
-        onRefresh={handleRefresh}
-        refreshing={isRefreshing}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
         initialNumToRender={4}
         maxToRenderPerBatch={4}
         windowSize={5}

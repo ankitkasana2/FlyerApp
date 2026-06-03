@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
@@ -127,6 +128,18 @@ const CartScreen: React.FC = observer(() => {
       cartStore.load(userId);
     }
   }, [authStore.user, cartStore]);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    const userId = authStore.user?.id;
+    if (!userId) return;
+    setIsRefreshing(true);
+    try {
+      await cartStore.load(userId);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [authStore.user?.id, cartStore]);
 
   // Map store items to card data
   const cartCardItems = cartStore.cartItems.map(mapCartItemToCard);
@@ -299,6 +312,14 @@ const CartScreen: React.FC = observer(() => {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
       >
         {cartCardItems.length === 0 ? (
           renderEmpty()

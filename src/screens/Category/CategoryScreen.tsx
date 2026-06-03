@@ -11,6 +11,7 @@ import {
   Dimensions,
   Animated,
   Easing,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { observer } from 'mobx-react-lite';
@@ -167,8 +168,31 @@ const CategoryScreen: React.FC = observer(() => {
   const navigation = useNavigation<NavigationProp<AppStackParamList>>();
   const { flyerStore } = useStores();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => { flyerStore.fetchCategories(); }, [flyerStore]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await flyerStore.fetchCategories();
+      // Re-fetch thumbnails for all category tabs
+      const tabs = flyerStore.orderedCategoryTabs;
+      await Promise.allSettled(
+        tabs.map(tab =>
+          flyerStore.fetchFlyersForCategoryTab({
+            categoryName: tab.name,
+            isRecentlyAdded: tab.id === 'recently_added',
+            sortBy: 'created_at',
+            sortDir: 'desc',
+            limit: 6,
+          }),
+        ),
+      );
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [flyerStore]);
 
   // ── Lazy fetch for categories with no local data ─────────────────────────────
   // Fetch with limit=6 so the uniqueness filter below has several URIs to choose
@@ -291,6 +315,14 @@ const CategoryScreen: React.FC = observer(() => {
         renderItem={renderRow}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
         ListHeaderComponent={
           <View style={styles.searchWrapper}>
             <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search categories..." />
