@@ -280,7 +280,9 @@ const TabLayout = observer(() => {
   const navState = useNavigationState(state => state as any);
   const activeRouteName = getActiveRouteName(navState);
   const hideGlobalHeader =
-    activeRouteName === 'Cart' || activeRouteName === 'Download';
+    activeRouteName === 'Cart' ||
+    activeRouteName === 'Download' ||
+    activeRouteName === 'Categories';
 
   useEffect(() => {
     fetchNotifications();

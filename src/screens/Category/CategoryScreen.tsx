@@ -12,10 +12,12 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { observer } from 'mobx-react-lite';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { useStores } from '../../stores/StoreContext';
 import SearchBar from '../../components/common/SearchBar';
+import ScreenHeader from '../../components/common/ScreenHeader';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 import type { AppStackParamList } from '../../navigation/types';
@@ -273,7 +275,16 @@ const CategoryScreen: React.FC = observer(() => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenHeader
+        title="Categories"
+        onBackPress={() => {
+          if (navigation.canGoBack()) navigation.goBack();
+        }}
+        rightSlot={null}
+        containerStyle={styles.headerBar}
+      />
+
       <FlatList
         data={rows}
         keyExtractor={(_, i) => `cat_row_${i}`}
@@ -281,8 +292,7 @@ const CategoryScreen: React.FC = observer(() => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
-          <View style={styles.header}>
-            <Text style={styles.pageTitle}>Categories</Text>
+          <View style={styles.searchWrapper}>
             <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search categories..." />
           </View>
         }
@@ -298,22 +308,16 @@ const CategoryScreen: React.FC = observer(() => {
         windowSize={7}
         removeClippedSubviews
       />
-    </View>
+    </SafeAreaView>
   );
 });
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container:   { flex: 1, backgroundColor: Colors.background },
-  listContent: { paddingHorizontal: H_PADDING, paddingBottom: 32 },
-
-  header:    { paddingTop: 14, paddingBottom: 18, gap: 14 },
-  pageTitle: {
-    fontSize:    Typography.fontSizes['2xl'],
-    fontFamily:  Typography.fontFamilies.black,
-    color:       Colors.textPrimary,
-    letterSpacing: 0.2,
-  },
+  container:     { flex: 1, backgroundColor: Colors.background },
+  headerBar:     { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Colors.border },
+  listContent:   { paddingHorizontal: H_PADDING, paddingBottom: 32 },
+  searchWrapper: { paddingTop: 12, paddingBottom: 16 },
 
   row:    { flexDirection: 'row', gap: COLUMN_GAP },
   spacer: { width: CARD_WIDTH },
