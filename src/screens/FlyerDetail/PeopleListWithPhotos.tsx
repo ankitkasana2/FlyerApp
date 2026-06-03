@@ -4,6 +4,7 @@ import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 import FormField from './FormField';
 import type { PickedImage } from '../../hooks/useImagePicker';
+import type { RecentKey } from '../../utils/recentItems';
 
 export type PersonWithPhoto = {
   name: string;
@@ -13,21 +14,27 @@ export type PersonWithPhoto = {
 
 type Props = {
   label: string;
+  itemLabel?: string;
   items: PersonWithPhoto[];
   onChange: (next: PersonWithPhoto[]) => void;
   onPickImage: (index: number) => void;
   onPickFromLibrary: (index: number) => void;
   onRemoveImage: (index: number) => void;
+  recentNameKey?: RecentKey;
 };
 
 const PeopleListWithPhotos: React.FC<Props> = ({
   label,
+  itemLabel,
   items,
   onChange,
   onPickImage,
   onPickFromLibrary,
   onRemoveImage,
+  recentNameKey,
 }) => {
+  const resolvedItemLabel = itemLabel ?? label.replace(/s$/i, '').trim();
+
   const setName = useCallback(
     (index: number, value: string) => {
       onChange(
@@ -45,17 +52,22 @@ const PeopleListWithPhotos: React.FC<Props> = ({
         return (
           <View key={`${label}_${index}`} style={styles.card}>
             <FormField
-              label={`${label.slice(0, -1)} ${index + 1}`}
+              label={`${resolvedItemLabel} ${index + 1}`}
               placeholder="Name"
               value={item.name}
               onChangeText={t => setName(index, t)}
+              recentKey={recentNameKey}
+              onRecentSelect={recentNameKey ? t => setName(index, t) : undefined}
             />
 
             {canUpload ? (
               <View style={styles.imageRow}>
                 <View style={styles.previewBox}>
                   {item.image?.uri ? (
-                    <Image source={{ uri: item.image.uri }} style={styles.preview} />
+                    <Image
+                      source={{ uri: item.image.uri }}
+                      style={styles.preview}
+                    />
                   ) : (
                     <Text style={styles.previewHint}>No photo</Text>
                   )}
@@ -67,28 +79,27 @@ const PeopleListWithPhotos: React.FC<Props> = ({
                     onPress={() => onPickImage(index)}
                     activeOpacity={0.85}
                   >
-                    <Text style={styles.smallBtnText}>Upload</Text>
+                    <Text style={styles.smallBtnText}>Upload Photo</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.smallBtn}
+                    style={[styles.smallBtn, styles.smallBtnOutline]}
                     onPress={() => onPickFromLibrary(index)}
                     activeOpacity={0.85}
                   >
-                    <Text style={styles.smallBtnText}>Library</Text>
+                    <Text style={styles.smallBtnOutlineText}>Media Library</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.smallBtn, styles.smallBtnGhost]}
-                    onPress={() => onRemoveImage(index)}
-                    activeOpacity={0.85}
-                    disabled={!item.image}
-                  >
-                    <Text style={styles.smallBtnText}>Remove</Text>
-                  </TouchableOpacity>
+                  {item.image ? (
+                    <TouchableOpacity
+                      style={[styles.smallBtn, styles.smallBtnGhost]}
+                      onPress={() => onRemoveImage(index)}
+                      activeOpacity={0.85}
+                    >
+                      <Text style={styles.smallBtnText}>Remove</Text>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
               </View>
-            ) : (
-              <Text style={styles.noPhotoHint}>Text only (no photo for this slot)</Text>
-            )}
+            ) : null}
           </View>
         );
       })}
@@ -111,7 +122,7 @@ const styles = StyleSheet.create({
     gap: 10,
     backgroundColor: Colors.surface,
   },
-  imageRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  imageRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   previewBox: {
     width: 84,
     height: 84,
@@ -124,7 +135,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   preview: { width: '100%', height: '100%' },
-  previewHint: { color: Colors.textSecondary, fontSize: Typography.fontSizes.xs },
+  previewHint: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSizes.xs,
+    textAlign: 'center',
+    paddingHorizontal: 4,
+  },
   btnCol: { flex: 1, gap: 8 },
   smallBtn: {
     backgroundColor: Colors.primary,
@@ -132,14 +148,22 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
+  smallBtnOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+  },
+  smallBtnOutlineText: {
+    color: Colors.primary,
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.bold,
+  },
   smallBtnGhost: { backgroundColor: Colors.surfaceElevated },
   smallBtnText: {
     color: Colors.textPrimary,
     fontSize: Typography.fontSizes.sm,
     fontWeight: Typography.fontWeights.bold,
   },
-  noPhotoHint: { color: Colors.textSecondary, fontSize: Typography.fontSizes.xs },
 });
 
 export default memo(PeopleListWithPhotos);
-

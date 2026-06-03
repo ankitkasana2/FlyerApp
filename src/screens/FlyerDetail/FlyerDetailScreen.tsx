@@ -14,7 +14,6 @@ import ScreenHeader from '../../components/common/ScreenHeader';
 import DatePickerField from '../../components/common/DatePickerField';
 import FlyerHeroBanner from './FlyerHeroBanner';
 import FormField from './FormField';
-import DynamicListField from './DynamicListField';
 import VenueLogoUpload from './VenueLogoUpload';
 import SponsorsUpload from './SponsorsUpload';
 import MediaLibraryModal from '../../components/media/MediaLibraryModal';
@@ -41,6 +40,7 @@ import {
   finalizePayment,
   STRIPE_RETURN_URL,
 } from '../../services/stripeService';
+import { saveRecentItem } from '../../utils/recentItems';
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -65,8 +65,6 @@ interface FlyerDetailFormState {
   date: Date | null;
   flyerInfo: string;
   addressPhone: string;
-  djArtists: string[];
-  hosts: string[];
   deliveryTime: string;
   selectedExtras: string[];
   designerNote: string;
@@ -125,8 +123,6 @@ const FlyerDetailScreen: React.FC = observer(() => {
     date: null,
     flyerInfo: '',
     addressPhone: '',
-    djArtists: ['', ''],
-    hosts: [''],
     deliveryTime: '24h',
     selectedExtras: [],
     designerNote: '',
@@ -178,42 +174,6 @@ const FlyerDetailScreen: React.FC = observer(() => {
       flyerCategories.some(cat => cat.toLowerCase().includes('no photo'))
     );
   }, [flyer, flyerCategories]);
-
-  const isWithPhotoForm = useMemo(() => {
-    if (!flyer) return false;
-    const formType = String(flyer.form_type ?? '').toLowerCase();
-    const categoryStr = String(flyer.category ?? '').toLowerCase();
-    return (
-      formType === 'with photo' ||
-      flyer.hasPhotos === true ||
-      categoryStr.includes('with photo') ||
-      categoryStr.includes('photo')
-    );
-  }, [flyer, flyerCategories]);
-
-  // Apply the same "slot rules" as the web:
-  // - $10 with photo: DJ 1-2 have photos, DJ 3-4 text only. Host 1 has photo, Host 2 text only.
-  // - $15 with photo: DJ 1-4 have photos, Host 1-2 have photos.
-  useEffect(() => {
-    if (!isWithPhotoForm) return;
-    if (parsedFlyerPrice === 10) {
-      setDjPeople(prev =>
-        prev.slice(0, 4).map((p, i) => ({ ...p, hasPhoto: i < 2 })),
-      );
-      setHostPeople(prev =>
-        prev.slice(0, 2).map((p, i) => ({ ...p, hasPhoto: i === 0 })),
-      );
-      return;
-    }
-    if (parsedFlyerPrice === 15) {
-      setDjPeople(prev =>
-        prev.slice(0, 4).map(p => ({ ...p, hasPhoto: true })),
-      );
-      setHostPeople(prev =>
-        prev.slice(0, 2).map(p => ({ ...p, hasPhoto: true })),
-      );
-    }
-  }, [isWithPhotoForm, parsedFlyerPrice]);
 
   const similarFlyers = useMemo(() => {
     const currentCategoryId = flyerStore.flyerFormDetail.categoryId;
@@ -339,8 +299,8 @@ const FlyerDetailScreen: React.FC = observer(() => {
     ok: boolean;
     message?: string;
   } => {
-    if (!form.eventTitle.trim()) {
-      return { ok: false, message: 'Event Title is required.' };
+    if (!form.date) {
+      return { ok: false, message: 'Please select an event date.' };
     }
     if (!form.deliveryTime) {
       return { ok: false, message: 'Please select a delivery time.' };
@@ -352,7 +312,7 @@ const FlyerDetailScreen: React.FC = observer(() => {
       }
     }
     return { ok: true };
-  }, [form.deliveryTime, form.eventTitle, isNoPhotoForm, venueLogo, venueText]);
+  }, [form.date, form.deliveryTime, isNoPhotoForm, venueLogo, venueText]);
 
   // ─── Add to Cart handler ─────────────────────────────────────────────────
   const doAddToCart = useCallback(async (): Promise<number | null> => {
@@ -383,18 +343,26 @@ const FlyerDetailScreen: React.FC = observer(() => {
       return null;
     }
 
-    const djsPayload = (
-      isWithPhotoForm
-        ? djPeople
-        : form.djArtists.map(name => ({ name, image: null, hasPhoto: false }))
-    )
+    // Save recent entries for quick reuse on next order
+    void (async () => {
+      if (form.presenter.trim()) await saveRecentItem('presenting', form.presenter);
+      if (form.eventTitle.trim()) await saveRecentItem('mainTitle', form.eventTitle);
+      if (form.flyerInfo.trim()) await saveRecentItem('flyerInfo', form.flyerInfo);
+      if (form.addressPhone.trim()) await saveRecentItem('address', form.addressPhone);
+      for (const p of djPeople) {
+        if (p.name.trim()) await saveRecentItem('dj', p.name);
+      }
+      for (const p of hostPeople) {
+        if (p.name.trim()) await saveRecentItem('host', p.name);
+      }
+    })();
+
+    const djsPayload = djPeople
       .map(entry => ({ name: entry.name }))
       .filter(entry => entry.name.trim().length > 0);
 
     const hostName =
-      (isWithPhotoForm ? hostPeople.map(h => h.name) : form.hosts).find(
-        h => h.trim().length > 0,
-      ) || '';
+      hostPeople.map(h => h.name).find(h => h.trim().length > 0) || '';
 
     // Build sponsors array (text + file index)
     const sponsorsPayload = sponsorImages.map((img, i) => ({
@@ -432,8 +400,8 @@ const FlyerDetailScreen: React.FC = observer(() => {
       {
         venueLogo: venueLogo,
         sponsorImages: sponsorImages,
-        hostImage: isWithPhotoForm ? hostPeople[0]?.image ?? null : null,
-        djImages: isWithPhotoForm ? djPeople.map(p => p.image) : [],
+        hostImage: hostPeople[0]?.image ?? null,
+        djImages: djPeople.map(p => p.image),
       },
     );
 
@@ -453,16 +421,12 @@ const FlyerDetailScreen: React.FC = observer(() => {
     form,
     totalPrice,
     cartStore,
-    navigation,
     venueLogo,
     sponsorImages,
     venueText,
     isNoPhotoForm,
-    isWithPhotoForm,
     djPeople,
     hostPeople,
-    parsedFlyerPrice,
-    isBirthdayForm,
     validateBeforeCart,
   ]);
 
@@ -626,6 +590,8 @@ const FlyerDetailScreen: React.FC = observer(() => {
                 placeholder="Enter Presenter Name"
                 value={form.presenter}
                 onChangeText={t => setField('presenter', t)}
+                recentKey="presenting"
+                onRecentSelect={t => setField('presenter', t)}
               />
 
               {/* Event Title */}
@@ -634,11 +600,14 @@ const FlyerDetailScreen: React.FC = observer(() => {
                 placeholder="Society Fridays"
                 value={form.eventTitle}
                 onChangeText={t => setField('eventTitle', t)}
+                recentKey="mainTitle"
+                onRecentSelect={t => setField('eventTitle', t)}
               />
 
-              {/* Date */}
+              {/* Date — required */}
               <DatePickerField
                 label="Date"
+                isRequired
                 value={form.date}
                 onChange={d => setField('date', d)}
                 rightIcon={
@@ -657,6 +626,8 @@ const FlyerDetailScreen: React.FC = observer(() => {
                 onChangeText={t => setField('flyerInfo', t)}
                 multiline
                 numberOfLines={4}
+                recentKey="flyerInfo"
+                onRecentSelect={t => setField('flyerInfo', t)}
               />
 
               {/* Address & Phone */}
@@ -666,6 +637,8 @@ const FlyerDetailScreen: React.FC = observer(() => {
                 value={form.addressPhone}
                 onChangeText={t => setField('addressPhone', t)}
                 keyboardType="default"
+                recentKey="address"
+                onRecentSelect={t => setField('addressPhone', t)}
               />
 
               {/* Venue Logo */}
@@ -688,89 +661,63 @@ const FlyerDetailScreen: React.FC = observer(() => {
                 </>
               )}
 
-              {/* DJs & Artists */}
-              {!isBirthdayForm &&
-                (isWithPhotoForm ? (
-                  <PeopleListWithPhotos
-                    label="DJs"
-                    items={djPeople}
-                    onChange={setDjPeople}
-                    onPickImage={async index => {
-                      const img = await pickWithPrompt(`DJ ${index + 1}`);
-                      if (!img) return;
-                      setDjPeople(prev =>
-                        prev.map((p, i) =>
-                          i === index ? { ...p, image: img } : p,
-                        ),
-                      );
-                    }}
-                    onPickFromLibrary={index =>
-                      setMediaLibraryTarget({ type: 'dj', index })
-                    }
-                    onRemoveImage={index =>
-                      setDjPeople(prev =>
-                        prev.map((p, i) =>
-                          i === index ? { ...p, image: null } : p,
-                        ),
-                      )
-                    }
-                  />
-                ) : (
-                  <DynamicListField
-                    label="DJs & Artists"
-                    items={form.djArtists}
-                    onChange={items => setField('djArtists', items)}
-                    addLabel="ADD MORE DJs"
-                    placeholder="DJ/Artist"
-                    maxItems={4}
-                  />
-                ))}
-
-              {/* Hosts */}
-              {isBirthdayForm ? (
-                <DynamicListField
-                  label="Hosts"
-                  items={form.hosts}
-                  onChange={items => setField('hosts', items)}
-                  addLabel="ADD HOST"
-                  placeholder="Host"
-                  maxItems={2}
-                />
-              ) : isWithPhotoForm ? (
+              {/* DJs & Artists — always show with photo upload */}
+              {!isBirthdayForm && (
                 <PeopleListWithPhotos
-                  label="Hosts"
-                  items={hostPeople}
-                  onChange={setHostPeople}
+                  label="DJs & Artists"
+                  itemLabel="DJ"
+                  items={djPeople}
+                  onChange={setDjPeople}
+                  recentNameKey="dj"
                   onPickImage={async index => {
-                    const img = await pickWithPrompt(`Host ${index + 1}`);
+                    const img = await pickWithPrompt(`DJ ${index + 1}`);
                     if (!img) return;
-                    setHostPeople(prev =>
+                    setDjPeople(prev =>
                       prev.map((p, i) =>
                         i === index ? { ...p, image: img } : p,
                       ),
                     );
                   }}
                   onPickFromLibrary={index =>
-                    setMediaLibraryTarget({ type: 'host', index })
+                    setMediaLibraryTarget({ type: 'dj', index })
                   }
                   onRemoveImage={index =>
-                    setHostPeople(prev =>
+                    setDjPeople(prev =>
                       prev.map((p, i) =>
                         i === index ? { ...p, image: null } : p,
                       ),
                     )
                   }
                 />
-              ) : (
-                <DynamicListField
-                  label="Hosts"
-                  items={form.hosts}
-                  onChange={items => setField('hosts', items)}
-                  addLabel="ADD HOST (S)"
-                  placeholder="Host"
-                  maxItems={2}
-                />
               )}
+
+              {/* Hosts — always show with photo upload */}
+              <PeopleListWithPhotos
+                label="Hosts"
+                itemLabel="Host"
+                items={hostPeople}
+                onChange={setHostPeople}
+                recentNameKey="host"
+                onPickImage={async index => {
+                  const img = await pickWithPrompt(`Host ${index + 1}`);
+                  if (!img) return;
+                  setHostPeople(prev =>
+                    prev.map((p, i) =>
+                      i === index ? { ...p, image: img } : p,
+                    ),
+                  );
+                }}
+                onPickFromLibrary={index =>
+                  setMediaLibraryTarget({ type: 'host', index })
+                }
+                onRemoveImage={index =>
+                  setHostPeople(prev =>
+                    prev.map((p, i) =>
+                      i === index ? { ...p, image: null } : p,
+                    ),
+                  )
+                }
+              />
 
               {/* Sponsors */}
               {!isBirthdayForm && (
