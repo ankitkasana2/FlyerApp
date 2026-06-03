@@ -1,23 +1,24 @@
 // components/home/HeroBanner.tsx
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ImageBackground,
-  Image,
   StyleSheet,
   FlatList,
   Dimensions,
   ImageSourcePropType,
   ViewToken,
+  Animated,
 } from 'react-native';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BANNER_HEIGHT = SCREEN_WIDTH * 0.56; // ~16:9 feel
+const BANNER_HEIGHT = SCREEN_WIDTH * 0.56; // unchanged
+const SLIDE_WIDTH = SCREEN_WIDTH - 8;      // 4 px margin each side
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface BannerSlide {
@@ -36,40 +37,6 @@ export interface HeroBannerProps {
   onFirstImageLoad?: () => void;
 }
 
-// ─── Single Slide ─────────────────────────────────────────────────────────────
-const SlideItem: React.FC<BannerSlide> = ({
-  tag = 'NEW ARRIVAL',
-  title,
-  description,
-  ctaLabel = 'Explore',
-  onCtaPress,
-  imageSource,
-}) => (
-  <View style={styles.slide}>
-    <ImageBackground
-      source={imageSource}
-      style={styles.image}
-      resizeMode="cover"
-    >
-
-
-      {/* Content */}
-      <View style={styles.content}>
-        <Text style={styles.title}>{title}</Text>
-        {description && <Text style={styles.description}>{description}</Text>}
-
-        <TouchableOpacity
-          style={styles.ctaButton}
-          onPress={onCtaPress}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.ctaText}>{ctaLabel}</Text>
-        </TouchableOpacity>
-      </View>
-    </ImageBackground>
-  </View>
-);
-
 // ─── Component ────────────────────────────────────────────────────────────────
 const HeroBanner: React.FC<HeroBannerProps> = ({
   slides,
@@ -79,21 +46,90 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   const flatListRef = useRef<FlatList<BannerSlide>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Track by URI so re-renders with the same image never show the black overlay again
   const [loadedUris, setLoadedUris] = useState<Set<string>>(new Set());
   const [failedUris, setFailedUris] = useState<Set<string>>(new Set());
   const firstImageLoadFired = useRef(false);
 
+  // Refs so stable callbacks can read latest values without re-creating
+  const activeIndexRef = useRef(0);
+  activeIndexRef.current = activeIndex;
+  const slidesLenRef = useRef(slides.length);
+  slidesLenRef.current = slides.length;
+  const isResettingRef = useRef(false);
+
+  // Text fade animation
+  const textOpacity = useRef(new Animated.Value(1)).current;
+  const prevDisplayRef = useRef(0);
+
+  // ── Infinite-loop data ──────────────────────────────────────────────────────
+  // Append a clone of the first slide at the end so scrolling forward from the
+  // last real slide lands on an identical image (the clone).  After the scroll
+  // animation finishes we silently snap back to real index 0 — the image is
+  // identical so the user sees nothing.
+  const loopSlides = useMemo(
+    () =>
+      slides.length > 1
+        ? [...slides, { ...slides[0], id: `${slides[0].id}__clone` }]
+        : slides,
+    [slides],
+  );
+
+  // displayIndex maps clone index → 0 for dots / text
+  const displayIndex = activeIndex >= slides.length ? 0 : activeIndex;
+  const currentSlide = slides[displayIndex] ?? slides[0];
+
+  // ── Text fade on slide change ───────────────────────────────────────────────
+  useEffect(() => {
+    if (prevDisplayRef.current === displayIndex) return;
+    prevDisplayRef.current = displayIndex;
+    Animated.sequence([
+      Animated.timing(textOpacity, {
+        toValue: 0,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(textOpacity, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [displayIndex, textOpacity]);
+
+  // ── Snap back from clone to real index 0 ───────────────────────────────────
+  // Called by onMomentumScrollEnd — fires after every scroll animation finishes.
+  const handleMomentumScrollEnd = useCallback(() => {
+    const len = slidesLenRef.current;
+    const idx = activeIndexRef.current;
+    if (len <= 1 || idx < len || isResettingRef.current) return;
+    isResettingRef.current = true;
+    flatListRef.current?.scrollToIndex({ index: 0, animated: false });
+    setActiveIndex(0);
+    activeIndexRef.current = 0;
+    // Short guard to prevent double-resets from rapid callbacks
+    setTimeout(() => {
+      isResettingRef.current = false;
+    }, 150);
+  }, []); // stable — reads everything via refs
+
+  // ── Auto-play ───────────────────────────────────────────────────────────────
   const startAutoPlay = useCallback(() => {
-    if (slides.length <= 1) return;
+    if (slidesLenRef.current <= 1) return;
     timerRef.current = setInterval(() => {
-      setActiveIndex((prev) => {
-        const next = (prev + 1) % slides.length;
-        flatListRef.current?.scrollToIndex({ index: next, animated: true });
-        return next;
-      });
+      const len = slidesLenRef.current;
+      const current = activeIndexRef.current;
+
+      // If we somehow ended up on or past the clone, do nothing — the
+      // onMomentumScrollEnd reset will have already fired or is about to.
+      if (current >= len || isResettingRef.current) return;
+
+      const next = current + 1;
+      // next can be up to loopSlides.length - 1 (the clone index = len)
+      flatListRef.current?.scrollToIndex({ index: next, animated: true });
+      setActiveIndex(next);
+      activeIndexRef.current = next;
     }, autoPlayInterval);
-  }, [slides.length, autoPlayInterval]);
+  }, [autoPlayInterval]); // stable
 
   const stopAutoPlay = useCallback(() => {
     if (timerRef.current) {
@@ -107,178 +143,214 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
     return stopAutoPlay;
   }, [startAutoPlay, stopAutoPlay]);
 
+  // ── Viewability ─────────────────────────────────────────────────────────────
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
       if (viewableItems.length > 0 && viewableItems[0].index !== null) {
-        setActiveIndex(viewableItems[0].index);
+        const idx = viewableItems[0].index;
+        setActiveIndex(idx);
+        activeIndexRef.current = idx;
       }
-    }
+    },
   ).current;
 
-  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+  const viewabilityConfig = useRef({
+    viewAreaCoveragePercentThreshold: 50,
+  }).current;
 
   if (!slides || slides.length === 0) return null;
 
   return (
-    <View style={styles.outerWrapper}>
-      <FlatList
-        ref={flatListRef}
-        data={slides}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        onScrollBeginDrag={stopAutoPlay}
-        onScrollEndDrag={startAutoPlay}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        getItemLayout={(_, index) => ({
-          length: SCREEN_WIDTH - 8,
-          offset: (SCREEN_WIDTH - 8) * index,
-          index,
-        })}
-        renderItem={({ item }) => {
-          const itemId = String(item.id);
-          const imageUri =
-            item.imageSource &&
-            typeof item.imageSource === 'object' &&
-            'uri' in item.imageSource
-              ? (item.imageSource as { uri: string }).uri
-              : null;
-          const hasLoaded = imageUri ? loadedUris.has(imageUri) : false;
-          const hasFailed = imageUri ? failedUris.has(imageUri) : false;
+    <View>
+      {/* ── Image carousel — clean, no text overlay ── */}
+      <View style={styles.imageWrapper}>
+        <FlatList
+          ref={flatListRef}
+          data={loopSlides}
+          keyExtractor={item => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          onScrollBeginDrag={stopAutoPlay}
+          onScrollEndDrag={startAutoPlay}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          getItemLayout={(_, index) => ({
+            length: SLIDE_WIDTH,
+            offset: SLIDE_WIDTH * index,
+            index,
+          })}
+          renderItem={({ item }) => {
+            const itemId = String(item.id);
+            const imageUri =
+              item.imageSource &&
+              typeof item.imageSource === 'object' &&
+              'uri' in item.imageSource
+                ? (item.imageSource as { uri: string }).uri
+                : null;
+            const hasLoaded = imageUri ? loadedUris.has(imageUri) : false;
+            const hasFailed = imageUri ? failedUris.has(imageUri) : false;
 
-          return (
-            <View style={styles.slide}>
-              <ImageBackground
-                source={item.imageSource}
-                style={styles.image}
-                resizeMode="cover"
-                onLoad={() => {
-                  if (imageUri) setLoadedUris(prev => new Set([...prev, imageUri]));
-                  if (!firstImageLoadFired.current) {
-                    firstImageLoadFired.current = true;
-                    onFirstImageLoad?.();
-                  }
-                }}
-                onError={event => {
-                  console.error('[HeroBanner] failed to load banner image', {
-                    id: itemId,
-                    source: item.imageSource,
-                    error: event.nativeEvent?.error,
-                  });
-                  if (imageUri) setFailedUris(prev => new Set([...prev, imageUri]));
-                }}
-              >
-                {!hasLoaded && !hasFailed ? <View style={styles.loadingOverlay} /> : null}
-                <View style={styles.content}>
-                  <Text style={styles.title}>{item.title}</Text>
-                  {item.description ? (
-                    <Text style={styles.description}>{item.description}</Text>
+            return (
+              <View style={styles.slide}>
+                <ImageBackground
+                  source={item.imageSource}
+                  style={styles.image}
+                  resizeMode="cover"
+                  onLoad={() => {
+                    if (imageUri) {
+                      setLoadedUris(prev => new Set([...prev, imageUri]));
+                    }
+                    if (!firstImageLoadFired.current) {
+                      firstImageLoadFired.current = true;
+                      onFirstImageLoad?.();
+                    }
+                  }}
+                  onError={event => {
+                    console.error('[HeroBanner] image error', {
+                      id: itemId,
+                      error: event.nativeEvent?.error,
+                    });
+                    if (imageUri) {
+                      setFailedUris(prev => new Set([...prev, imageUri]));
+                    }
+                  }}
+                >
+                  {!hasLoaded && !hasFailed ? (
+                    <View style={styles.loadingOverlay} />
                   ) : null}
+                </ImageBackground>
+              </View>
+            );
+          }}
+        />
+      </View>
 
-                  <TouchableOpacity
-                    style={styles.ctaButton}
-                    onPress={item.onCtaPress}
-                    activeOpacity={0.85}
-                  >
-                    <Text style={styles.ctaText}>{item.ctaLabel || 'Explore'}</Text>
-                  </TouchableOpacity>
-                </View>
-              </ImageBackground>
-            </View>
-          );
-        }}
-      />
+      {/* ── Content panel below image — fades when slide changes ── */}
+      <Animated.View style={[styles.contentPanel, { opacity: textOpacity }]}>
+        <View style={styles.titleRow}>
+          <View style={styles.textBlock}>
+            {currentSlide.tag ? (
+              <Text style={styles.tag} numberOfLines={1}>
+                {currentSlide.tag.toUpperCase()}
+              </Text>
+            ) : null}
+            <Text style={styles.title} numberOfLines={2}>
+              {currentSlide.title}
+            </Text>
+            {currentSlide.description ? (
+              <Text style={styles.description} numberOfLines={1}>
+                {currentSlide.description}
+              </Text>
+            ) : null}
+          </View>
 
-      {/* Pagination dots */}
-      {slides.length > 1 && (
-        <View style={styles.dotsContainer}>
-          {slides.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                i === activeIndex ? styles.dotActive : styles.dotInactive,
-              ]}
-            />
-          ))}
+          {currentSlide.onCtaPress ? (
+            <TouchableOpacity
+              style={styles.ctaButton}
+              onPress={currentSlide.onCtaPress}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.ctaText}>
+                {currentSlide.ctaLabel || 'Explore'}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
-      )}
+
+        {/* Dots — show slides.length dots, not loopSlides.length */}
+        {slides.length > 1 ? (
+          <View style={styles.dotsRow}>
+            {slides.map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.dot,
+                  i === displayIndex ? styles.dotActive : styles.dotInactive,
+                ]}
+              />
+            ))}
+          </View>
+        ) : null}
+      </Animated.View>
     </View>
   );
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  outerWrapper: {
+  imageWrapper: {
     marginHorizontal: 4,
-    borderRadius: 8,
+    borderRadius: 14,
     overflow: 'hidden',
   },
   slide: {
-    width: SCREEN_WIDTH - 8,
+    width: SLIDE_WIDTH,
   },
   image: {
     width: '100%',
     height: BANNER_HEIGHT,
-    justifyContent: 'flex-end',
-    overflow: 'hidden',
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#111114',
   },
-  content: {
-    padding: 20,
-    paddingBottom: 22,
+  contentPanel: {
+    paddingHorizontal: 8,
+    paddingTop: 12,
+    paddingBottom: 4,
+    gap: 10,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  textBlock: {
+    flex: 1,
+    gap: 3,
   },
   tag: {
-    fontSize: Typography.fontSizes.sm,
+    fontSize: 10,
     fontFamily: Typography.fontFamilies.bold,
     color: Colors.primary,
     letterSpacing: 1.5,
-    marginBottom: 6,
-    textTransform: 'uppercase',
   },
   title: {
-    fontSize: Typography.fontSizes.xl,
+    fontSize: Typography.fontSizes.lg,
     fontFamily: Typography.fontFamilies.black,
     color: Colors.textPrimary,
-    lineHeight: 32,
-    marginBottom: 8,
-    maxWidth: '80%',
+    lineHeight: 24,
   },
   description: {
-    fontSize: Typography.fontSizes.sm,
+    fontSize: Typography.fontSizes.xs,
+    fontFamily: Typography.fontFamilies.regular,
     color: Colors.textSecondary,
-    marginBottom: 20,
-    lineHeight: 20,
-    maxWidth: '85%',
+    lineHeight: 18,
   },
   ctaButton: {
     backgroundColor: Colors.primary,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 28,
-    paddingVertical: 11,
-    borderRadius: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+    flexShrink: 0,
   },
   ctaText: {
-    fontSize: Typography.fontSizes.md,
+    fontSize: Typography.fontSizes.sm,
     fontFamily: Typography.fontFamilies.bold,
-    color: Colors.textInverse,
-    letterSpacing: 0.5,
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
-  dotsContainer: {
+  dotsRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    justifyContent: 'center',
     gap: 6,
   },
   dot: {
-    height: 6,
+    height: 5,
     borderRadius: 3,
   },
   dotActive: {
@@ -286,8 +358,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   dotInactive: {
-    width: 6,
-    backgroundColor: 'rgba(255,255,255,0.35)',
+    width: 5,
+    backgroundColor: 'rgba(255,255,255,0.28)',
   },
 });
 

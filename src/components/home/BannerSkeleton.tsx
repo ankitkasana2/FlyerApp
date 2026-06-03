@@ -1,11 +1,12 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
+import Colors from '../../theme/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BANNER_HEIGHT = SCREEN_WIDTH * 0.56;
+const BANNER_HEIGHT = SCREEN_WIDTH * 0.56; // matches HeroBanner exactly
 
 const BASE = '#1A1A1D';
-const STRIPE = 'rgba(255,255,255,0.07)';
+const SHIMMER = 'rgba(255,255,255,0.07)';
 const BLOCK = '#252528';
 
 const BannerSkeleton: React.FC = () => {
@@ -30,99 +31,118 @@ const BannerSkeleton: React.FC = () => {
   });
 
   return (
-    <View style={styles.wrapper}>
-      {/* Shimmer sweep stripe */}
-      <Animated.View
-        style={[styles.shimmerStripe, { transform: [{ translateX }] }]}
-      />
-
-      {/* Skeleton content blocks at bottom */}
-      <View style={styles.content}>
-        <View style={styles.tag} />
-        <View style={styles.titleLine1} />
-        <View style={styles.titleLine2} />
-        <View style={styles.cta} />
+    <View>
+      {/* Image placeholder */}
+      <View style={styles.imageWrapper}>
+        <View style={styles.imagePlaceholder}>
+          <Animated.View
+            style={[styles.shimmer, { transform: [{ translateX }] }]}
+          />
+        </View>
       </View>
 
-      {/* Dots row matching HeroBanner */}
-      <View style={styles.dotsRow}>
-        <View style={[styles.dot, styles.dotActive]} />
-        <View style={styles.dot} />
-        <View style={styles.dot} />
+      {/* Content panel below — mirrors HeroBanner layout */}
+      <View style={styles.contentPanel}>
+        <View style={styles.titleRow}>
+          <View style={styles.textBlock}>
+            <View style={styles.tagBlock} />
+            <View style={styles.titleBlock} />
+            <View style={styles.descBlock} />
+          </View>
+          <View style={styles.ctaBlock} />
+        </View>
+
+        {/* Dots */}
+        <View style={styles.dotsRow}>
+          <View style={[styles.dot, styles.dotActive]} />
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
+  // ── Image placeholder ────────────────────────────────────────────────────────
+  imageWrapper: {
     marginHorizontal: 4,
-    borderRadius: 8,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: BANNER_HEIGHT,
     backgroundColor: BASE,
     overflow: 'hidden',
   },
-  shimmerStripe: {
+  shimmer: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     width: SCREEN_WIDTH * 0.55,
-    backgroundColor: STRIPE,
+    backgroundColor: SHIMMER,
     transform: [{ skewX: '-20deg' }],
   },
 
-  // ── Content placeholder ─────────────────────────────────────────────────────
-  content: {
-    height: BANNER_HEIGHT,
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingBottom: 22,
+  // ── Content panel ────────────────────────────────────────────────────────────
+  contentPanel: {
+    paddingHorizontal: 8,
+    paddingTop: 12,
+    paddingBottom: 4,
     gap: 10,
   },
-  tag: {
-    width: 72,
-    height: 13,
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  textBlock: {
+    flex: 1,
+    gap: 6,
+  },
+  tagBlock: {
+    width: 56,
+    height: 10,
+    borderRadius: 3,
+    backgroundColor: BLOCK,
+  },
+  titleBlock: {
+    width: '72%',
+    height: 20,
+    borderRadius: 6,
+    backgroundColor: BLOCK,
+  },
+  descBlock: {
+    width: '52%',
+    height: 14,
     borderRadius: 4,
     backgroundColor: BLOCK,
   },
-  titleLine1: {
-    width: '60%',
-    height: 22,
-    borderRadius: 6,
+  ctaBlock: {
+    width: 80,
+    height: 38,
+    borderRadius: 10,
     backgroundColor: BLOCK,
-  },
-  titleLine2: {
-    width: '42%',
-    height: 22,
-    borderRadius: 6,
-    backgroundColor: BLOCK,
-    marginTop: -2,
-  },
-  cta: {
-    width: 96,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: BLOCK,
-    marginTop: 6,
+    flexShrink: 0,
   },
 
-  // ── Dots ────────────────────────────────────────────────────────────────────
+  // ── Dots ─────────────────────────────────────────────────────────────────────
   dotsRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
-    paddingVertical: 10,
   },
   dot: {
-    width: 6,
-    height: 6,
+    width: 5,
+    height: 5,
     borderRadius: 3,
     backgroundColor: BLOCK,
   },
   dotActive: {
     width: 20,
-    height: 6,
-    borderRadius: 3,
+    height: 5,
     backgroundColor: '#333336',
   },
 });
