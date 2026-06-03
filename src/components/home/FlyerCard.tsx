@@ -163,17 +163,6 @@ const FlyerCard: React.FC<FlyerCardProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Text Info below card */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.titleText} numberOfLines={1}>
-          {title}
-        </Text>
-        {brand ? (
-          <Text style={styles.brandText} numberOfLines={1}>
-            {brand}
-          </Text>
-        ) : null}
-      </View>
     </Animated.View>
   );
 };
@@ -253,21 +242,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSizes.sm,
     fontFamily: Typography.fontFamilies.bold,
     color: '#FFF',
-  },
-  infoContainer: {
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-  },
-  titleText: {
-    fontSize: Typography.fontSizes.sm,
-    fontFamily: Typography.fontFamilies.bold,
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  brandText: {
-    fontSize: Typography.fontSizes.xs,
-    color: Colors.textSecondary,
-    fontFamily: Typography.fontFamilies.medium,
   },
 });
 

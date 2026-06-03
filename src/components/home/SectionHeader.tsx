@@ -15,6 +15,7 @@ export interface SectionHeaderProps {
   title: string;
   actionLabel?: string;
   onActionPress?: () => void;
+  onTitlePress?: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -22,9 +23,17 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   actionLabel = 'See All',
   onActionPress,
+  onTitlePress,
 }) => (
   <View style={styles.container}>
-    <Text style={styles.title}>{title}</Text>
+    <TouchableOpacity
+      onPress={onTitlePress}
+      activeOpacity={onTitlePress ? 0.7 : 1}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      disabled={!onTitlePress}
+    >
+      <Text style={styles.title}>{title}</Text>
+    </TouchableOpacity>
     {onActionPress && (
       <TouchableOpacity
         onPress={onActionPress}

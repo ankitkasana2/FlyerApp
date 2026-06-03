@@ -46,6 +46,7 @@ import MyOrdersScreen from '../screens/orders/MyOrdersScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import CategoryScreen from '../screens/Category/CategoryScreen';
+import CategoryFlyersScreen from '../screens/CategoryFlyers/CategoryFlyersScreen';
 import AppDrawer from './AppDrawer';
 import ContactUsScreen from '../screens/DrawerScreen/ContactUs';
 import FAQScreen from '../screens/DrawerScreen/FAQScreen';
@@ -348,6 +349,7 @@ const AppNavigator = () => (
     <AppStack.Screen name="HowItWorks" component={HowItWorksScreen} />
     <AppStack.Screen name="MediaLibrary" component={MediaLibraryScreen} />
     <AppStack.Screen name="FlyerDetail" component={FlyerDetailScreen} />
+    <AppStack.Screen name="CategoryFlyers" component={CategoryFlyersScreen} />
     <AppStack.Screen name="Favorites" component={FavoritesScreen} />
     <AppStack.Screen name="Notifications" component={NotificationsScreen} />
     <AppStack.Screen name="ContactUs" component={ContactUsScreen} />

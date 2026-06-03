@@ -34,6 +34,7 @@ export type AppStackParamList = {
   HowItWorks: undefined;
   MediaLibrary: undefined;
   FlyerDetail: { flyerId: string };
+  CategoryFlyers: { categoryId: string; categoryName: string };
   Favorites: undefined;
   Notifications: undefined;
   ContactUs: undefined;

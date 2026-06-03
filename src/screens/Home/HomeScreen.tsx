@@ -408,7 +408,15 @@ const HomeScreen: React.FC = observer(() => {
 	          isPremiumSection ? styles.premiumCategorySection : null,
 	        ]}
 	      >
-	        <SectionHeader title={item.title} />
+	        <SectionHeader
+          title={item.title}
+          onTitlePress={() =>
+            navigation.navigate('CategoryFlyers', {
+              categoryId: item.id,
+              categoryName: item.title,
+            })
+          }
+        />
 	        <FlatList
           horizontal
           data={item.data}
