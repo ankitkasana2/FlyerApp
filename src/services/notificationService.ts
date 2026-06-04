@@ -9,3 +9,6 @@ export const markNotificationRead = (id: number) =>
 
 export const markAllNotificationsRead = () =>
   apiClient.patch('/notifications/read-all');
+
+export const registerDeviceToken = (deviceToken: string, platform: 'ios' | 'android') =>
+  apiClient.post('/notifications/device-token', { device_token: deviceToken, platform });

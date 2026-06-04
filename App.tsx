@@ -8,6 +8,7 @@ import {
   useStripe,
 } from '@stripe/stripe-react-native';
 import Config from 'react-native-config';
+import messaging from '@react-native-firebase/messaging';
 import RootNavigator from './src/navigation/RootNavigator';
 import { StoreProvider } from './src/stores/StoreContext';
 import { rootStore } from './src/stores/rootStore';
@@ -15,6 +16,7 @@ import Toast from 'react-native-toast-message';
 import Colors from './src/theme/colors';
 import Typography from './src/theme/typography';
 import { toastConfig } from './src/components/common/AppToast';
+import { initNotifications } from './src/services/notifications';
 
 const globalTextStyle = { fontFamily: Typography.fontFamilies.regular };
 const globalInputStyle = {
@@ -75,6 +77,20 @@ const AppShell = () => {
       subscription.remove();
     };
   }, [handleDeepLink]);
+
+  useEffect(() => {
+    initNotifications();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      const title = remoteMessage.notification?.title ?? 'Notification';
+      const message = remoteMessage.notification?.body ?? '';
+      Toast.show({ type: 'info', text1: title, text2: message });
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
