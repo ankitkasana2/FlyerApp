@@ -10,6 +10,7 @@ import {
   InteractionManager,
   Image,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
@@ -209,11 +210,94 @@ const HomeScreen: React.FC = observer(() => {
         tag: b.tag,
         title: b.title,
         description: b.description,
-        ctaLabel: b.button_text || b.ctaLabel || 'Explore',
+        ctaLabel: b.button_text || b.ctaLabel || 'GET IT',
         imageSource: { uri: b.image_url },
-        onCtaPress: () => navigation.navigate('Categories' as never),
+        onCtaPress: () => {
+          const tabs = flyerStore.orderedCategoryTabs;
+          const linkVal = b.link_value ?? '';
+
+          // Resolve any URL as an in-app route — strips the domain so it works
+          // regardless of which environment the admin saved the URL from.
+          const resolveUrl = (url: string): boolean => {
+            try {
+              const path = url.startsWith('http')
+                ? url.replace(/^https?:\/\/[^/]+/, '')
+                : url;
+
+              // /categories?slug=birthday-flyers  (slug may be first or later param)
+              if (path.includes('/categories')) {
+                const slugMatch = path.match(/[?&]slug=([^&#\s]+)/);
+                if (slugMatch) {
+                  const slug = decodeURIComponent(slugMatch[1]);
+                  const tab = tabs.find(
+                    t =>
+                      t.name.toLowerCase().replace(/\s+/g, '-') === slug.toLowerCase() ||
+                      t.name.toLowerCase() === slug.toLowerCase(),
+                  );
+                  navigation.navigate('CategoryFlyers', {
+                    categoryId: tab?.id ?? slug,
+                    categoryName: tab?.name ?? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                  });
+                  return true;
+                }
+                // /categories with no slug — not useful, let title-fallback handle it
+                return false;
+              }
+
+              // /flyer/{id}
+              const flyerMatch = path.match(/^\/flyer\/([^/?#\s]+)/);
+              if (flyerMatch) {
+                navigation.navigate('FlyerDetail', { flyerId: flyerMatch[1] });
+                return true;
+              }
+            } catch {}
+            return false;
+          };
+
+          if (b.link_type !== 'none' && linkVal) {
+            if (b.link_type === 'category') {
+              // link_value is the plain category name e.g. "Birthday Flyers"
+              // but could also be a full URL if admin misconfigured it
+              if (resolveUrl(linkVal)) return;
+              const tab = tabs.find(t => t.name.toLowerCase() === linkVal.toLowerCase());
+              navigation.navigate('CategoryFlyers', {
+                categoryId: tab?.id ?? linkVal,
+                categoryName: tab?.name ?? linkVal,
+              });
+              return;
+            }
+            if (b.link_type === 'flyer') {
+              navigation.navigate('FlyerDetail', { flyerId: linkVal });
+              return;
+            }
+            if (b.link_type === 'external') {
+              // Always try to handle in-app first — only open the browser
+              // for URLs that don't match any internal route pattern
+              if (resolveUrl(linkVal)) return;
+              Linking.openURL(linkVal).catch(() => {});
+              return;
+            }
+          }
+
+          // Fallback: infer destination from banner title
+          const titleLower = b.title.toLowerCase();
+          const matched = tabs.find(
+            t =>
+              titleLower.includes(t.name.toLowerCase()) ||
+              t.name.toLowerCase().includes(titleLower),
+          );
+          if (matched) {
+            navigation.navigate('CategoryFlyers', {
+              categoryId: matched.id,
+              categoryName: matched.name,
+            });
+            return;
+          }
+
+          navigation.navigate('Categories' as never);
+        },
       })),
-    [banners, navigation],
+    [banners, navigation, flyerStore],
   );
 
   const handleSearchChange = useCallback((text: string) => {
@@ -412,6 +496,12 @@ const HomeScreen: React.FC = observer(() => {
 	        <SectionHeader
           title={item.title}
           onTitlePress={() =>
+            navigation.navigate('CategoryFlyers', {
+              categoryId: item.id,
+              categoryName: item.title,
+            })
+          }
+          onActionPress={() =>
             navigation.navigate('CategoryFlyers', {
               categoryId: item.id,
               categoryName: item.title,

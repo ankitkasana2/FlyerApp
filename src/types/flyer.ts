@@ -69,6 +69,9 @@ export interface Banner {
   button_text?: string;
   description?: string;
   image_url: string;
+  link_type?: 'category' | 'flyer' | 'external' | 'none' | string;
+  link_value?: string | null;
+  display_order?: number;
 }
 export interface FavoritesResponse {
   success: boolean;
