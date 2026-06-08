@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import cognitoService from '../services/cognitoService';
 import { COGNITO_DOMAIN, COGNITO_CLIENT_ID } from '../services/api';
 import { setAccessToken } from '../services/tokenStore';
+import { initNotifications } from '../services/notifications';
 import * as authService from '../services/authService';
 import { Linking } from 'react-native';
 import axios from 'axios';
@@ -48,6 +49,50 @@ export class AuthStore {
     return params.backendToken || params.idToken || params.accessToken || null;
   }
 
+  private async syncBackendSession(user: {
+    fullname: string;
+    email: string;
+    user_id: string;
+    fallbackAccessToken?: string | null;
+    fallbackIdToken?: string | null;
+  }) {
+    const result = await this.registerUserInDatabase(user);
+    const responseData =
+      result.success && result.data && typeof result.data === 'object'
+        ? (result.data as Record<string, unknown>)
+        : null;
+    const backendToken =
+      typeof responseData?.token === 'string'
+        ? responseData.token
+        : typeof responseData?.access_token === 'string'
+          ? responseData.access_token
+          : typeof responseData?.accessToken === 'string'
+            ? responseData.accessToken
+            : typeof responseData?.jwt === 'string'
+              ? responseData.jwt
+              : responseData?.data &&
+                  typeof responseData.data === 'object' &&
+                  typeof (responseData.data as Record<string, unknown>).token === 'string'
+                ? (responseData.data as Record<string, unknown>).token as string
+              : null;
+
+    if (backendToken) {
+      setAccessToken(backendToken);
+      return backendToken;
+    }
+
+    const fallbackToken = this.getPreferredApiToken({
+      idToken: user.fallbackIdToken ?? this.idToken,
+      accessToken: user.fallbackAccessToken ?? this.accessToken,
+    });
+
+    if (fallbackToken) {
+      setAccessToken(fallbackToken);
+    }
+
+    return fallbackToken;
+  }
+
   async initialize() {
     try {
       const session = await cognitoService.getCurrentSession();
@@ -60,15 +105,22 @@ export class AuthStore {
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
         const accessToken = session.getAccessToken().getJwtToken();
         const idToken = session.getIdToken().getJwtToken();
-        setAccessToken(this.getPreferredApiToken({ idToken, accessToken }));
+        const backendToken = await this.syncBackendSession({
+          fullname: user.name || user.email,
+          email: user.email,
+          user_id: user.id,
+          fallbackAccessToken: accessToken,
+          fallbackIdToken: idToken,
+        });
         runInAction(() => {
-          this.accessToken = accessToken;
+          this.accessToken = backendToken || accessToken;
           this.idToken = idToken;
           this.refreshToken = session.getRefreshToken().getToken();
           this.user = user;
           this.isAuthenticated = true;
           this.isLoading = false;
         });
+        void initNotifications();
         return;
       }
     } catch (e) {
@@ -82,14 +134,21 @@ export class AuthStore {
         const tokens = JSON.parse(storedTokensStr);
         const user = this.normalizeStoredUser(JSON.parse(storedUserRaw));
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-        setAccessToken(this.getPreferredApiToken(tokens));
+        const backendToken = await this.syncBackendSession({
+          fullname: user.name || user.email,
+          email: user.email,
+          user_id: user.id,
+          fallbackAccessToken: tokens.accessToken,
+          fallbackIdToken: tokens.idToken,
+        });
         runInAction(() => {
-          this.accessToken = tokens.accessToken;
+          this.accessToken = backendToken || tokens.accessToken;
           this.idToken = tokens.idToken;
           this.refreshToken = tokens.refreshToken;
           this.user = user;
           this.isAuthenticated = true;
         });
+        void initNotifications();
       } else {
         console.warn('[AuthStore] Session restore failed, user not logged in.');
       }
@@ -113,20 +172,22 @@ export class AuthStore {
       };
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-      setAccessToken(
-        this.getPreferredApiToken({
-          idToken: result.idToken,
-          accessToken: result.accessToken,
-        }),
-      );
+      const backendToken = await this.syncBackendSession({
+        fullname: user.name,
+        email: user.email,
+        user_id: user.id,
+        fallbackAccessToken: result.accessToken,
+        fallbackIdToken: result.idToken,
+      });
 
       runInAction(() => {
-        this.accessToken = result.accessToken;
+        this.accessToken = backendToken || result.accessToken;
         this.idToken = result.idToken;
         this.refreshToken = result.refreshToken;
         this.user = user;
         this.isAuthenticated = true;
       });
+      void initNotifications();
 
       return { success: true };
     } catch (error: any) {
@@ -305,13 +366,21 @@ export class AuthStore {
             accessToken: result.accessToken,
           }),
         );
+        const backendToken = await this.syncBackendSession({
+          fullname,
+          email,
+          user_id: userId,
+          fallbackAccessToken: result.accessToken,
+          fallbackIdToken: result.idToken,
+        });
         runInAction(() => {
-          this.accessToken = result.accessToken;
+          this.accessToken = backendToken || result.accessToken;
           this.idToken = result.idToken;
           this.refreshToken = result.refreshToken;
           this.user = user;
           this.isAuthenticated = true;
         });
+        void initNotifications();
         return { success: true, autoLogin: true };
       } catch {
         return { success: true, autoLogin: false };
@@ -352,8 +421,15 @@ export class AuthStore {
         accessToken: result.accessToken,
       }),
     );
+    const backendToken = await this.syncBackendSession({
+      fullname: user.name || '',
+      email: user.email,
+      user_id: userId,
+      fallbackAccessToken: result.accessToken,
+      fallbackIdToken: result.idToken,
+    });
     runInAction(() => {
-      this.accessToken = result.accessToken;
+      this.accessToken = backendToken || result.accessToken;
       this.idToken = result.idToken;
       this.refreshToken = result.refreshToken;
       this.user = user;
@@ -361,6 +437,7 @@ export class AuthStore {
       this.pendingEmail = null;
       this.pendingPassword = null;
     });
+    void initNotifications();
     return { success: true };
   }
 
@@ -462,15 +539,23 @@ export class AuthStore {
           accessToken: access_token,
         }),
       );
+      const backendToken = await this.syncBackendSession({
+        fullname: user.name || '',
+        email: user.email,
+        user_id: user.id,
+        fallbackAccessToken: access_token,
+        fallbackIdToken: id_token,
+      });
 
       runInAction(() => {
-        this.accessToken = access_token;
+        this.accessToken = backendToken || access_token;
         this.idToken = id_token;
         this.refreshToken = refresh_token;
         this.user = user;
         this.isAuthenticated = true;
         this.loading = false;
       });
+      void initNotifications();
     } catch (error: any) {
       console.error('[AuthStore] OAuth Callback Error:', error?.response?.data || error);
       runInAction(() => {

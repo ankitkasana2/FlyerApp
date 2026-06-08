@@ -457,6 +457,7 @@ const FlyerDetailScreen: React.FC = observer(() => {
     const result = await cartStore.addToCart(
       {
         user_id: userId,
+        web_user_id: userId,
         flyer_is: flyerIs,
         category_id: categoryId ? String(categoryId) : undefined,
         presenting: form.presenter,

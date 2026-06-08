@@ -271,11 +271,9 @@ const getActiveRouteName = (state: any): string | undefined => {
 
 // ─── Tab Layout with Global Header ─────────────────────────────────────────────
 const TabLayout = observer(() => {
-  const { notificationStore } = useStores();
+  const { notificationStore, authStore } = useStores();
   const {
-    fetchNotifications,
-    startAutoRefresh,
-    stopAutoRefresh,
+    refreshNotifications,
   } = notificationStore;
   const navState = useNavigationState(state => state as any);
   const activeRouteName = getActiveRouteName(navState);
@@ -285,11 +283,9 @@ const TabLayout = observer(() => {
     activeRouteName === 'Categories';
 
   useEffect(() => {
-    fetchNotifications();
-    startAutoRefresh();
-
-    return () => stopAutoRefresh();
-  }, [fetchNotifications, startAutoRefresh, stopAutoRefresh]);
+    if (!authStore.isAuthenticated || authStore.isLoading) return;
+    void refreshNotifications();
+  }, [authStore.isAuthenticated, authStore.isLoading, refreshNotifications]);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>

@@ -1,8 +1,10 @@
 import apiClient from './apiClient';
 import type { NotificationsResponse } from '../types/api';
 
-export const getNotifications = () =>
-  apiClient.get<NotificationsResponse>('/notifications');
+export const getNotifications = (page = 1, limit = 20) =>
+  apiClient.get<NotificationsResponse>('/notifications', {
+    params: { page, limit },
+  });
 
 export const markNotificationRead = (id: number) =>
   apiClient.patch(`/notifications/${id}/read`);

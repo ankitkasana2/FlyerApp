@@ -1,16 +1,19 @@
 import { makeAutoObservable, runInAction, computed } from 'mobx';
 import * as notificationService from '../services/notificationService';
+import { getAccessToken } from '../services/tokenStore';
 import type { Notification } from '../types/api';
 
-const AUTO_REFRESH_MS = 30_000;
+const DEFAULT_PAGE_SIZE = 20;
 
 class NotificationStore {
   notifications: Notification[] = [];
   unreadCount = 0;
   isLoading = false;
+  isRefreshing = false;
+  isLoadingMore = false;
+  hasMore = true;
+  page = 1;
   error: string | null = null;
-
-  private _refreshTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     makeAutoObservable(this, {
@@ -24,44 +27,105 @@ class NotificationStore {
   }
 
   get sortedNotifications(): Notification[] {
-    return [...this.notifications].sort((a, b) => {
-      if (a.is_read !== b.is_read) return a.is_read - b.is_read;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+    return [...this.notifications].sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
   }
 
-  fetchNotifications = async () => {
-    runInAction(() => {
-      this.isLoading = true;
-      this.error = null;
-    });
-    try {
-      const { data } = await notificationService.getNotifications();
+  private mergeNotifications(nextItems: Notification[]) {
+    const seen = new Set<number>();
+    const merged: Notification[] = [];
+
+    for (const item of [...this.notifications, ...nextItems]) {
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+      merged.push(item);
+    }
+
+    return merged;
+  }
+
+  fetchNotifications = async (opts: { reset?: boolean } = {}) => {
+    if (!getAccessToken()) {
       runInAction(() => {
-        this.notifications = data.success ? data.notifications : [];
-        this.unreadCount = data.success ? data.unread_count : 0;
+        this.error = null;
+        if (opts.reset) {
+          this.notifications = [];
+          this.unreadCount = 0;
+          this.page = 1;
+          this.hasMore = true;
+        }
         this.isLoading = false;
+        this.isRefreshing = false;
+        this.isLoadingMore = false;
+      });
+      return;
+    }
+
+    const { reset = false } = opts;
+    const nextPage = reset ? 1 : this.page + 1;
+
+    if (!reset) {
+      if (this.isLoadingMore || !this.hasMore) return;
+      runInAction(() => {
+        this.isLoadingMore = true;
+        this.error = null;
+      });
+    } else {
+      runInAction(() => {
+        this.error = null;
+        if (this.notifications.length > 0) {
+          this.isRefreshing = true;
+        } else {
+          this.isLoading = true;
+        }
+        this.page = 1;
+        this.hasMore = true;
+      });
+    }
+
+    try {
+      const { data } = await notificationService.getNotifications(nextPage, DEFAULT_PAGE_SIZE);
+      runInAction(() => {
+        const nextNotifications = data.success ? data.notifications : [];
+        this.notifications = reset
+          ? nextNotifications
+          : this.mergeNotifications(nextNotifications);
+        this.unreadCount = data.success ? data.unread_count : 0;
+        this.page = data.pagination?.page ?? nextPage;
+        this.hasMore = data.pagination?.hasMore ?? nextNotifications.length === DEFAULT_PAGE_SIZE;
+        this.isLoading = false;
+        this.isRefreshing = false;
+        this.isLoadingMore = false;
       });
     } catch (err: any) {
+      const message = String(err?.message || '');
       runInAction(() => {
-        this.error = err.message ?? 'Failed to load notifications';
+        if (/unauthorized/i.test(message) || /401/.test(message)) {
+          this.error = null;
+          if (opts.reset) {
+            this.notifications = [];
+            this.unreadCount = 0;
+          }
+        } else {
+          this.error = err.message ?? 'Failed to load notifications';
+        }
         this.isLoading = false;
+        this.isRefreshing = false;
+        this.isLoadingMore = false;
       });
     }
   };
 
-  startAutoRefresh = () => {
-    this.stopAutoRefresh();
-    this._refreshTimer = setInterval(() => {
-      void this.fetchNotifications();
-    }, AUTO_REFRESH_MS);
+  refreshNotifications = async () => {
+    await this.fetchNotifications({ reset: true });
   };
 
-  stopAutoRefresh = () => {
-    if (this._refreshTimer) {
-      clearInterval(this._refreshTimer);
-      this._refreshTimer = null;
+  loadMoreNotifications = async () => {
+    if (this.notifications.length === 0 || !this.hasMore || this.isLoadingMore || this.isLoading || this.isRefreshing) {
+      return;
     }
+    await this.fetchNotifications({ reset: false });
   };
 
   markRead = async (id: number) => {
@@ -102,10 +166,13 @@ class NotificationStore {
   };
 
   reset() {
-    this.stopAutoRefresh();
     this.notifications = [];
     this.unreadCount = 0;
     this.isLoading = false;
+    this.isRefreshing = false;
+    this.isLoadingMore = false;
+    this.hasMore = true;
+    this.page = 1;
     this.error = null;
   }
 }

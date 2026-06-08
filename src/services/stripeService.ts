@@ -27,6 +27,7 @@ export const buildCheckoutPayload = (
   amount: Number(amount.toFixed(2)),
   cartItemIds: cartItems.map(item => item.id),
   userId,
+  web_user_id: userId,
 });
 
 export const createPaymentSheet = async (

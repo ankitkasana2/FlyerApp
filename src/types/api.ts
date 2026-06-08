@@ -16,10 +16,18 @@ export interface Notification {
   flyer_id?: number | null;
 }
 
+export interface NotificationPagination {
+  page: number;
+  limit: number;
+  total: number;
+  hasMore: boolean;
+}
+
 export interface NotificationsResponse {
   success: boolean;
   unread_count: number;
   notifications: Notification[];
+  pagination?: NotificationPagination;
 }
 
 // ─── Shared ───────────────────────────────────────────────────────────────────

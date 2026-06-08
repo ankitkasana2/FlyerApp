@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, memo } from 'react';
 import {
   View,
   Text,
@@ -47,10 +47,13 @@ const BackArrow: React.FC<{ onPress: () => void }> = ({ onPress }) => (
 );
 
 // ─── Notification Card ────────────────────────────────────────────────────────
-const NotificationCard: React.FC<{
+const NotificationCard = memo(({
+  item,
+  onPress,
+}: {
   item: Notification;
   onPress: (item: Notification) => void;
-}> = ({ item, onPress }) => {
+}) => {
   const config = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.info;
   const isUnread = item.is_read === 0;
 
@@ -95,7 +98,9 @@ const NotificationCard: React.FC<{
       </View>
     </TouchableOpacity>
   );
-};
+});
+
+NotificationCard.displayName = 'NotificationCard';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 const NotificationsScreen: React.FC = observer(() => {
@@ -105,23 +110,30 @@ const NotificationsScreen: React.FC = observer(() => {
     sortedNotifications,
     unreadCount,
     isLoading,
+    isRefreshing,
+    isLoadingMore,
+    hasMore,
     error,
-    fetchNotifications,
+    refreshNotifications,
+    loadMoreNotifications,
     markRead,
     markAllRead,
-    startAutoRefresh,
-    stopAutoRefresh,
   } = notificationStore;
 
   useEffect(() => {
-    void fetchNotifications();
-    startAutoRefresh();
-    return () => stopAutoRefresh();
-  }, [fetchNotifications, startAutoRefresh, stopAutoRefresh]);
+    void refreshNotifications();
+  }, [refreshNotifications]);
 
   const handleRefresh = useCallback(() => {
-    void fetchNotifications();
-  }, [fetchNotifications]);
+    void refreshNotifications();
+  }, [refreshNotifications]);
+
+  const handleLoadMore = useCallback(() => {
+    if (sortedNotifications.length === 0 || !hasMore || isLoadingMore || isRefreshing || isLoading) return;
+    void loadMoreNotifications();
+  }, [hasMore, isLoading, isLoadingMore, isRefreshing, loadMoreNotifications, sortedNotifications.length]);
+
+  const hasBlockingError = !isLoading && !!error && sortedNotifications.length === 0;
 
   const handleCardPress = useCallback((item: Notification) => {
     void markRead(item.id);
@@ -157,7 +169,7 @@ const NotificationsScreen: React.FC = observer(() => {
       )}
 
       {/* Error */}
-      {!isLoading && !!error && sortedNotifications.length === 0 && (
+      {hasBlockingError && (
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity onPress={handleRefresh} style={styles.retryBtn}>
@@ -167,7 +179,7 @@ const NotificationsScreen: React.FC = observer(() => {
       )}
 
       {/* List */}
-      {!error && (
+      {!hasBlockingError && (
         <FlatList
           data={sortedNotifications}
           keyExtractor={item => String(item.id)}
@@ -178,11 +190,25 @@ const NotificationsScreen: React.FC = observer(() => {
           contentContainerStyle={styles.list}
           refreshControl={
             <RefreshControl
-              refreshing={isLoading}
+              refreshing={isRefreshing}
               onRefresh={handleRefresh}
               tintColor={Colors.primary}
               colors={[Colors.primary]}
             />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.35}
+          ListFooterComponent={
+            sortedNotifications.length > 0 && isLoadingMore ? (
+              <View style={styles.footerLoader}>
+                <ActivityIndicator color={Colors.primary} size="small" />
+                <Text style={styles.footerText}>Loading more</Text>
+              </View>
+            ) : sortedNotifications.length > 0 && !hasMore ? (
+              <View style={styles.footerEnd}>
+                <Text style={styles.footerEndText}>You’re all caught up</Text>
+              </View>
+            ) : null
           }
           ListEmptyComponent={
             !isLoading ? (
@@ -385,6 +411,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 32,
     lineHeight: 20,
+  },
+  footerLoader: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  footerText: {
+    fontSize: Typography.fontSizes.xs,
+    color: Colors.textSecondary,
+    fontFamily: Typography.fontFamilies.medium,
+  },
+  footerEnd: {
+    paddingVertical: 18,
+    alignItems: 'center',
+  },
+  footerEndText: {
+    fontSize: Typography.fontSizes.xs,
+    color: Colors.textSecondary,
+    fontFamily: Typography.fontFamilies.medium,
   },
 });
 
