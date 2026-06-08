@@ -95,17 +95,15 @@ const FlyerDetailScreen: React.FC = observer(() => {
   const [birthdayPersonPhoto, setBirthdayPersonPhoto] =
     useState<PickedImage | null>(null);
   const [venueText, setVenueText] = useState('');
+  const [showVenueText, setShowVenueText] = useState(false);
 
   const [djPeople, setDjPeople] = useState<PersonWithPhoto[]>([
-    { name: '', image: null, hasPhoto: true },
-    { name: '', image: null, hasPhoto: true },
-    { name: '', image: null, hasPhoto: true },
-    { name: '', image: null, hasPhoto: true },
+    { name: '', image: null, hasPhoto: false },
   ]);
   const [hostPeople, setHostPeople] = useState<PersonWithPhoto[]>([
-    { name: '', image: null, hasPhoto: true },
-    { name: '', image: null, hasPhoto: true },
+    { name: '', image: null, hasPhoto: false },
   ]);
+  const [djInitialized, setDjInitialized] = useState(false);
 
   // ── Media library modal state ────────────────────────────────────────────────
   type MediaTarget =
@@ -205,6 +203,33 @@ const FlyerDetailScreen: React.FC = observer(() => {
     );
   }, [flyer, flyerCategories]);
 
+  const isWithPhotoForm = useMemo(() => {
+    if (!flyer) return false;
+    const formType = String(flyer.form_type ?? '').toLowerCase();
+    const categoryStr = String(flyer.category ?? '').toLowerCase();
+    return (
+      formType === 'with photo' ||
+      formType === 'withphoto' ||
+      categoryStr.includes('with photo') ||
+      categoryStr.includes('photo') ||
+      (flyer as any).hasPhotos === true ||
+      flyerCategories.some(cat => cat.toLowerCase().includes('with photo'))
+    );
+  }, [flyer, flyerCategories]);
+
+  // ── Set correct initial DJ count once form type is known ─────────────────
+  // No-Photo form starts with 2 DJs (text-only), matching web no-photo-form.tsx
+  useEffect(() => {
+    if (!flyer || djInitialized) return;
+    if (isNoPhotoForm) {
+      setDjPeople([
+        { name: '', image: null, hasPhoto: false },
+        { name: '', image: null, hasPhoto: false },
+      ]);
+    }
+    setDjInitialized(true);
+  }, [flyer, isNoPhotoForm, djInitialized]);
+
   const similarFlyers = useMemo(() => {
     const currentCategoryId = flyerStore.flyerFormDetail.categoryId;
     const currentFlyerId = flyerStore.flyerFormDetail.flyerId || flyerId;
@@ -287,6 +312,30 @@ const FlyerDetailScreen: React.FC = observer(() => {
       next[index] = null;
       return next;
     });
+  }, []);
+
+  const handleAddDJ = useCallback(() => {
+    setDjPeople(prev =>
+      prev.length < 4 ? [...prev, { name: '', image: null, hasPhoto: false }] : prev,
+    );
+  }, []);
+
+  const handleRemoveDJ = useCallback((index: number) => {
+    setDjPeople(prev =>
+      prev.length > 1 ? prev.filter((_, i) => i !== index) : prev,
+    );
+  }, []);
+
+  const handleAddHost = useCallback(() => {
+    setHostPeople(prev =>
+      prev.length < 2 ? [...prev, { name: '', image: null, hasPhoto: false }] : prev,
+    );
+  }, []);
+
+  const handleRemoveHost = useCallback((index: number) => {
+    setHostPeople(prev =>
+      prev.length > 1 ? prev.filter((_, i) => i !== index) : prev,
+    );
   }, []);
 
   // ─── Price calculation ──────────────────────────────────────────────────
@@ -683,81 +732,138 @@ const FlyerDetailScreen: React.FC = observer(() => {
 
               {/* Venue Logo */}
               {!isBirthdayForm && (
-                <>
+                isNoPhotoForm ? (
+                  showVenueText ? (
+                    /* Text mode: name input + "Upload logo instead" link */
+                    <>
+                      <FormField
+                        label="Venue Name (Text)"
+                        placeholder="Enter venue name..."
+                        value={venueText}
+                        onChangeText={setVenueText}
+                      />
+                      <TouchableOpacity
+                        onPress={() => setShowVenueText(false)}
+                        activeOpacity={0.75}
+                      >
+                        <Text style={styles.venueToggleLink}>Upload logo instead</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    /* Logo mode: upload + "no logo" link */
+                    <>
+                      <VenueLogoUpload
+                        pickedImage={venueLogo}
+                        onUploadPress={handleVenueLogoCamera}
+                        onChooseFromLibrary={handleVenueLogoLibrary}
+                        onRemove={() => setVenueLogo(null)}
+                      />
+                      <TouchableOpacity
+                        onPress={() => { setShowVenueText(true); setVenueLogo(null); }}
+                        activeOpacity={0.75}
+                      >
+                        <Text style={styles.venueToggleLink}>If you don't have a logo, click here</Text>
+                      </TouchableOpacity>
+                    </>
+                  )
+                ) : (
+                  /* With Photo / other forms: just logo upload */
                   <VenueLogoUpload
                     pickedImage={venueLogo}
                     onUploadPress={handleVenueLogoCamera}
                     onChooseFromLibrary={handleVenueLogoLibrary}
                     onRemove={() => setVenueLogo(null)}
                   />
-                  {isNoPhotoForm && (
-                    <FormField
-                      label="Venue Text (if no logo)"
-                      placeholder="Type venue name..."
-                      value={venueText}
-                      onChangeText={setVenueText}
-                    />
+                )
+              )}
+
+              {/* DJs & Artists — photo upload only for With Photo form */}
+              {!isBirthdayForm && (
+                <>
+                  <PeopleListWithPhotos
+                    label="DJs & Artists"
+                    itemLabel="DJ"
+                    items={djPeople.map(p => ({ ...p, hasPhoto: isWithPhotoForm }))}
+                    onChange={setDjPeople}
+                    recentNameKey="dj"
+                    onRemovePerson={handleRemoveDJ}
+                    onPickImage={async index => {
+                      const img = await pickWithPrompt(`DJ ${index + 1}`);
+                      if (!img) return;
+                      setDjPeople(prev =>
+                        prev.map((p, i) =>
+                          i === index ? { ...p, image: img } : p,
+                        ),
+                      );
+                    }}
+                    onPickFromLibrary={index =>
+                      setMediaLibraryTarget({ type: 'dj', index })
+                    }
+                    onRemoveImage={index =>
+                      setDjPeople(prev =>
+                        prev.map((p, i) =>
+                          i === index ? { ...p, image: null } : p,
+                        ),
+                      )
+                    }
+                  />
+                  {djPeople.length < 4 && (
+                    <TouchableOpacity
+                      style={styles.addPersonBtn}
+                      onPress={handleAddDJ}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.addPersonBtnText}>
+                        + Add More DJ/Artist ({djPeople.length}/4)
+                      </Text>
+                    </TouchableOpacity>
                   )}
                 </>
               )}
 
-              {/* DJs & Artists — always show with photo upload */}
+              {/* Hosts — photo upload only for With Photo form, hidden for birthday */}
               {!isBirthdayForm && (
-                <PeopleListWithPhotos
-                  label="DJs & Artists"
-                  itemLabel="DJ"
-                  items={djPeople}
-                  onChange={setDjPeople}
-                  recentNameKey="dj"
-                  onPickImage={async index => {
-                    const img = await pickWithPrompt(`DJ ${index + 1}`);
-                    if (!img) return;
-                    setDjPeople(prev =>
-                      prev.map((p, i) =>
-                        i === index ? { ...p, image: img } : p,
-                      ),
-                    );
-                  }}
-                  onPickFromLibrary={index =>
-                    setMediaLibraryTarget({ type: 'dj', index })
-                  }
-                  onRemoveImage={index =>
-                    setDjPeople(prev =>
-                      prev.map((p, i) =>
-                        i === index ? { ...p, image: null } : p,
-                      ),
-                    )
-                  }
-                />
+                <>
+                  <PeopleListWithPhotos
+                    label="Hosts"
+                    itemLabel="Host"
+                    items={hostPeople.map(p => ({ ...p, hasPhoto: isWithPhotoForm }))}
+                    onChange={setHostPeople}
+                    recentNameKey="host"
+                    onRemovePerson={handleRemoveHost}
+                    onPickImage={async index => {
+                      const img = await pickWithPrompt(`Host ${index + 1}`);
+                      if (!img) return;
+                      setHostPeople(prev =>
+                        prev.map((p, i) =>
+                          i === index ? { ...p, image: img } : p,
+                        ),
+                      );
+                    }}
+                    onPickFromLibrary={index =>
+                      setMediaLibraryTarget({ type: 'host', index })
+                    }
+                    onRemoveImage={index =>
+                      setHostPeople(prev =>
+                        prev.map((p, i) =>
+                          i === index ? { ...p, image: null } : p,
+                        ),
+                      )
+                    }
+                  />
+                  {hostPeople.length < 2 && (
+                    <TouchableOpacity
+                      style={styles.addPersonBtn}
+                      onPress={handleAddHost}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.addPersonBtnText}>
+                        + Add Host ({hostPeople.length}/2)
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </>
               )}
-
-              {/* Hosts — always show with photo upload */}
-              <PeopleListWithPhotos
-                label="Hosts"
-                itemLabel="Host"
-                items={hostPeople}
-                onChange={setHostPeople}
-                recentNameKey="host"
-                onPickImage={async index => {
-                  const img = await pickWithPrompt(`Host ${index + 1}`);
-                  if (!img) return;
-                  setHostPeople(prev =>
-                    prev.map((p, i) =>
-                      i === index ? { ...p, image: img } : p,
-                    ),
-                  );
-                }}
-                onPickFromLibrary={index =>
-                  setMediaLibraryTarget({ type: 'host', index })
-                }
-                onRemoveImage={index =>
-                  setHostPeople(prev =>
-                    prev.map((p, i) =>
-                      i === index ? { ...p, image: null } : p,
-                    ),
-                  )
-                }
-              />
 
               {/* Sponsors */}
               {!isBirthdayForm && (
@@ -1069,6 +1175,25 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSizes.xs,
     fontWeight: Typography.fontWeights.semiBold,
     letterSpacing: 0.2,
+  },
+  addPersonBtn: {
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  addPersonBtnText: {
+    color: Colors.primary,
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.bold,
+  },
+  venueToggleLink: {
+    color: Colors.primary,
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.medium,
+    textDecorationLine: 'underline',
   },
 });
 

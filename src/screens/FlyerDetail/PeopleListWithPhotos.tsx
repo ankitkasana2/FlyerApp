@@ -20,6 +20,7 @@ type Props = {
   onPickImage: (index: number) => void;
   onPickFromLibrary: (index: number) => void;
   onRemoveImage: (index: number) => void;
+  onRemovePerson?: (index: number) => void;
   recentNameKey?: RecentKey;
 };
 
@@ -31,6 +32,7 @@ const PeopleListWithPhotos: React.FC<Props> = ({
   onPickImage,
   onPickFromLibrary,
   onRemoveImage,
+  onRemovePerson,
   recentNameKey,
 }) => {
   const resolvedItemLabel = itemLabel ?? label.replace(/s$/i, '').trim();
@@ -51,8 +53,16 @@ const PeopleListWithPhotos: React.FC<Props> = ({
         const canUpload = item.hasPhoto;
         return (
           <View key={`${label}_${index}`} style={styles.card}>
+            <View style={styles.itemHeader}>
+              <Text style={styles.itemLabel}>{resolvedItemLabel} {index + 1}</Text>
+              {onRemovePerson && items.length > 1 && (
+                <TouchableOpacity onPress={() => onRemovePerson(index)} activeOpacity={0.75}>
+                  <Text style={styles.removeText}>Remove</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <FormField
-              label={`${resolvedItemLabel} ${index + 1}`}
+              label=""
               placeholder="Name"
               value={item.name}
               onChangeText={t => setName(index, t)}
@@ -113,6 +123,21 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: Typography.fontSizes.base,
     fontWeight: Typography.fontWeights.bold,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemLabel: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.medium,
+  },
+  removeText: {
+    color: Colors.primary,
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.semiBold,
   },
   card: {
     borderWidth: 1,
