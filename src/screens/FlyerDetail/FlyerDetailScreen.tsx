@@ -74,7 +74,8 @@ const FlyerDetailScreen: React.FC = observer(() => {
   const { flyerStore, cartStore, authStore } = useStores();
   const route = useRoute<RouteProp<AppStackParamList, 'FlyerDetail'>>();
   const navigation = useNavigation<any>();
-  const { flyerId } = route.params;
+  const { flyerId, cartItemId } = route.params;
+  const isEditMode = !!cartItemId;
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const stripePublishableKey =
     Config.STRIPE_PUBLISHABLE_KEY ||
@@ -139,6 +140,35 @@ const FlyerDetailScreen: React.FC = observer(() => {
   useEffect(() => {
     flyerStore.fetchFlyer(flyerId);
   }, [flyerId, flyerStore]);
+
+  // ── Pre-fill form when editing a cart item ────────────────────────────────
+  useEffect(() => {
+    if (!isEditMode || !cartItemId) return;
+    const item = cartStore.cartItems.find(ci => ci.id === cartItemId);
+    if (!item) return;
+
+    const extras: string[] = [];
+    if (item.story_size_version) extras.push('story');
+    if (item.custom_flyer)       extras.push('diff');
+    if (item.animated_flyer)     extras.push('anim');
+    if (item.instagram_post_size) extras.push('insta');
+
+    setForm({
+      presenter: item.presenting ?? '',
+      eventTitle: item.event_title ?? '',
+      date: item.event_date ? new Date(item.event_date) : null,
+      flyerInfo: item.flyer_info ?? '',
+      addressPhone: item.address_and_phone ?? '',
+      deliveryTime: item.delivery_time ?? '24h',
+      selectedExtras: extras,
+      designerNote: item.custom_notes ?? '',
+    });
+
+    if (item.venue_logo) {
+      setVenueText('');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItemId, isEditMode]);
 
   const flyer = flyerStore.flyer;
   const flyerCategories = useMemo(() => {
@@ -343,6 +373,11 @@ const FlyerDetailScreen: React.FC = observer(() => {
       return null;
     }
 
+    // Remove old cart item first when updating
+    if (isEditMode && cartItemId) {
+      await cartStore.removeFromCart(cartItemId, userId);
+    }
+
     // Save recent entries for quick reuse on next order
     void (async () => {
       if (form.presenter.trim()) await saveRecentItem('presenting', form.presenter);
@@ -428,11 +463,16 @@ const FlyerDetailScreen: React.FC = observer(() => {
     djPeople,
     hostPeople,
     validateBeforeCart,
+    isEditMode,
+    cartItemId,
   ]);
 
   const handleAddToCart = useCallback(async () => {
-    await doAddToCart();
-  }, [doAddToCart]);
+    const newCartItemId = await doAddToCart();
+    if (newCartItemId && isEditMode) {
+      navigation.goBack();
+    }
+  }, [doAddToCart, isEditMode, navigation]);
 
   // ─── Checkout handler ────────────────────────────────────────────────────
   const handleCheckoutNow = useCallback(async () => {
@@ -838,35 +878,37 @@ const FlyerDetailScreen: React.FC = observer(() => {
             <TouchableOpacity
               style={[
                 styles.addToCartButton,
-                (cartStore.isAddingToCart || isInCart) && styles.buttonDisabled,
+                (cartStore.isAddingToCart || (!isEditMode && isInCart)) && styles.buttonDisabled,
               ]}
               onPress={handleAddToCart}
-              disabled={cartStore.isAddingToCart || isInCart}
+              disabled={cartStore.isAddingToCart || (!isEditMode && isInCart)}
               activeOpacity={0.8}
             >
               {cartStore.isAddingToCart ? (
                 <ActivityIndicator size="small" color={Colors.textPrimary} />
               ) : (
                 <Text style={styles.addToCartText}>
-                  {isInCart ? 'IN CART' : 'ADD TO CART'}
+                  {isEditMode ? 'UPDATE CART' : isInCart ? 'IN CART' : 'ADD TO CART'}
                 </Text>
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                styles.checkoutButton,
-                cartStore.isAddingToCart && styles.buttonDisabled,
-              ]}
-              onPress={handleCheckoutNow}
-              disabled={cartStore.isAddingToCart}
-              activeOpacity={0.85}
-            >
-              <View style={styles.checkoutContent}>
-                <Text style={styles.checkoutText}>Checkout Now</Text>
-                <Text style={styles.priceText}>${totalPrice.toFixed(2)}</Text>
-              </View>
-            </TouchableOpacity>
+            {!isEditMode && (
+              <TouchableOpacity
+                style={[
+                  styles.checkoutButton,
+                  cartStore.isAddingToCart && styles.buttonDisabled,
+                ]}
+                onPress={handleCheckoutNow}
+                disabled={cartStore.isAddingToCart}
+                activeOpacity={0.85}
+              >
+                <View style={styles.checkoutContent}>
+                  <Text style={styles.checkoutText}>Checkout Now</Text>
+                  <Text style={styles.priceText}>${totalPrice.toFixed(2)}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       )}

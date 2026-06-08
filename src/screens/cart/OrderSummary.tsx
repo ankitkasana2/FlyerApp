@@ -38,9 +38,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   serviceFees,
   total,
   inclusions = [
-    'High-quality PDF & JPG files',
+    'High-quality JPG file',
     'Commercial use license',
-    '24/7 Priority support access',
+    '24/7 priority customer service support',
   ],
 }) => (
   <View style={styles.container}>

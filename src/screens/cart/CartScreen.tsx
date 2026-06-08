@@ -151,9 +151,13 @@ const CartScreen: React.FC = observer(() => {
 
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleEdit = useCallback((id: string) => {
-    // Navigate to FlyerDetail or edit modal in the future
-    console.log('Edit cart item:', id);
-  }, []);
+    const cartItem = cartStore.cartItems.find(item => String(item.id) === id);
+    if (!cartItem) return;
+    navigation.navigate('FlyerDetail', {
+      flyerId: String(cartItem.flyer_is),
+      cartItemId: cartItem.id,
+    });
+  }, [cartStore.cartItems, navigation]);
 
   const handleRemove = useCallback((id: string) => {
     Alert.alert(

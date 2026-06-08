@@ -33,7 +33,7 @@ export type AppStackParamList = {
   OrderDetail: { orderId: string };
   HowItWorks: undefined;
   MediaLibrary: undefined;
-  FlyerDetail: { flyerId: string };
+  FlyerDetail: { flyerId: string; cartItemId?: number };
   CategoryFlyers: { categoryId: string; categoryName: string };
   Favorites: undefined;
   Notifications: undefined;
