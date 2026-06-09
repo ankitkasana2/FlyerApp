@@ -98,6 +98,50 @@ const formatPrice = (price: number | string | undefined | null): string => {
   return priceStr.startsWith('$') ? priceStr : `$${priceStr}`;
 };
 
+type HomeListHeaderProps = {
+  searchQuery: string;
+  onSearchChange: (text: string) => void;
+  onSearchSubmit: (text: string) => void;
+  isBannersLoading: boolean;
+  mappedBanners: BannerSlide[];
+  flyersError?: string;
+};
+
+const HomeListHeader = React.memo(function HomeListHeader({
+  searchQuery,
+  onSearchChange,
+  onSearchSubmit,
+  isBannersLoading,
+  mappedBanners,
+  flyersError,
+}: HomeListHeaderProps) {
+  return (
+    <View>
+      <View style={styles.searchWrapper}>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={onSearchChange}
+          onSubmit={onSearchSubmit}
+          placeholder="Search premium flyers..."
+        />
+      </View>
+
+      {/* Banner: show skeleton only on first load (no banners yet), keep showing banner during refresh */}
+      {isBannersLoading && mappedBanners.length === 0 ? (
+        <BannerSkeleton />
+      ) : mappedBanners.length > 0 ? (
+        <HeroBanner slides={mappedBanners} autoPlayInterval={5000} />
+      ) : null}
+
+      {flyersError ? (
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{flyersError}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+});
+
 const HomeScreen: React.FC = observer(() => {
   const navigation = useNavigation<NavigationProp<AppStackParamList>>();
   const { flyerStore, cartStore, authStore } = useStores();
@@ -549,32 +593,6 @@ const HomeScreen: React.FC = observer(() => {
     );
   };
 
-  const renderHeader = useCallback(() => (
-    <View>
-      <View style={styles.searchWrapper}>
-        <SearchBar
-          value={searchQuery}
-          onChangeText={handleSearchChange}
-          onSubmit={handleSearchSubmit}
-          placeholder="Search premium flyers..."
-        />
-      </View>
-
-      {/* Banner: show skeleton only on first load (no banners yet), keep showing banner during refresh */}
-      {isBannersLoading && mappedBanners.length === 0 ? (
-        <BannerSkeleton />
-      ) : mappedBanners.length > 0 ? (
-        <HeroBanner slides={mappedBanners} autoPlayInterval={5000} />
-      ) : null}
-
-      {flyersError ? (
-        <View style={styles.center}>
-          <Text style={styles.errorText}>{flyersError}</Text>
-        </View>
-      ) : null}
-    </View>
-  ), [flyersError, handleSearchChange, handleSearchSubmit, isBannersLoading, mappedBanners, searchQuery]);
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -582,7 +600,16 @@ const HomeScreen: React.FC = observer(() => {
         renderItem={renderCategorySection}
         keyExtractor={item => item.id}
         style={styles.list}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={
+          <HomeListHeader
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
+            onSearchSubmit={handleSearchSubmit}
+            isBannersLoading={isBannersLoading}
+            mappedBanners={mappedBanners}
+            flyersError={flyersError}
+          />
+        }
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
