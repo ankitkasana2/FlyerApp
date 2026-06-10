@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "FlyerApp",
+      withModuleName: "Grodify",
       in: window,
       launchOptions: launchOptions
     )

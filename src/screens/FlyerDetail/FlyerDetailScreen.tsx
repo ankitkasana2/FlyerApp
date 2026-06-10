@@ -549,7 +549,7 @@ const FlyerDetailScreen: React.FC = observer(() => {
       );
 
       const { error } = await initPaymentSheet({
-        merchantDisplayName: 'FlyerApp',
+        merchantDisplayName: 'Grodify',
         paymentIntentClientSecret: paymentSheet.paymentIntent,
         customerId: paymentSheet.customer,
         customerEphemeralKeySecret: paymentSheet.ephemeralKey,

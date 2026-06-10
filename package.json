@@ -1,10 +1,10 @@
 {
-  "name": "FlyerApp",
+  "name": "Grodify",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
-    "ios": "react-native run-ios --no-packager --buildFolder /private/tmp/FlyerApp-ios-build",
+    "ios": "react-native run-ios --no-packager --buildFolder /private/tmp/Grodify-ios-build",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"

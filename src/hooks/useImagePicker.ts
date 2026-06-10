@@ -24,7 +24,7 @@ const requestCameraPermission = async (): Promise<boolean> => {
       PermissionsAndroid.PERMISSIONS.CAMERA,
       {
         title: 'Camera Permission',
-        message: 'Flyer App needs access to your camera to take photos.',
+        message: 'Grodify needs access to your camera to take photos.',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
         buttonPositive: 'OK',
