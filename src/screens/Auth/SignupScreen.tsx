@@ -286,7 +286,6 @@ const SignupScreen: React.FC = observer(() => {
 
             {/* Social auth */}
             <SocialAuthButtons
-              onApplePress={() => authStore.signInWithProvider('apple')}
               onGooglePress={() => authStore.signInWithProvider('google')}
             />
 

@@ -202,7 +202,6 @@ const LoginScreen = observer(() => {
 
           {/* Social Auth */}
           <SocialAuthButtons
-            onApplePress={() => authStore.signInWithProvider('apple')}
             onGooglePress={() => authStore.signInWithProvider('google')}
           />
 
