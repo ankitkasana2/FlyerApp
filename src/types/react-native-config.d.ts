@@ -11,6 +11,8 @@ declare module 'react-native-config' {
     STRIPE_PUBLISHABLE_KEY?: string;
     PUBLIC_STRIPE_PUBLISHABLE_KEY?: string;
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?: string;
+    STRIPE_API_BASE_URL?: string;
+    STRIPE_PAYMENT_SHEET_PATH?: string;
     STRIPE_MERCHANT_IDENTIFIER?: string;
   }
 
