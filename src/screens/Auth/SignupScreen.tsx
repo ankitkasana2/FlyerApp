@@ -161,8 +161,7 @@ const SignupScreen: React.FC = observer(() => {
       if (
         msg.includes('UsernameExistsException') ||
         msg.includes('User already exists') ||
-        msg.includes('email') ||
-        msg.includes(' EMAIL')
+        msg.includes('already registered')
       ) {
         setEmailAlreadyRegistered(true);
       } else {

@@ -226,6 +226,32 @@ const cognitoService = {
   },
 
   /**
+   * Permanently delete the currently authenticated Cognito user.
+   */
+  deleteUser(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const currentUser = userPool.getCurrentUser();
+      if (!currentUser) {
+        resolve();
+        return;
+      }
+      currentUser.getSession((sessionErr: Error | null) => {
+        if (sessionErr) {
+          resolve(); // session gone — proceed with local cleanup
+          return;
+        }
+        currentUser.deleteUser((err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+    });
+  },
+
+  /**
    * Sign up a new user with Cognito.
    */
   confirmSignUp(username: string, code: string): Promise<void> {

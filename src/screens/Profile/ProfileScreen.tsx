@@ -228,6 +228,34 @@ const ProfileScreen: React.FC = observer(() => {
     );
   }, [authStore]);
 
+  const handleDeleteAccount = useCallback(() => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all associated data including orders, favorites, and cart items. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete My Account',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Are you absolutely sure?',
+              'Your account will be permanently deleted.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Yes, Delete',
+                  style: 'destructive',
+                  onPress: () => authStore.deleteAccount(),
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
+  }, [authStore]);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
@@ -301,6 +329,17 @@ const ProfileScreen: React.FC = observer(() => {
         </TouchableOpacity>
       </View>
 
+      {/* ── Delete Account ── */}
+      <View style={styles.deleteWrapper}>
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={handleDeleteAccount}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.deleteText}>Delete Account</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* ── App version ── */}
       <Text style={styles.versionText}>GRODIFY MOBILE APP V2.4.1</Text>
 
@@ -359,6 +398,22 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeights.bold,
     color: Colors.primary,
     letterSpacing: 0.3,
+  },
+  deleteWrapper: {
+    paddingHorizontal: 16,
+    marginTop: 12,
+  },
+  deleteBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+  },
+  deleteText: {
+    fontSize: Typography.fontSizes.sm,
+    fontWeight: Typography.fontWeights.medium,
+    color: Colors.textMuted,
+    textDecorationLine: 'underline',
+    letterSpacing: 0.2,
   },
   versionText: {
     textAlign: 'center',

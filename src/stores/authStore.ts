@@ -123,7 +123,12 @@ export class AuthStore {
         void initNotifications();
         return;
       }
-    } catch (e) {
+    } catch (e: any) {
+      if (e?.message === 'ACCOUNT_DELETED') {
+        await this.logout();
+        runInAction(() => { this.isLoading = false; });
+        return;
+      }
       console.warn('[AuthStore] Standard session restore threw an error:', e);
     }
 
@@ -152,8 +157,13 @@ export class AuthStore {
       } else {
         console.warn('[AuthStore] Session restore failed, user not logged in.');
       }
-    } catch (e) {
-      console.warn('[AuthStore] Failed to restore manual tokens', e);
+    } catch (e: any) {
+      if (e?.message === 'ACCOUNT_DELETED') {
+        await AsyncStorage.removeItem(STORAGE_KEY);
+        await AsyncStorage.removeItem('@auth_tokens');
+      } else {
+        console.warn('[AuthStore] Failed to restore manual tokens', e);
+      }
     } finally {
       runInAction(() => { this.isLoading = false; });
     }
@@ -191,10 +201,57 @@ export class AuthStore {
 
       return { success: true };
     } catch (error: any) {
+      if (error?.message === 'ACCOUNT_DELETED') {
+        // Cognito login succeeded but backend blocked this deleted account —
+        // sign out of Cognito so they can't keep trying and clear any stored data
+        try { await cognitoService.signOut(); } catch {}
+        await AsyncStorage.removeItem(STORAGE_KEY);
+        await AsyncStorage.removeItem('@auth_tokens');
+        const err = new Error('This account has been deleted. Please sign up to create a new account.');
+        throw err;
+      }
       console.error('[AuthStore] Login error:', error.message || error);
       throw error;
     }
   }
+
+  deleteAccount = async () => {
+    runInAction(() => { this.loading = true; this.error = null; });
+    try {
+      await this.getBackendToken();
+      await authService.deleteAccount();
+    } catch (err: any) {
+      // If backend deletion fails, still proceed — user must be able to delete locally
+      console.warn('[AuthStore] Backend account deletion failed:', err.message);
+    }
+
+    try {
+      await cognitoService.deleteUser();
+    } catch (err: any) {
+      // Social login users don't have a deletable Cognito record via SDK — that's fine
+      console.warn('[AuthStore] Cognito deleteUser failed:', err.message);
+    }
+
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEY);
+      await AsyncStorage.removeItem('@auth_tokens');
+    } catch {}
+
+    setAccessToken(null);
+
+    if (this.flyerStore) this.flyerStore.reset();
+    if (this.cartStore) this.cartStore.reset();
+    if (this.notificationStore) this.notificationStore.reset();
+
+    runInAction(() => {
+      this.isAuthenticated = false;
+      this.user = null;
+      this.accessToken = null;
+      this.idToken = null;
+      this.refreshToken = null;
+      this.loading = false;
+    });
+  };
 
   async logout() {
     try {
@@ -329,6 +386,13 @@ export class AuthStore {
       const { data } = await authService.registerUser(params);
       return { success: true, data };
     } catch (err: any) {
+      // apiClient interceptor strips err.response — check the message text instead
+      if (
+        err?.response?.status === 403 ||
+        err?.message?.toLowerCase().includes('has been deleted')
+      ) {
+        throw new Error('ACCOUNT_DELETED');
+      }
       console.warn('[AuthStore] DB register failed:', err.message);
       return { success: false, error: err.message };
     }
@@ -343,10 +407,31 @@ export class AuthStore {
     if (!emailRegex.test(email)) throw new Error('Please enter a valid email address');
     if (password.length < 8) throw new Error('Password must be at least 8 characters long');
 
+    // If this email was previously deleted, clear the blocklist entry so the user
+    // can create a fresh account. Silent OAuth re-login is still blocked because
+    // it goes through a different code path (handleOAuthCallback / initialize).
+    try {
+      const { data } = await authService.checkEmailDeleted(email);
+      if (data.deleted) {
+        await authService.clearDeletedAccount(email);
+      }
+    } catch {
+      // Network/server error — ignore and let Cognito decide
+    }
+
     const { userId, isSignUpComplete, userConfirmed } =
       await cognitoService.signUp(email, password, fullname);
 
-    await this.registerUserInDatabase({ fullname, email, user_id: userId });
+    try {
+      await this.registerUserInDatabase({ fullname, email, user_id: userId });
+    } catch (err: any) {
+      if (err?.message === 'ACCOUNT_DELETED') {
+        // Delete the freshly created Cognito account and surface a clear error
+        try { await cognitoService.signOut(); } catch {}
+        throw new Error('This email belongs to a deleted account. Please use a different email address.');
+      }
+      throw err;
+    }
 
     if (isSignUpComplete || userConfirmed) {
       try {
@@ -557,6 +642,13 @@ export class AuthStore {
       });
       void initNotifications();
     } catch (error: any) {
+      if (error?.message === 'ACCOUNT_DELETED') {
+        runInAction(() => {
+          this.error = 'This account has been deleted. Please sign up to create a new account.';
+          this.loading = false;
+        });
+        return;
+      }
       console.error('[AuthStore] OAuth Callback Error:', error?.response?.data || error);
       runInAction(() => {
         this.error = 'Failed to authenticate with social provider.';
