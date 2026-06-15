@@ -1,4 +1,4 @@
-package com.flyerapp
+package com.grodify
 
 import android.app.Application
 import com.facebook.react.PackageList
