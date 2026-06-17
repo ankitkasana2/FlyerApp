@@ -11,6 +11,7 @@ import {
   Image,
   RefreshControl,
   Linking,
+  TouchableOpacity,
 } from 'react-native';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { observer } from 'mobx-react-lite';
@@ -104,7 +105,8 @@ type HomeListHeaderProps = {
   onSearchSubmit: (text: string) => void;
   isBannersLoading: boolean;
   mappedBanners: BannerSlide[];
-  flyersError?: string;
+  flyersError?: string | null;
+  onRetry?: () => void;
 };
 
 const HomeListHeader = React.memo(function HomeListHeader({
@@ -114,6 +116,7 @@ const HomeListHeader = React.memo(function HomeListHeader({
   isBannersLoading,
   mappedBanners,
   flyersError,
+  onRetry,
 }: HomeListHeaderProps) {
   return (
     <View>
@@ -134,8 +137,37 @@ const HomeListHeader = React.memo(function HomeListHeader({
       ) : null}
 
       {flyersError ? (
-        <View style={styles.center}>
-          <Text style={styles.errorText}>{flyersError}</Text>
+        <View style={styles.errorState}>
+          {/* Icon — red circle with signal bars drawn as stacked rects */}
+          <View style={styles.errorIconWrap}>
+            <View style={styles.errorIconCircle}>
+              <View style={styles.errorSignalRow}>
+                <View style={[styles.errorSignalBar, styles.errorSignalBar1]} />
+                <View style={[styles.errorSignalBar, styles.errorSignalBar2]} />
+                <View style={[styles.errorSignalBar, styles.errorSignalBar3]} />
+                <View style={[styles.errorSignalBar, styles.errorSignalBar4]} />
+              </View>
+              <View style={styles.errorSlash} />
+            </View>
+          </View>
+
+          <Text style={styles.errorTitle}>Couldn't load flyers</Text>
+          <Text style={styles.errorSubtitle}>
+            {flyersError.toLowerCase().includes('network') ||
+            flyersError.toLowerCase().includes('connect')
+              ? 'Check your internet connection and try again.'
+              : 'Something went wrong on our end. Please try again.'}
+          </Text>
+
+          {onRetry && (
+            <TouchableOpacity
+              style={styles.retryBtn}
+              onPress={onRetry}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.retryBtnText}>Try Again</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : null}
     </View>
@@ -608,6 +640,7 @@ const HomeScreen: React.FC = observer(() => {
             isBannersLoading={isBannersLoading}
             mappedBanners={mappedBanners}
             flyersError={flyersError}
+            onRetry={handleRefresh}
           />
         }
         showsVerticalScrollIndicator={false}
@@ -679,12 +712,84 @@ const styles = StyleSheet.create({
     paddingVertical: 48,
     alignItems: 'center',
   },
-  errorText: {
-    color: '#FF6B6B',
-    fontSize: 14,
-    textAlign: 'center',
+  // ─── Error state ──────────────────────────────────────────────────────────
+  errorState: {
+    marginHorizontal: 24,
+    marginVertical: 32,
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: `${Colors.error}33`,
+    paddingVertical: 40,
     paddingHorizontal: 24,
+    alignItems: 'center',
+    gap: 12,
   },
+  errorIconWrap: {
+    marginBottom: 8,
+  },
+  errorIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: `${Colors.error}18`,
+    borderWidth: 1.5,
+    borderColor: `${Colors.error}55`,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  errorSignalRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 3,
+    marginBottom: 4,
+  },
+  errorSignalBar: {
+    width: 7,
+    borderRadius: 2,
+    backgroundColor: `${Colors.error}50`,
+  },
+  errorSignalBar1: { height: 8 },
+  errorSignalBar2: { height: 14 },
+  errorSignalBar3: { height: 20 },
+  errorSignalBar4: { height: 26 },
+  errorSlash: {
+    position: 'absolute',
+    width: 50,
+    height: 2.5,
+    borderRadius: 2,
+    backgroundColor: Colors.error,
+    transform: [{ rotate: '-40deg' }],
+  },
+  errorTitle: {
+    fontSize: 17,
+    fontFamily: 'Geist-Bold',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    letterSpacing: 0.2,
+  },
+  errorSubtitle: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 8,
+  },
+  retryBtn: {
+    marginTop: 8,
+    backgroundColor: Colors.error,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: 'Geist-SemiBold',
+    letterSpacing: 0.3,
+  },
+  // ─── Empty state ──────────────────────────────────────────────────────────
   emptyText: {
     color: Colors.textSecondary,
     fontSize: 14,
