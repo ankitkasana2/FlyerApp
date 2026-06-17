@@ -14,10 +14,12 @@ import Images from '../../assets';
 
 export interface SocialAuthButtonsProps {
   onGooglePress: () => void;
+  onApplePress: () => void;
 }
 
 const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
   onGooglePress,
+  onApplePress,
 }) => (
   <View style={styles.wrapper}>
     {/* OR divider */}
@@ -27,18 +29,32 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
       <View style={styles.dividerLine} />
     </View>
 
-    {/* Google — full width */}
-    <TouchableOpacity
-      style={styles.socialBtn}
-      onPress={onGooglePress}
-      activeOpacity={0.7}
-    >
-      <Image
-        source={Images.google}
-        style={styles.socialIcon}
-        resizeMode="contain"
-      />
-    </TouchableOpacity>
+    {/* Apple + Google side by side */}
+    <View style={styles.socialRow}>
+      <TouchableOpacity
+        style={styles.socialBtn}
+        onPress={onApplePress}
+        activeOpacity={0.7}
+      >
+        <Image
+          source={Images.apple}
+          style={styles.socialIcon}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.socialBtn}
+        onPress={onGooglePress}
+        activeOpacity={0.7}
+      >
+        <Image
+          source={Images.google}
+          style={styles.socialIcon}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+    </View>
   </View>
 );
 
@@ -61,6 +77,10 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamilies.semiBold,
     color: Colors.textMuted,
     letterSpacing: 1,
+  },
+  socialRow: {
+    flexDirection: 'row',
+    gap: 12,
   },
   socialBtn: {
     flex: 1,

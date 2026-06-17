@@ -82,7 +82,8 @@ const LoginScreen = observer(() => {
 
       // amazon-cognito-identity-js throws errors with a `code` property
       const code = err?.code || '';
-      const msg = err?.message || '';
+      const rawMsg = typeof err?.message === 'string' && err.message !== 'null' ? err.message : '';
+      const msg = rawMsg;
       let message = 'Login failed. Please check your credentials.';
 
       if (code === 'NotAuthorizedException' || msg.includes('NotAuthorizedException')) {
@@ -203,6 +204,7 @@ const LoginScreen = observer(() => {
           {/* Social Auth */}
           <SocialAuthButtons
             onGooglePress={() => authStore.signInWithProvider('google')}
+            onApplePress={() => authStore.signInWithProvider('apple')}
           />
 
           {/* Footer */}
