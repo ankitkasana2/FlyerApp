@@ -2731,6 +2731,8 @@ PODS:
     - React-perflogger (= 0.84.1)
     - React-utils (= 0.84.1)
     - SocketRocket
+  - RNAppleAuthentication (2.5.1):
+    - React-Core
   - RNAWSCognito (6.3.16):
     - React-Core
   - RNDateTimePicker (9.1.0):
@@ -3301,6 +3303,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios/ReactAppDependencyProvider`)
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
   - RNAWSCognito (from `../node_modules/amazon-cognito-identity-js`)
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
@@ -3500,6 +3503,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios/ReactCodegen
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNAppleAuthentication:
+    :path: "../node_modules/@invertase/react-native-apple-authentication"
   RNAWSCognito:
     :path: "../node_modules/amazon-cognito-identity-js"
   RNDateTimePicker:
@@ -3613,6 +3618,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: e96e93b493d8d86eeaee3e590ba0be53f6abe46f
   ReactCodegen: 101633fe6eb482d8ea6f6a59e575133ccb44c676
   ReactCommon: 02ee6650471e9c32a201abc0b593e4b0e5d1eede
+  RNAppleAuthentication: a89c9804592b38ed4ab11f0aee68d05ba12ad432
   RNAWSCognito: c271cb77af824c5fbfb5060cb22ecae245376939
   RNDateTimePicker: 73ffdd45f0ce1d00ff981031679a05206e619fdc
   RNFBApp: 569341984b0459d270e2f0fe168541e549038f13

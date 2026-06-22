@@ -5,8 +5,9 @@ import { COGNITO_DOMAIN, COGNITO_CLIENT_ID } from '../services/api';
 import { setAccessToken } from '../services/tokenStore';
 import { initNotifications } from '../services/notifications';
 import * as authService from '../services/authService';
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import axios from 'axios';
+import appleAuth from '@invertase/react-native-apple-authentication';
 import type { UpdateProfilePayload, ChangePasswordPayload } from '../types/api';
 
 const STORAGE_KEY = '@auth_user';
@@ -570,8 +571,11 @@ export class AuthStore {
   // ─── Social / OAuth ───────────────────────────────────────────────────────
 
   signInWithProvider = async (provider: 'google' | 'apple') => {
+    if (provider === 'apple') {
+      return this.signInWithAppleNative();
+    }
     try {
-      const identityProvider = provider === 'google' ? 'Google' : 'SignInWithApple';
+      const identityProvider = 'Google';
       const redirectUri = encodeURIComponent('flyerapp://auth');
       const authUrl = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=${identityProvider}&response_type=code&client_id=${COGNITO_CLIENT_ID}&redirect_uri=${redirectUri}&scope=email+openid+profile`;
       await Linking.openURL(authUrl);
@@ -580,6 +584,77 @@ export class AuthStore {
       runInAction(() => { this.error = errorMessage; });
       throw new Error(errorMessage);
     }
+  };
+
+  private signInWithAppleNative = async () => {
+    if (Platform.OS !== 'ios') {
+      throw new Error('Apple Sign-In is only available on iOS.');
+    }
+    if (!appleAuth.isSupported) {
+      throw new Error('Apple Sign-In is not supported on this device (requires iOS 13+).');
+    }
+
+    const credential = await appleAuth.performRequest({
+      requestedOperation: appleAuth.Operation.LOGIN,
+      requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+    });
+
+    if (!credential.identityToken) {
+      throw new Error('Apple Sign-In failed: no identity token received.');
+    }
+
+    // Apple only returns email + name on the very first sign-in — cache them
+    const APPLE_USER_KEY = `@apple_user_${credential.user}`;
+    let cached: { email: string; name: string } | null = null;
+    try {
+      const raw = await AsyncStorage.getItem(APPLE_USER_KEY);
+      if (raw) cached = JSON.parse(raw);
+    } catch {}
+
+    const email = credential.email || cached?.email || '';
+    const givenName = credential.fullName?.givenName || '';
+    const familyName = credential.fullName?.familyName || '';
+    const fullName = givenName
+      ? `${givenName}${familyName ? ` ${familyName}` : ''}`.trim()
+      : cached?.name || email || 'Apple User';
+
+    if (credential.email) {
+      try {
+        await AsyncStorage.setItem(APPLE_USER_KEY, JSON.stringify({ email, name: fullName }));
+      } catch {}
+    }
+
+    const userId = `apple_${credential.user}`;
+    const user = {
+      id: userId,
+      name: fullName,
+      email,
+      phone: '',
+      provider: 'apple' as const,
+    };
+
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    await AsyncStorage.setItem('@auth_tokens', JSON.stringify({
+      accessToken: credential.identityToken,
+      idToken: credential.identityToken,
+      refreshToken: credential.authorizationCode || '',
+    }));
+
+    const backendToken = await this.syncBackendSession({
+      fullname: user.name,
+      email: user.email,
+      user_id: userId,
+      fallbackIdToken: credential.identityToken,
+    });
+
+    runInAction(() => {
+      this.accessToken = backendToken || credential.identityToken;
+      this.idToken = credential.identityToken;
+      this.refreshToken = credential.authorizationCode || '';
+      this.user = user;
+      this.isAuthenticated = true;
+    });
+    void initNotifications();
   };
 
   handleOAuthCallback = async (url: string) => {

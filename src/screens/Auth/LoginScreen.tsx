@@ -203,8 +203,28 @@ const LoginScreen = observer(() => {
 
           {/* Social Auth */}
           <SocialAuthButtons
-            onGooglePress={() => authStore.signInWithProvider('google')}
-            onApplePress={() => authStore.signInWithProvider('apple')}
+            onGooglePress={async () => {
+              try {
+                await authStore.signInWithProvider('google');
+              } catch (err: any) {
+                Toast.show({
+                  type: 'error',
+                  text1: 'Google Sign-In failed',
+                  text2: err?.message || 'Please try again.',
+                });
+              }
+            }}
+            onApplePress={async () => {
+              try {
+                await authStore.signInWithProvider('apple');
+              } catch (err: any) {
+                Toast.show({
+                  type: 'error',
+                  text1: 'Apple Sign-In failed',
+                  text2: err?.message || 'Please try again.',
+                });
+              }
+            }}
           />
 
           {/* Footer */}
