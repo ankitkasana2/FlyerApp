@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Platform,
 } from 'react-native';
 import Colors from '../../theme/colors';
 import Typography from '../../theme/typography';
@@ -44,8 +43,7 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
         />
       </TouchableOpacity>
 
-      {Platform.OS !== 'ios' && (
-        <TouchableOpacity
+      <TouchableOpacity
           style={styles.socialBtn}
           onPress={onGooglePress}
           activeOpacity={0.7}
@@ -56,7 +54,6 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
             resizeMode="contain"
           />
         </TouchableOpacity>
-      )}
     </View>
   </View>
 );

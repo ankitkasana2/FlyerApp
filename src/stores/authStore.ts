@@ -575,15 +575,25 @@ export class AuthStore {
       return this.signInWithAppleNative();
     }
     try {
+      runInAction(() => { this.loading = true; this.error = null; });
       const identityProvider = 'Google';
       const redirectUri = encodeURIComponent('flyerapp://auth');
-      const authUrl = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=${identityProvider}&response_type=code&client_id=${COGNITO_CLIENT_ID}&redirect_uri=${redirectUri}&scope=email+openid+profile`;
+      const authUrl = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=${identityProvider}&response_type=code&client_id=${COGNITO_CLIENT_ID}&redirect_uri=${redirectUri}&scope=email%20openid%20profile`;
       await Linking.openURL(authUrl);
     } catch (error: any) {
+      runInAction(() => { this.loading = false; });
       const errorMessage = this.mapCognitoError(error, 'social');
       runInAction(() => { this.error = errorMessage; });
       throw new Error(errorMessage);
     }
+  };
+
+  cancelOAuthLoading = () => {
+    runInAction(() => {
+      if (this.loading && !this.isAuthenticated) {
+        this.loading = false;
+      }
+    });
   };
 
   private signInWithAppleNative = async () => {
@@ -658,6 +668,15 @@ export class AuthStore {
   };
 
   handleOAuthCallback = async (url: string) => {
+    if (url?.includes('?error=')) {
+      const params = new URLSearchParams(url.split('?')[1]);
+      const errorDesc = params.get('error_description') || params.get('error') || 'Sign-in was cancelled or failed.';
+      runInAction(() => {
+        this.error = decodeURIComponent(errorDesc.replace(/\+/g, ' '));
+        this.loading = false;
+      });
+      return;
+    }
     if (!url?.includes('?code=')) return;
     const code = url.split('?code=')[1].split('&')[0];
     runInAction(() => { this.loading = true; this.error = null; });

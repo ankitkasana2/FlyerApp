@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Linking, Text, TextInput } from 'react-native';
+import { AppState, Linking, Text, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -64,19 +64,32 @@ const AppShell = () => {
     [handleURLCallback],
   );
 
+  // Cold-start: run only once so we never double-process the initial URL.
+  useEffect(() => {
+    Linking.getInitialURL().then((url) => {
+      handleDeepLink(url);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Live listener: re-subscribes only if handleDeepLink identity changes.
   useEffect(() => {
     const subscription = Linking.addEventListener('url', ({ url }) => {
       handleDeepLink(url);
     });
-
-    Linking.getInitialURL().then((url) => {
-      handleDeepLink(url);
-    });
-
     return () => {
       subscription.remove();
     };
   }, [handleDeepLink]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        rootStore.authStore.cancelOAuthLoading();
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     initNotifications();

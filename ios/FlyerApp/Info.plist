@@ -46,8 +46,6 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Grodify needs camera access to capture photos for your flyer.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Grodify needs permission to save photos to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
