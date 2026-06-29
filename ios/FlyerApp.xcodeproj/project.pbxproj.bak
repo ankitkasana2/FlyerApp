@@ -385,6 +385,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUILD_DIR = /private/tmp/FlyerAppBuild;
+				BUILD_ROOT = /private/tmp/FlyerAppBuild;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -441,6 +443,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
+				OBJROOT = /private/tmp/FlyerAppObj;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -457,8 +460,10 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SHARED_PRECOMPS_DIR = /private/tmp/FlyerAppPCH;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SYMROOT = /private/tmp/FlyerAppBuild;
 				USE_HERMES = true;
 			};
 			name = Debug;
@@ -467,6 +472,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUILD_DIR = /private/tmp/FlyerAppBuild;
+				BUILD_ROOT = /private/tmp/FlyerAppBuild;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -516,6 +523,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OBJROOT = /private/tmp/FlyerAppObj;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
@@ -531,7 +539,9 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SHARED_PRECOMPS_DIR = /private/tmp/FlyerAppPCH;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SYMROOT = /private/tmp/FlyerAppBuild;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};

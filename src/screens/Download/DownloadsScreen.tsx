@@ -150,7 +150,7 @@ const DownloadsScreen: React.FC = observer(() => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScreenHeader
-        title="Downloads"
+        title="My Designs"
         subtitle={undefined}
         onBackPress={() => {
           if (navigation.canGoBack()) navigation.goBack();
@@ -206,9 +206,9 @@ const DownloadsScreen: React.FC = observer(() => {
             </View>
           ) : (
             <View style={styles.emptyWrap}>
-              <Text style={styles.emptyTitle}>No downloads yet</Text>
+              <Text style={styles.emptyTitle}>No completed designs yet</Text>
               <Text style={styles.emptySubtitle}>
-                Your purchased files will show up here when they are delivered.
+                Your completed flyer designs will appear here once our team delivers them.
               </Text>
             </View>
           )

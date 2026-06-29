@@ -49,11 +49,11 @@ const steps = [
     id: 3,
     title: 'Receive Your Flyer',
     description:
-      'Get your completed flyer delivered to your account and download it when it is ready.',
+      'Our design team delivers your completed flyer directly to your account once it is ready.',
     image: Images.pic3,
     details: [
       'Track your completed orders inside your profile',
-      'Download high-quality files for promotion and sharing',
+      'Receive your completed design and share it for your event promotion',
       'Use your flyer for print, social posts and stories',
       'Reorder again anytime from your previous submissions',
     ],

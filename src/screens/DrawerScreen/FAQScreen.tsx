@@ -34,21 +34,21 @@ const FAQ_DATA: FAQSection[] = [
     items: [
       {
         id: 'p1',
-        question: 'What do I receive when I purchase a flyer?',
+        question: 'What do I receive when I order a flyer?',
         answer:
-          'You will receive a high-quality JPG flyer in professional resolution, ready to post on social media or print. We do not deliver PSD files. All flyers are delivered as finished designs.',
+          'You are ordering a custom flyer design service. Our professional design team creates your flyer manually and delivers it directly to your account within the selected timeframe. This is a creative service, not an instant digital purchase.',
       },
       {
         id: 'p2',
-        question: 'What file format will I receive?',
+        question: 'How long does the design take?',
         answer:
-          'All flyers are delivered in JPG format only. This ensures compatibility, fast delivery, and easy sharing.',
+          'Most orders are completed within 24 hours. Rush options (5-hour and 1-hour) are available at checkout for urgent needs. Our team handles all design work manually to ensure quality.',
       },
       {
         id: 'p3',
         question: 'Are your flyers high quality?',
         answer:
-          'Absolutely. All Grodify flyers are first-class quality, high resolution, professionally designed, and optimized for nightlife promotions. We focus on premium visuals that stand out.',
+          'Absolutely. Every flyer is crafted by our professional design team with a focus on premium visuals optimized for nightlife and events. We do not use automated templates — each design is completed by a real designer.',
       },
       {
         id: 'p4',

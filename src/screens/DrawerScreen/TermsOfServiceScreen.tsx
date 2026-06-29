@@ -30,7 +30,7 @@ const TERMS_SECTIONS: TermsSection[] = [
     id: 'services',
     icon: Images.terms,
     title: '1. Services',
-    body: 'Grodify provides an online marketplace for digital event flyers, templates, and promotional graphics. Access is provided on an "as is" basis for intended promotional use.',
+    body: 'Grodify provides an online marketplace for custom flyer design services for events and promotions. Access is provided on an "as is" basis for intended promotional use.',
   },
   {
     id: 'user',
@@ -47,7 +47,7 @@ const TERMS_SECTIONS: TermsSection[] = [
     icon: Images.myorders,
     title: '3. Orders & Payments',
     bullets: [
-      'All sales are final due to the digital nature of the products.',
+      'All sales are final as each order is a custom service completed by our design team.',
       'Prices are subject to change without prior notice.',
     ],
   },
@@ -55,7 +55,7 @@ const TERMS_SECTIONS: TermsSection[] = [
     id: 'ip',
     icon: Images.privacy,
     title: '4. Intellectual Property',
-    body: 'Purchasing a flyer grants a non-exclusive license to use the design for promotional purposes. You may not resell, redistribute, or claim ownership of the original template files.',
+    body: 'Each design is created exclusively for your order by our design team. You may use your completed design for promotional purposes. You may not resell or redistribute the design.',
   },
 ];
 

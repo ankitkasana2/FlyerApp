@@ -256,7 +256,7 @@ const BottomTabs = () => (
   >
     <Tab.Screen name="Home" component={HomeScreen} />
     <Tab.Screen name="Categories" component={CategoryScreen} />
-    <Tab.Screen name="Download" component={DownloadsScreen} />
+    <Tab.Screen name="Download" component={DownloadsScreen} options={{ title: 'My Designs' }} />
     <Tab.Screen name="Cart" component={CartScreen} options={{ title: 'Cart' }} />
   </Tab.Navigator>
 );

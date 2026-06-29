@@ -42,7 +42,7 @@ const REFUND_SECTIONS: RefundSection[] = [
     title: 'No Refunds',
     bullets: [
       'Once a flyer is delivered, no refunds will be issued.',
-      'Instant-download or completed designs are non-refundable.',
+      'Completed custom designs are non-refundable as each order is manually created by our design team.',
     ],
   },
   {
@@ -61,7 +61,7 @@ const REFUND_SECTIONS: RefundSection[] = [
     id: 'digital-products',
     iconLabel: '!',
     title: 'Digital Products',
-    body: 'Because Grodify provides digital products and custom design services, all sales are generally final.',
+    body: 'Because Grodify provides custom flyer design services completed by our team, all sales are generally final.',
     italic: true,
   },
 ];

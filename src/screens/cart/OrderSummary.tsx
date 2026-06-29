@@ -38,9 +38,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   serviceFees,
   total,
   inclusions = [
-    'High-quality JPG file',
-    'Commercial use license',
-    '24/7 priority customer service support',
+    'Professional flyer design service',
+    'Custom-made for your event',
+    '24-hour delivery by our design team',
   ],
 }) => (
   <View style={styles.container}>

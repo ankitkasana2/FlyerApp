@@ -8,13 +8,6 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
-# React Native 0.84 prebuilt iOS artifacts can fail validation when the
-# project lives in a path containing spaces, so fall back to source builds.
-if __dir__.include?(' ')
-  ENV['RCT_USE_RN_DEP'] = '0'
-  ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
-end
-
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -40,25 +33,23 @@ target 'FlyerApp' do
       # :ccache_enabled => true
     )
 
-    build_dir = '/private/tmp/FlyerAppBuild'
-    objroot = '/private/tmp/FlyerAppObj'
-    shared_precomps_dir = '/private/tmp/FlyerAppPCH'
-
-    installer.pods_project.build_configurations.each do |configuration|
-      configuration.build_settings['BUILD_DIR'] = build_dir
-      configuration.build_settings['BUILD_ROOT'] = build_dir
-      configuration.build_settings['OBJROOT'] = objroot
-      configuration.build_settings['SYMROOT'] = build_dir
-      configuration.build_settings['SHARED_PRECOMPS_DIR'] = shared_precomps_dir
-    end
-
     installer.pods_project.targets.each do |target|
+      # Fix for Xcode 26: the fmt pod uses C++20 consteval which Xcode 26 rejects.
+      # fmt is self-contained, so dropping it to c++17 is safe. (stripe-react-native
+      # and other RN pods must stay on c++20 — they use C++20 `requires` concepts.)
+      if target.name == 'fmt'
+        target.build_configurations.each do |config|
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        end
+      end
+
       target.build_configurations.each do |configuration|
-        configuration.build_settings['BUILD_DIR'] = build_dir
-        configuration.build_settings['BUILD_ROOT'] = build_dir
-        configuration.build_settings['OBJROOT'] = objroot
-        configuration.build_settings['SYMROOT'] = build_dir
-        configuration.build_settings['SHARED_PRECOMPS_DIR'] = shared_precomps_dir
+        # Ensure all pods meet the minimum deployment target
+        if configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 13.0
+          configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+        end
+        # Allow stripe-react-native's C++/Swift interop headers
+        configuration.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
       end
     end
   end
