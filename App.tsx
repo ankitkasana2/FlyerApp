@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { AppState, Linking, Text, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -45,6 +45,14 @@ TextInputWithDefaults.defaultProps.style = [
 
 const AppShell = () => {
   const { handleURLCallback } = useStripe();
+  const oauthCancelTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearOAuthCancelTimeout = useCallback(() => {
+    if (oauthCancelTimeoutRef.current) {
+      clearTimeout(oauthCancelTimeoutRef.current);
+      oauthCancelTimeoutRef.current = null;
+    }
+  }, []);
 
   const handleDeepLink = useCallback(
     async (url: string | null) => {
@@ -58,10 +66,11 @@ const AppShell = () => {
       }
 
       if (url.startsWith('flyerapp://auth')) {
+        clearOAuthCancelTimeout();
         rootStore.authStore.handleOAuthCallback(url);
       }
     },
-    [handleURLCallback],
+    [clearOAuthCancelTimeout, handleURLCallback],
   );
 
   // Cold-start: run only once so we never double-process the initial URL.
@@ -85,11 +94,18 @@ const AppShell = () => {
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
-        rootStore.authStore.cancelOAuthLoading();
+        clearOAuthCancelTimeout();
+        oauthCancelTimeoutRef.current = setTimeout(() => {
+          rootStore.authStore.cancelOAuthLoading();
+          oauthCancelTimeoutRef.current = null;
+        }, 1500);
       }
     });
-    return () => sub.remove();
-  }, []);
+    return () => {
+      clearOAuthCancelTimeout();
+      sub.remove();
+    };
+  }, [clearOAuthCancelTimeout]);
 
   useEffect(() => {
     initNotifications();

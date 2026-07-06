@@ -31,7 +31,7 @@ const RootNavigator = observer(() => {
     return <OnboardingScreen onDone={handleOnboardingDone} />;
   }
 
-  if (authStore.isLoading) {
+  if (authStore.isLoading || authStore.loading) {
     return (
       <View
         style={{

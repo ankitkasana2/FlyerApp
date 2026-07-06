@@ -25,6 +25,11 @@ export class AuthStore {
   loading: boolean = false;
   error: string | null = null;
 
+  // Guards against exchanging the same single-use Cognito authorization
+  // code twice (e.g. if a redirect is ever delivered through more than
+  // one path) — a second exchange attempt fails with "invalid_grant".
+  private lastHandledOAuthCode: string | null = null;
+
   private flyerStore: any;
   private cartStore: any;
   private notificationStore: any;
@@ -574,6 +579,13 @@ export class AuthStore {
     if (provider === 'apple') {
       return this.signInWithAppleNative();
     }
+    if (this.loading) {
+      // Already mid-flow (e.g. a double-tap on the button) — a second
+      // /oauth2/authorize call would race the first and, since Cognito
+      // authorization codes are single-use, whichever one exchanges its
+      // code second would fail with "invalid_grant".
+      return;
+    }
     try {
       runInAction(() => { this.loading = true; this.error = null; });
       const identityProvider = 'Google';
@@ -679,6 +691,8 @@ export class AuthStore {
     }
     if (!url?.includes('?code=')) return;
     const code = url.split('?code=')[1].split('&')[0];
+    if (code === this.lastHandledOAuthCode) return;
+    this.lastHandledOAuthCode = code;
     runInAction(() => { this.loading = true; this.error = null; });
     try {
       const redirectUri = encodeURIComponent('flyerapp://auth');

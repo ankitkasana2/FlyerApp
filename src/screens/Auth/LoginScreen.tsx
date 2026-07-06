@@ -203,6 +203,7 @@ const LoginScreen = observer(() => {
 
           {/* Social Auth */}
           <SocialAuthButtons
+            disabled={authStore.loading}
             onGooglePress={async () => {
               try {
                 await authStore.signInWithProvider('google');

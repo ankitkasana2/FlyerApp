@@ -15,11 +15,13 @@ import Images from '../../assets';
 export interface SocialAuthButtonsProps {
   onGooglePress: () => void;
   onApplePress: () => void;
+  disabled?: boolean;
 }
 
 const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
   onGooglePress,
   onApplePress,
+  disabled,
 }) => (
   <View style={styles.wrapper}>
     {/* OR divider */}
@@ -32,9 +34,10 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
     {/* Apple + Google side by side */}
     <View style={styles.socialRow}>
       <TouchableOpacity
-        style={styles.socialBtn}
+        style={[styles.socialBtn, disabled && styles.socialBtnDisabled]}
         onPress={onApplePress}
         activeOpacity={0.7}
+        disabled={disabled}
       >
         <Image
           source={Images.apple}
@@ -44,9 +47,10 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
       </TouchableOpacity>
 
       <TouchableOpacity
-          style={styles.socialBtn}
+          style={[styles.socialBtn, disabled && styles.socialBtnDisabled]}
           onPress={onGooglePress}
           activeOpacity={0.7}
+          disabled={disabled}
         >
           <Image
             source={Images.google}
@@ -91,6 +95,9 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  socialBtnDisabled: {
+    opacity: 0.5,
   },
   socialIcon: {
     width: 24,
