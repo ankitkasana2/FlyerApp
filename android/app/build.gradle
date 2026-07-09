@@ -74,6 +74,19 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == "androidx.sqlite") {
+            details.useVersion("2.7.0")
+            details.because("Use AndroidX SQLite native prebuilts compatible with 16 KB page-size devices.")
+        }
+        if (details.requested.group == "androidx.datastore") {
+            details.useVersion("1.2.1")
+            details.because("Use AndroidX DataStore native prebuilts compatible with 16 KB page-size devices.")
+        }
+    }
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -84,7 +97,7 @@ android {
         applicationId "com.grodify"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 2
         versionName "1.0"
     }
     signingConfigs {
