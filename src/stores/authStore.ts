@@ -30,6 +30,10 @@ export class AuthStore {
   // one path) — a second exchange attempt fails with "invalid_grant".
   private lastHandledOAuthCode: string | null = null;
 
+  // Populated by syncBackendSession with whatever name/email the backend has
+  // on record — the authoritative source, since Apple only sends them once.
+  private lastBackendUser: { fullname?: string; email?: string } | null = null;
+
   private flyerStore: any;
   private cartStore: any;
   private notificationStore: any;
@@ -66,6 +70,10 @@ export class AuthStore {
     const responseData =
       result.success && result.data && typeof result.data === 'object'
         ? (result.data as Record<string, unknown>)
+        : null;
+    this.lastBackendUser =
+      responseData?.user && typeof responseData.user === 'object'
+        ? (responseData.user as { fullname?: string; email?: string })
         : null;
     const backendToken =
       typeof responseData?.token === 'string'
@@ -655,7 +663,6 @@ export class AuthStore {
       provider: 'apple' as const,
     };
 
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
     await AsyncStorage.setItem('@auth_tokens', JSON.stringify({
       accessToken: credential.identityToken,
       idToken: credential.identityToken,
@@ -668,6 +675,17 @@ export class AuthStore {
       user_id: userId,
       fallbackIdToken: credential.identityToken,
     });
+
+    // Apple didn't resend name/email this time (e.g. reinstall wiped our local
+    // cache) — the backend still has whatever it saved on the first sign-in,
+    // so trust it over our own placeholder guess.
+    if (this.lastBackendUser?.fullname) user.name = this.lastBackendUser.fullname;
+    if (this.lastBackendUser?.email) user.email = this.lastBackendUser.email;
+
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    try {
+      await AsyncStorage.setItem(APPLE_USER_KEY, JSON.stringify({ email: user.email, name: user.name }));
+    } catch {}
 
     runInAction(() => {
       this.accessToken = backendToken || credential.identityToken;
