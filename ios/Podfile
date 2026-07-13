@@ -1,3 +1,9 @@
+# The project path contains a space ("Flyer App"), which breaks React Native's
+# prebuilt binary download steps (URI::File.build rejects unescaped spaces). Force
+# building React-Core and ReactNativeDependencies from source instead.
+ENV['RCT_USE_PREBUILT_RNCORE'] ||= '0'
+ENV['RCT_USE_RN_DEP'] ||= '0'
+
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
