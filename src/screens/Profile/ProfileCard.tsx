@@ -66,9 +66,6 @@ const badgeStyles = StyleSheet.create({
 export interface ProfileCardProps {
   name: string;
   email: string;
-  memberSince: string;
-  totalAssets: number;
-  assetLabel?: string;
   membershipLabel?: string;
   avatarSource?: ImageSourcePropType;
 }
@@ -77,9 +74,6 @@ export interface ProfileCardProps {
 const ProfileCard: React.FC<ProfileCardProps> = ({
   name,
   email,
-  memberSince,
-  totalAssets,
-  assetLabel = 'FLYERS',
   membershipLabel = 'PREMIUM MEMBER',
   avatarSource,
 }) => (
@@ -116,25 +110,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       </View>
     </View>
 
-    {/* ── Divider ── */}
-    <View style={styles.divider} />
-
-    {/* ── Stats row ── */}
-    <View style={styles.statsRow}>
-      <View style={styles.statItem}>
-        <Text style={styles.statLabel}>{'MEMBER\nSINCE'}</Text>
-        <Text style={styles.statValue}>{memberSince.toUpperCase()}</Text>
-      </View>
-
-      <View style={styles.statDivider} />
-
-      <View style={[styles.statItem, styles.statItemRight]}>
-        <Text style={styles.statLabel}>TOTAL ASSETS</Text>
-        <Text style={styles.statValue}>
-          {totalAssets} {assetLabel}
-        </Text>
-      </View>
-    </View>
   </View>
 );
 
@@ -150,7 +125,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    marginBottom: 18,
   },
   avatarWrapper: {
     width: 72,
@@ -211,38 +185,6 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeights.regular,
     color: Colors.textSecondary,
     marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginBottom: 16,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  statItem: {
-    gap: 4,
-  },
-  statItemRight: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
-  statDivider: {
-    flex: 1,
-  },
-  statLabel: {
-    fontSize: Typography.fontSizes.xs,
-    fontWeight: Typography.fontWeights.regular,
-    color: Colors.textMuted,
-    letterSpacing: 0.8,
-    lineHeight: 16,
-  },
-  statValue: {
-    fontSize: Typography.fontSizes.md,
-    fontWeight: Typography.fontWeights.black,
-    color: Colors.textPrimary,
-    letterSpacing: 0.5,
   },
 });
 
