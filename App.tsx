@@ -17,6 +17,9 @@ import Colors from './src/theme/colors';
 import Typography from './src/theme/typography';
 import { toastConfig } from './src/components/common/AppToast';
 import { initNotifications } from './src/services/notifications';
+import { navigationRef, navigate, navigateWhenReady } from './src/navigation/navigationRef';
+import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import type { AppStackParamList } from './src/navigation/types';
 
 const globalTextStyle = { fontFamily: Typography.fontFamilies.regular };
 const globalInputStyle = {
@@ -42,6 +45,29 @@ TextInputWithDefaults.defaultProps.style = [
   globalInputStyle,
   TextInputWithDefaults.defaultProps.style,
 ].filter(Boolean);
+
+function navigateFromNotification(
+  remoteMessage: FirebaseMessagingTypes.RemoteMessage,
+  navigateFn: <RouteName extends keyof AppStackParamList>(
+    ...args: undefined extends AppStackParamList[RouteName]
+      ? [screen: RouteName] | [screen: RouteName, params: AppStackParamList[RouteName]]
+      : [screen: RouteName, params: AppStackParamList[RouteName]]
+  ) => void = navigate,
+) {
+  const data = remoteMessage.data ?? {};
+  const orderId = data.orderId ?? data.order_id;
+  const flyerId = data.flyerId ?? data.flyer_id;
+
+  if (typeof orderId === 'string' && orderId) {
+    navigateFn('OrderDetail', { orderId });
+    return;
+  }
+  if (typeof flyerId === 'string' && flyerId) {
+    navigateFn('FlyerDetail', { flyerId });
+    return;
+  }
+  navigateFn('Notifications');
+}
 
 const AppShell = () => {
   const { handleURLCallback } = useStripe();
@@ -121,11 +147,32 @@ const AppShell = () => {
     return unsubscribe;
   }, []);
 
+  // Tapped a notification while the app was backgrounded (not killed).
+  useEffect(() => {
+    const unsubscribe = messaging().onNotificationOpenedApp(remoteMessage => {
+      navigateFromNotification(remoteMessage);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Cold start via a notification tap: check once the navigator has mounted
+  // so navigationRef.isReady() is true.
+  const handleNavigationReady = useCallback(() => {
+    messaging()
+      .getInitialNotification()
+      .then(remoteMessage => {
+        if (remoteMessage) {
+          navigateFromNotification(remoteMessage, navigateWhenReady);
+        }
+      });
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StoreProvider>
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef} onReady={handleNavigationReady}>
             <RootNavigator />
           </NavigationContainer>
           <Toast config={toastConfig} topOffset={52} visibilityTime={3000} />
