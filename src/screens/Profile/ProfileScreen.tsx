@@ -133,19 +133,6 @@ const RECENT_ORDERS: RecentOrder[] = [
   },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-/** Format an ISO date-string or raw Date into "Month YYYY" */
-function formatMemberSince(raw?: string | null): string {
-  if (!raw) return 'Member';
-  try {
-    const d = new Date(raw);
-    if (isNaN(d.getTime())) return raw;
-    return d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-  } catch {
-    return raw;
-  }
-}
-
 // ─── ProfileScreen ────────────────────────────────────────────────────────────
 const ProfileScreen: React.FC = observer(() => {
   const { authStore, flyerStore, cartStore } = useStores();
@@ -162,7 +149,6 @@ const ProfileScreen: React.FC = observer(() => {
   // Derive display values from real user object
   const displayName = user?.name || user?.email?.split('@')[0] || 'User';
   const displayEmail = user?.email || '';
-  const memberSince = formatMemberSince(user?.createdAt);
 
   const SETTINGS_ITEMS: SettingsMenuItem[] = [
     {
@@ -272,9 +258,6 @@ const ProfileScreen: React.FC = observer(() => {
       <ProfileCard
         name={displayName}
         email={displayEmail}
-        memberSince={memberSince}
-        totalAssets={124}
-        assetLabel="FLYERS"
         membershipLabel="PREMIUM MEMBER"
       />
 

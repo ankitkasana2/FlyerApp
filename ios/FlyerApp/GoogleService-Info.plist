@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.grodify.flyerapp</string>
+	<string>com.grodify.flyer</string>
 	<key>PROJECT_ID</key>
 	<string>flyerapp-ba31a</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:551566874046:ios:8ca709b82c614d6cb015ef</string>
+	<string>1:551566874046:ios:1ff350e5d8aeefb3b015ef</string>
 </dict>
 </plist>
