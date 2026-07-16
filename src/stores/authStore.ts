@@ -65,16 +65,38 @@ export class AuthStore {
     user_id: string;
     fallbackAccessToken?: string | null;
     fallbackIdToken?: string | null;
+    retries?: number;
   }) {
-    const result = await this.registerUserInDatabase(user);
+    let result = await this.registerUserInDatabase(user);
+    let retriesLeft = user.retries ?? 0;
+    while (!result.success && retriesLeft > 0) {
+      // This call may be the one and only chance to persist Apple-provided
+      // name/email (it's only ever sent once) — worth a couple of retries
+      // instead of silently losing it to a transient network failure.
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 750));
+      result = await this.registerUserInDatabase(user);
+      retriesLeft -= 1;
+    }
+    if (!result.success) {
+      console.warn(
+        '[AuthStore] Registration failed after retries — user data may not be persisted:',
+        result.error,
+      );
+    }
     const responseData =
       result.success && result.data && typeof result.data === 'object'
         ? (result.data as Record<string, unknown>)
         : null;
+    const nestedResponseData =
+      responseData?.data && typeof responseData.data === 'object'
+        ? (responseData.data as Record<string, unknown>)
+        : null;
     this.lastBackendUser =
       responseData?.user && typeof responseData.user === 'object'
         ? (responseData.user as { fullname?: string; email?: string })
-        : null;
+        : nestedResponseData?.user && typeof nestedResponseData.user === 'object'
+          ? (nestedResponseData.user as { fullname?: string; email?: string })
+          : null;
     const backendToken =
       typeof responseData?.token === 'string'
         ? responseData.token
@@ -674,6 +696,9 @@ export class AuthStore {
       email: user.email,
       user_id: userId,
       fallbackIdToken: credential.identityToken,
+      // Apple only sends real name/email once — worth retrying this specific
+      // save so a transient network blip doesn't lose it permanently.
+      retries: credential.email ? 2 : 0,
     });
 
     // Apple didn't resend name/email this time (e.g. reinstall wiped our local
